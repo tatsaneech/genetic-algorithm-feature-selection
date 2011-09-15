@@ -8,17 +8,11 @@ P=size(parents,1);
 SCORE_test=zeros(P,1);
 SCORE_train=zeros(P,1);
 
-% Default parameters
-KI=50; % Number of fitness function evaluations to average over
-train=false(size(data_target,1),KI);
-test=false(size(data_target,1),KI);
-
 % Calculate indices from crossvalidation
-for ki=1:KI
-    % Determine cross validation indices
-    [ train(:,ki) test(:,ki)] = feval(xvalFcn,data_target, ki);
-    %           [ train(:,ki) test(:,ki)] = myholdout( data_target, 0.3 );
-end
+% Determine cross validation indices
+[ train test ] = feval(xvalFcn,data_target);
+KI=size(train,2); % Number of fitness function evaluations to average over
+%           [ train(:,ki) test(:,ki)] = myholdout( data_target, 0.3 );
 
 % For each individual (parallelized)
 parfor individual=1:P
