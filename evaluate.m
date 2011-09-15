@@ -29,7 +29,6 @@ for individual=1:P
         % variables
         % model = pca(DATA',0.01); % 1% variance is discarded only
         % DATA = linproj(DATA',model);
-        
         tr_cost=zeros(KI,1);
         t_cost=zeros(KI,1);
         
