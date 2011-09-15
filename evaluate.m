@@ -4,9 +4,22 @@ fitFcn=options.FitnessFcn;
 costFcn=options.CostFcn;
 xvalFcn=options.CrossValidationFcn;
 
+% Pre-allocate
 P=size(parents,1);
 SCORE_test=zeros(P,1);
 SCORE_train=zeros(P,1);
+
+% Default parameters
+KI=50; % Number of fitness function evaluations to average over
+train=false(size(data_target,1),KI);
+test=false(size(data_target,1),KI);
+
+% Calculate indices from crossvalidation
+for ki=1:KI
+    % Determine cross validation indices
+    [ train(:,ki) test(:,ki)] = feval(xvalFcn,data_target, ki);
+    %           [ train(:,ki) test(:,ki)] = myholdout( data_target, 0.3 );
+end
 
 % For each individual
 for individual=1:P
@@ -16,24 +29,38 @@ for individual=1:P
     % Convert Gene into selected variables
     FS = parents(individual,:)==1;
     % If enough variables selected to regress               
-    if sum(FS)>0        
+    if sum(FS)>0
+        DATA = OriginalData(:,FS);
         % RUN PCA if needed to avoid linear correlation between input
         % variables
-        DATA = OriginalData(:,FS);
-%         model = pca(DATA',0.01); % 1% variance is discarded only
-                                 % enough to avoid direct linear relation                       
-%         DATA = linproj(DATA',model);
+        % model = pca(DATA',0.01); % 1% variance is discarded only
+        % DATA = linproj(DATA',model);
         
-        % 
-        [ Stest, Strain ]  = feval(fitFcn,DATA,data_target,costFcn);
+        tr_cost=zeros(KI,1);
+        t_cost=zeros(KI,1);
+        
+        % repeat until the mean of the AUC is significant
+        for ki=1:KI
+            %TODO: Use arrayfun and a wrapper to vectorize this
+            train_data = DATA(train(:,ki),:);
+            train_target = data_target(train(:,ki));
+            test_data = DATA(test(:,ki),:);
+            test_target = data_target(test(:,ki));
+            
+            % Use fitness function to calculate costs
+            [ tr_cost(ki), t_cost(ki) ]  = feval(fitFcn,...
+                train_data,train_target,test_data,test_target,...
+                costFcn);
+        end
         
         % ...and get the results on TEST and TRAIN set 
-        SCORE_test(individual) =  nanmean(Stest );
-        SCORE_train(individual) =  nanmedian(Strain );
+        SCORE_test(individual) =  nanmedian(t_cost );
+        SCORE_train(individual) =  nanmedian(tr_cost );
         
     else
-        SCORE_test(individual) = 0 ;
-        SCORE_train(individual) = 0 ;
+        %TODO: Figure out a better upper limit than 9999
+        SCORE_test(individual) = options.OptDir*9999;
+        SCORE_train(individual) = options.OptDir*9999;
     end
 end
 
