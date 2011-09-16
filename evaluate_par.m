@@ -2,6 +2,7 @@ function [ SCORE_test SCORE_train  ] = evaluate_par( OriginalData , data_target 
 fitFcn=options.FitnessFcn; 
 costFcn=options.CostFcn;
 xvalFcn=options.CrossValidationFcn;
+optDir=options.OptDir;
 
 % Pre-allocate
 P=size(parents,1);
@@ -10,11 +11,10 @@ SCORE_train=zeros(P,1);
 
 % Calculate indices from crossvalidation
 % Determine cross validation indices
-[ train test ] = feval(xvalFcn,data_target);
-KI=size(train,2); % Number of fitness function evaluations to average over
-%           [ train(:,ki) test(:,ki)] = myholdout( data_target, 0.3 );
+[ train, test, KI ] = feval(xvalFcn,data_target,options);
 
 % For each individual (parallelized)
+% TODO: Change this to send different data to each core (doc spmd)
 parfor individual=1:P
     % If you want to remove multiples warnings
     warning off all
@@ -52,8 +52,8 @@ parfor individual=1:P
         
     else
         %TODO: Figure out a better upper limit than 9999
-        SCORE_test(individual) = options.OptDir*9999;
-        SCORE_train(individual) = options.OptDir*9999;
+        SCORE_test(individual) = optDir*9999;
+        SCORE_train(individual) = optDir*9999;
     end
 end
 
