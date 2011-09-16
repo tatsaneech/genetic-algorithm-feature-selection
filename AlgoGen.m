@@ -96,11 +96,6 @@ for tries = 1:options.Repetitions
         % If tracking best genome statistics is desirable during run-time,
         % this section will have to recalculate the genome fitness, etc.
         FS = parent(1,:)==1;
-        %FIXME: Why is the below hack necessary?
-        if sum(FS)==0 % ensure parents with 0 features are disabled
-            aT=min_or_max([0,9999]);
-            aTR=min_or_max([0,9999]);
-        end
         [aT,aTR] = evaluate(DATA,outcome,FS,options);
        
         out.EvolutionBestCost(ite,tries) = feval(min_or_max,aTR) ;
