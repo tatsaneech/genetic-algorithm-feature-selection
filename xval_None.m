@@ -1,9 +1,15 @@
-function [ tr_idx, t_idx, D ] = xval_None( data_target )
+function [ tr_idx, t_idx, D ] = xval_None( data_target, options )
 %XVAL_NONE No Cross Validation used.
 %   Default is 50 randomly assigned indices 70%/30% training/test.
 
-D=50;
-P=0.3;
+if isempty(options.CrossValidationParam)
+    D=50;
+    P=0.3;
+else
+    D=options.CrossValidationParam(1);
+    P=options.CrossValidationParam(2);
+end
+
 N=length(data_target);
     
 %     random indices from 1:N

@@ -10,6 +10,9 @@ if nargin <3
     options=ga_opt_set;
 end
 
+verbose=true; % Set true to view time evaluations
+totTime=0;
+
 % Define main parameters
 [options] = ...
     parse_inputs(options);
@@ -17,13 +20,15 @@ end
     % functions handles when initializing/defining the options?
     
     % COMMENT Alistair 14 Sep 2011 : ga_opt_set checks the parameters are
-    % valid and defaults them. parse_inputs makes sure they are internally
-    % consistent: i.e., ConfFact < Nbre_tot_var, etc
+    % valid and defaults undefined to []. parse_inputs makes sure they are 
+    % internally consistent: i.e., ConfFact < Nbre_tot_var, etc
     %
     % To add an option field, follow these steps:
-    %   Add to def_opt in parse_options
     %   Add to options in ga_opt_set (also add comment)
     %   Add to check_args subfunction in ga_opt_set
+    %   Add to def_opt in parse_options (in AlgoGen.m)
+    %   If it is a new type of sub-function, you will also need to 
+    %       add it to parse_functions (in AlgoGen.m)
 
 Nbre_var=size(DATA,2);
 
@@ -72,11 +77,9 @@ for tries = 1:options.Repetitions
     % Check if early-stop criterion is met
     % if not: continue
     ite = 0 ; early_stop = false ; im=[];
-    tic;
-    tries
     while ite < options.MaxIterations && early_stop == false
-        ite = ite + 1
-        toc;
+        tic;
+        ite = ite + 1;
         if ite>(options.ErrorIterations+1) % Enough iterations have passed
             win = out.EvolutionBestCost((ite-(options.ErrorIterations+1)):(ite-1));
             if abs(max(win) - min(win)) < options.ErrorGradient
@@ -138,7 +141,11 @@ for tries = 1:options.Repetitions
         %         if auc>80
         %             eval(['save RAMB_MODELDIM_' num2str(floor(options.NumActiveFeatures),'%d') '_AUC_' num2str(floor(auc),'%d') '.mat FS AUC']);
         %         end
-        
+        totTime=totTime+toc;
+        if verbose
+            fprintf('Iteration %d of %d. Time: %2.2f. Total Time: %2.2f. \n',...
+                ite,options.MaxIterations,toc, totTime);
+        end 
     end
     out.GenomePlot{1,tries}=im;
     [~,~,out.BestGenomeStats{1,tries}] = feval(options.FitnessFcn,DATA(:,parent(1,:)==1),outcome,options.CostFcn);
@@ -195,6 +202,7 @@ def_options=struct( ...
         'MutationFcn', 'mut_SP', ...
         'MutationRate', 0.06, ...
         'CrossValidationFcn', 'xval_None', ...
+        'CrossValidationParam',[], ...
         'PlotFcn', 'plot_All', ...% This should have the exact same name as the .m function
         'ErrorGradient', 0.01, ...
         'ErrorIterations', 10, ...
@@ -228,6 +236,7 @@ for k=1:length(fcn_idx)
         parse_functions(opt_fn{fcn_idx(k)},options.(opt_fn{fcn_idx(k)}));
 end
 
+%TODO: Check xvalFcn and xvalParam are internally consistent
 end
 
 % Parses functions, including translating strings into function handles

@@ -11,7 +11,7 @@ SCORE_train=zeros(P,1);
 
 % Calculate indices from crossvalidation
 % Determine cross validation indices
-[ train test ] = feval(xvalFcn,data_target);
+[ train test ] = feval(xvalFcn,data_target,options);
 KI=size(train,2); % Number of fitness function evaluations to average over
 %           [ train(:,ki) test(:,ki)] = myholdout( data_target, 0.3 );
 

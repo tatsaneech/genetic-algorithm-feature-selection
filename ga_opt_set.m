@@ -31,11 +31,13 @@ function [ options ] = ga_opt_set( varargin )
 %   MutationFcn          - The function used to mutate genomes
 %                       [ function name string | function handle | {[]} ]
 %   CrossoverFcn        - The type of genomic crossover used
-%                      [ function name string | function handle | {[]} ]
+%                       [ function name string | function handle | {[]} ]
 %   CrossValidationFcn  - The type of cross-validation technique used
-%                      [ function name string | function handle | {[]} ]
+%                       [ function name string | function handle | {[]} ]
+%   CrossValidationParam - Parameters of the cross-validation function
+%                       [Double vector | {[]} ]
 %   Elitism             - How many parents (%) should be passed down unchanged to next generation
-%                      [ positive scalar between 0-100 | {10} ] 
+%                       [ positive scalar between 0-100 | {10} ] 
 %   MutationRate       - Rate of ramndom mutations applied to children
 %                       [ positive scalar between 0-1 | {.06} ]
 %   OptDir             - The optimization direction, 0 - min, 1 - maximize
@@ -83,6 +85,7 @@ else
         'MutationFcn', [], ...
         'MutationRate', [], ...
         'CrossValidationFcn', [], ...
+        'CrossValidationParam', [], ...
         'PlotFcn', [], ...
         'ErrorGradient', [], ...
         'ErrorIterations', [], ...
@@ -178,6 +181,12 @@ switch param
 %             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be ''never'' or ''always''.',param);
 %        end
     % Doubles
+    case {'CrossValidationParam'}
+        if ~isnumeric(val)
+            valid=0;
+            errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive integer',param);
+        end
+    % Positive definite doubles
     case {'NumActiveFeatures','MaxIterations','PopulationSize',...
             'ErrorGradient', 'ErrorIterations',...
             'MutationRate','Repetitions','Elitism'}
