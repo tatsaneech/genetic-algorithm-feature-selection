@@ -101,7 +101,7 @@ for tries = 1:options.Repetitions
             aT=min_or_max([0,9999]);
             aTR=min_or_max([0,9999]);
         end
-        [aT,aTR] = feval(options.FitnessFcn,DATA(:,parent(1,:)==1),outcome,options.CostFcn);
+        [aT,aTR] = feval(evalFcn,DATA,outcome,FS,options);
        
         out.EvolutionBestCost(ite,tries) = feval(min_or_max,aTR) ;
         out.EvolutionBestCostTest(ite,tries) = feval(min_or_max,aT) ;
