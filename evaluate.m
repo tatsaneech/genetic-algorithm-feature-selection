@@ -1,4 +1,4 @@
-function [ SCORE_test SCORE_train  ] = evaluate( OriginalData , data_target , parents, options )
+function [ SCORE_test SCORE_train stats ] = evaluate( OriginalData , data_target , parents, options )
 
 fitFcn=options.FitnessFcn; 
 costFcn=options.CostFcn;
@@ -55,5 +55,13 @@ for individual=1:P
     end
 end
 
-
+if nargout>2
+    % Assumes running a final validation, and t_cost has carried over from
+    % single loop iteration above
+    [~,idx]=min(abs(t_cost-nanmedian(t_cost))); % find median
+    b2 = robustfit(DATA(train(:,idx),:),data_target(train(:,idx)),[],[],'off');
+    test_data=DATA(test(:,idx),:);
+    test_pred = test_data*b2 ;
+    stats=stat_calc_struct(test_pred,data_target(test(:,idx)));
+end
 

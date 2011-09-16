@@ -143,7 +143,7 @@ for tries = 1:options.Repetitions
         end 
     end
     out.GenomePlot{1,tries}=im;
-    [~,~,out.BestGenomeStats{1,tries}] = feval(options.FitnessFcn,DATA(:,parent(1,:)==1),outcome,options.CostFcn);
+    [~,~,out.BestGenomeStats{1,tries}] = evaluate( DATA , outcome , parent(1,:), options );
     out.BestGenome{1,tries} = parent(1,:)==1;
 
     % COMMENT : Louis Mayaud July-1st-11 :  I think the next 4 lines should

@@ -4,7 +4,7 @@
 
 % First, load the data
 % loaddata;
-matlabpool;
+matlabpool 4;
 % load arrhythmia;
 % disp(Description)
 
