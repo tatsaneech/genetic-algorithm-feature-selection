@@ -11,7 +11,6 @@ if nargin <3
 end
 
 verbose=true; % Set true to view time evaluations
-totTime=0;
 
 % Define main parameters
 [options] = ...
@@ -62,8 +61,12 @@ end
     out.BestGenomeStats = cell(1,options.Repetitions);
     out.BestGenome = cell(1,options.Repetitions) ;
     out.GenomePlot=cell(1,options.Repetitions);
+    out.RepetitionTime=zeros(1,options.Repetitions);
+    out.IterationTime=zeros(1,options.MaxIterations);
     
+repTime=0;
 for tries = 1:options.Repetitions
+    
     %% Initialise GA
     % Create a random population of genomes with :
     % - options.PopulationSize genomes
@@ -77,6 +80,7 @@ for tries = 1:options.Repetitions
     % Check if early-stop criterion is met
     % if not: continue
     ite = 0 ; early_stop = false ; im=[];
+    iteTime=0;
     while ite < options.MaxIterations && early_stop == false
         tic;
         ite = ite + 1;
@@ -136,17 +140,18 @@ for tries = 1:options.Repetitions
         %         if auc>80
         %             eval(['save RAMB_MODELDIM_' num2str(floor(options.NumActiveFeatures),'%d') '_AUC_' num2str(floor(auc),'%d') '.mat FS AUC']);
         %         end
-        totTime=totTime+toc;
+        iteTime=iteTime+toc;
+        repTime=repTime+toc;
         if verbose
             fprintf('Iteration %d of %d. Time: %2.2fs. Total Time: %2.2fs. Projected: %2.2fh. \n',...
-                ite,options.MaxIterations,toc, totTime,...
-                ((totTime/ite*options.MaxIterations*options.Repetitions)-totTime)/3600);
-        end 
+                ite,options.MaxIterations,toc, iteTime,...
+                ((iteTime/ite* (options.MaxIterations-ite) * (options.Repetitions-tries)))/3600);
+        end
     end
     out.GenomePlot{1,tries}=im;
     [~,~,out.BestGenomeStats{1,tries}] = evaluate( DATA , outcome , parent(1,:), options );
     out.BestGenome{1,tries} = parent(1,:)==1;
-
+    out.IterationTime(1,tries)=out.IterationTime(1,tries)+iteTime/options.MaxIterations;
     % COMMENT : Louis Mayaud July-1st-11 :  I think the next 4 lines should
     % be removed
         if strcmpi(options.Display,'plot')
@@ -174,6 +179,9 @@ for tries = 1:options.Repetitions
     
     
 end
+
+out.RepetitionTime{1,tries}=repTime/options.Repetitions;
+    
 end
 
 function [options] = ...
