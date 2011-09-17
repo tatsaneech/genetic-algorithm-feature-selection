@@ -180,7 +180,7 @@ for tries = 1:options.Repetitions
     
 end
 
-out.RepetitionTime{1,tries}=repTime/options.Repetitions;
+out.RepetitionTime(1,tries)=repTime/options.Repetitions;
     
 end
 
