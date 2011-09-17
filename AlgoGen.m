@@ -138,8 +138,9 @@ for tries = 1:options.Repetitions
         %         end
         totTime=totTime+toc;
         if verbose
-            fprintf('Iteration %d of %d. Time: %2.2f. Total Time: %2.2f. \n',...
-                ite,options.MaxIterations,toc, totTime);
+            fprintf('Iteration %d of %d. Time: %2.2fs. Total Time: %2.2fs. Projected: %2.2fh. \n',...
+                ite,options.MaxIterations,toc, totTime,...
+                ((totTime/ite*options.MaxIterations*options.Repetitions)-totTime)/3600);
         end 
     end
     out.GenomePlot{1,tries}=im;
