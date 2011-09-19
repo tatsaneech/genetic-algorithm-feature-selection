@@ -61,8 +61,7 @@ end
     out.BestGenomeStats = cell(1,options.Repetitions);
     out.BestGenome = cell(1,options.Repetitions) ;
     out.GenomePlot=cell(1,options.Repetitions);
-    out.RepetitionTime=zeros(1,options.Repetitions);
-    out.IterationTime=zeros(1,options.MaxIterations);
+    out.IterationTime=zeros(1,options.Repetitions);
     
 repTime=0;
 for tries = 1:options.Repetitions
@@ -151,7 +150,7 @@ for tries = 1:options.Repetitions
     out.GenomePlot{1,tries}=im;
     [~,~,out.BestGenomeStats{1,tries}] = evaluate( DATA , outcome , parent(1,:), options );
     out.BestGenome{1,tries} = parent(1,:)==1;
-    out.IterationTime(1,tries)=out.IterationTime(1,tries)+iteTime/options.MaxIterations;
+    out.IterationTime(1,tries)=iteTime/options.MaxIterations;
     % COMMENT : Louis Mayaud July-1st-11 :  I think the next 4 lines should
     % be removed
         if strcmpi(options.Display,'plot')
@@ -180,7 +179,7 @@ for tries = 1:options.Repetitions
     
 end
 
-out.RepetitionTime(1,tries)=repTime/options.Repetitions;
+out.RepetitionTime(1,tries)=repTime;
     
 end
 
