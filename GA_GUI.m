@@ -22,7 +22,7 @@ function varargout = GA_GUI(varargin)
 
 % Edit the above text to modify the response to help GA_GUI
 
-% Last Modified by GUIDE v2.5 01-Jul-2011 20:40:33
+% Last Modified by GUIDE v2.5 30-Sep-2011 20:48:57
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -208,18 +208,18 @@ end
 
 
 
-function edit3_Callback(hObject, eventdata, handles)
-% hObject    handle to edit3 (see GCBO)
+function MaxFeatures_Callback(hObject, eventdata, handles)
+% hObject    handle to MaxFeatures (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit3 as text
-%        str2double(get(hObject,'String')) returns contents of edit3 as a double
+% Hints: get(hObject,'String') returns contents of MaxFeatures as text
+%        str2double(get(hObject,'String')) returns contents of MaxFeatures as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit3_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit3 (see GCBO)
+function MaxFeatures_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to MaxFeatures (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -410,7 +410,8 @@ costFs = get(handles.popupmenu6,'String')
 costFIdx = get(handles.popupmenu6,'Value')
 
 opts = ga_opt_set('Display','plot',...
-    'NumActiveFeatures', str2double( get(handles.edit3,'String') ), ...
+    'MinFeatures', str2double( get(handles.MinFeatures,'String') ), ...
+    'MaxFeatures', str2double( get(handles.MaxFeatures,'String') ), ...
     'MaxIterations',str2double( get(handles.edit2,'String') ),...
     'ConfoundingFactors', get(handles.edit4,'String'), ...
     'Repetitions' , str2double( get(handles.edit1,'String') ), ...
@@ -512,6 +513,29 @@ function popupmenu6_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function MinFeatures_Callback(hObject, eventdata, handles)
+% hObject    handle to MinFeatures (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of MinFeatures as text
+%        str2double(get(hObject,'String')) returns contents of MinFeatures as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function MinFeatures_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to MinFeatures (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');

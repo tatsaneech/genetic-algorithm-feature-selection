@@ -7,35 +7,39 @@ function parents = initialise_pop(Nbre_tot_var,options)
 %   Variable list
 %       Nbre_tot_var - Number of dimensions of each genome
 %       options.PopulationSize - Number of genomes to generate
-%       options.NumActiveFeatures - Number of true values in each genome
+%       numFeatures - Number of true values in each genome
 %       options.ConfoundingFactors - Numeric indices of flags in genomes which must be true
 %           (forcably included features)
 
-if isempty(options.NumActiveFeatures) || options.NumActiveFeatures == 0
-     % default true values to square root of total dimension
-    options.NumActiveFeatures = round(sqrt(Nbre_tot_var));
-elseif options.NumActiveFeatures < 0
-    % flip the negative
-    options.NumActiveFeatures = - options.NumActiveFeatures ;
+if options.MaxFeatures == options.MinFeatures
+    % forced number of features
+    numFeatures=options.MaxFeatures;
+else
+    % default true values to square root of total dimension
+    numFeatures = round(sqrt(Nbre_tot_var));
+    
+    % Check to ensure this is does not violate min/max
+    if numFeatures>options.MaxFeatures
+        numFeatures=options.MaxFeatures;
+    elseif numFeatures<options.MinFeatures
+        numFeatures=options.MinFeatures;
+    end
 end
 
 % Initialize population
 parents = zeros(options.PopulationSize,Nbre_tot_var-length(options.ConfoundingFactors));
 
-% Generate vector with "options.NumActiveFeatures" true values
-tmp = [ones(1,options.NumActiveFeatures-length(options.ConfoundingFactors)) zeros(1,Nbre_tot_var-options.NumActiveFeatures)];
+% Generate vector with "numFeatures" true values
+tmp = [ones(1,numFeatures-length(options.ConfoundingFactors)) zeros(1,Nbre_tot_var-numFeatures)];
 for i=1:options.PopulationSize
-    % Randomly assign "options.NumActiveFeatures" true values in the population
+    % Randomly assign "numFeatures" true values in the population
+    % TODO: Vectorize this.
     parents(i,:) = tmp(randperm(Nbre_tot_var-length(options.ConfoundingFactors)));
 end        
 
 
 if ~isempty(options.ConfoundingFactors)
-%     % Generate an index array which excludes confounding factors
-%     CF=1:Nbre_tot_var;
-%     CF(options.ConfoundingFactors)=[];
-    
-%     final_parents(:,CF) = parents ; 
+    % Force confounding factors
     parents(:,options.ConfoundingFactors) = ones(options.PopulationSize,length(options.ConfoundingFactors));
 else
     % do nothing    
