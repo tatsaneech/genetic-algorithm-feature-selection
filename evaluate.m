@@ -44,6 +44,9 @@ for individual=1:P
                 costFcn);
         end
         
+        % Check/perform minimal feature selection is desired
+        [ tr_cost, t_cost ] = fs_opt( tr_cost, t_cost, FS, options );
+        
         % ...and get the results on TEST and TRAIN set 
         SCORE_test(individual) =  nanmedian(t_cost );
         SCORE_train(individual) =  nanmedian(tr_cost );

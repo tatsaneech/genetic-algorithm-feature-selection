@@ -3,30 +3,33 @@
 % toolbox using all default parameters.
 
 % First, load the data
-% loaddata;
-%matlabpool 4;
+%loaddata;
+matlabpool;
 % load arrhythmia;
 % disp(Description)
-
+% pmode start local 4
+% mpiprofile on
 % Next, instantiate the GA options
 % A full list of options is available in the help file
 opts=ga_opt_set('Parallelize',1,'CostFcn',@cost_AUROC,'OptDir',1,...
-    'ErrorIterations',20,'ErrorGradient',0.005,...
-    'PopulationSize', 48,'FitnessFcn','fit_LR','NumActiveFeatures',10,...
-    'Repetitions', 50,'MaxIterations',200,'Display','none');
-
-% Run the GA1
-[ga_out1, ga_options1] =  AlgoGen(data,outcome,opts);
-
-% Change a few options
-% A full list of options is available in the help file
-opts=ga_opt_set('Parallelize',1,'CostFcn',@cost_AUROC,'OptDir',1,...
-    'ErrorIterations',20,'ErrorGradient',0.005,...
+    'ErrorIterations',20,'ErrorGradient',0.005,'MutationRate',0.20,...
     'PopulationSize', 48,'FitnessFcn','fit_LR','NumActiveFeatures',20,...
-    'Repetitions', 50,'MaxIterations',200,'Display','none');
+    'Repetitions', 100,'MaxIterations',200,'Display','none');
 
 % Run the GA1
-[ga_out2, ga_options2] =  AlgoGen(data,outcome,opts);
-
-save('aoife50rep200it_10and20feat.mat','ga_out1','ga_options1','ga_out2','ga_options2');
+[ga_out, ga_options] =  AlgoGen(data,outcome,opts);
+save('aoife100repetitions_20feat.mat','ga_out','ga_options');
 matlabpool close;
+% % Next, instantiate the GA options
+% % A full list of options is available in the help file
+% opts=ga_opt_set('Parallelize',1,'CostFcn',@cost_AUROC,'OptDir',1,...
+%     'ErrorIterations',20,'ErrorGradient',0.005,...
+%     'PopulationSize', 48,'FitnessFcn','fit_LR','NumActiveFeatures',20,...
+%     'Repetitions', 50,'MaxIterations',200,'Display','none');
+% 
+% mpiprofile viewer
+% % Run the GA1
+% [ga_out2, ga_options2] =  AlgoGen(data,outcome,opts);
+
+% save('aoife50repetitions200it_twoGAs.mat','ga_out1','ga_options1','ga_out2','ga_options2');
+% matlabpool close;
