@@ -32,14 +32,15 @@ verbose=true; % Set true to view time evaluations
 % TODO: Also document changes needed in GUI
 
 Nbre_var=size(DATA,2);
-
+GUIflag=true;
 % Initialise visualization variable
 im = zeros(options.MaxIterations,Nbre_var,options.Repetitions);
 
 if strcmpi(options.Display,'plot')
     if isempty(options.PopulationEvolutionAxe)
         % If axes are empty, then the GUI is not used, must set up figure
-        figure;
+        h=figure;
+        GUIflag=false;
         subplot(3, 2 , [1 2]);
         colormap('gray');
         title(['Selected variables'],'FontSize',16);
@@ -141,6 +142,9 @@ for tries = 1:options.Repetitions
         if strcmpi(options.Display,'plot')
             [~,~,out.EvolutionGenomeStats{ite,tries}] = evaluate(DATA, outcome, parent(1,:), options);
             %  saveas(h,['AG-current_' int2str(patient_type) '.jpg'])
+            if GUIflag
+                figure(h);
+            end
             set(gcf,'CurrentAxes',options.PopulationEvolutionAxe) ;
             imagesc(~im(1:ite,:,tries)'); % Plot features selected
             colormap('gray');
