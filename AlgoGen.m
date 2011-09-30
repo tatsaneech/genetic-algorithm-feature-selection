@@ -27,14 +27,15 @@ verbose=true; % Set true to view time evaluations
     %   Add to def_opt in parse_options (in AlgoGen.m)
     %   If it is a new type of sub-function, you will also need to 
     %       add it to parse_functions (in AlgoGen.m)
-
+    % TODO: Also document changes needed in GUI
 Nbre_var=size(DATA,2);
 
 % Initialise visualization variable
 im = zeros(options.MaxIterations,Nbre_var,options.Repetitions);
     
 if strcmpi(options.Display,'plot')
-    h = figure;
+%     h = figure;
+    out.EvolutionGenomeStats= cell(options.MaxIterations,options.Repetitions);
 end
 
 % min or maximize cost
@@ -73,8 +74,8 @@ for tries = 1:options.Repetitions
     % - options.ConfoundingFactors genes (variables) having these indexes being
     % activated by default
     
+    %TODO: Remove redundant inputs
     parent = initialise_pop(options.PopulationSize,options,Nbre_var);
-    
     % Check if early-stop criterion is met
     % if not: continue
     ite = 0 ; early_stop = false ;
@@ -91,6 +92,10 @@ for tries = 1:options.Repetitions
         
         %% Evaluate parents are create new generation
         [PerfA] = feval(evalFcn,DATA,outcome,parent, options);
+        % TODO:
+        %   Change eval function to return:
+        %       model, outputs with predictions+indices, statistics
+        
         parent = new_generation(parent,PerfA,sort_str,options);
         
         %% FINAL VALIDATION
@@ -98,7 +103,7 @@ for tries = 1:options.Repetitions
         % If tracking best genome statistics is desirable during run-time,
         % this section will have to recalculate the genome fitness, etc.
         FS = parent(1,:)==1;
-        [aT,aTR] = evaluate(DATA,outcome,FS,options);
+        [aT,aTR] = evaluate(DATA,outcome,FS,options); % 1 individual - do not need to parallelize
        
         out.EvolutionBestCost(ite,tries) = feval(min_or_max,aTR) ;
         out.EvolutionBestCostTest(ite,tries) = feval(min_or_max,aT) ;
@@ -108,25 +113,27 @@ for tries = 1:options.Repetitions
         %%-------------------------+
         im(ite,:,tries)=FS;
         if strcmpi(options.Display,'plot')
-            figure(h);
+            [~,~,out.EvolutionGenomeStats{ite,tries}] = evaluate(DATA, outcome, parent(1,:), options);
+%             figure(h); clf; hold all;
             %             saveas(h,['AG-current_' int2str(patient_type) '.jpg'])
             set(gcf,'CurrentAxes',options.PopulationEvolutionAxe) ; 
-            subplot(3, 2 , [1 2]); hold all;
+%             subplot(3, 2 , [1 2]);
             imagesc(~im(1:ite,:,tries)'); % Plot features selected
             colormap('gray');
             title([int2str(sum(FS)) ' selected variables'],'FontSize',16);
             ylabel('Variables','FontSize',16);
             set(gcf,'CurrentAxes',options.FitFunctionEvolutionAxe);
-            subplot(3, 2 , [3 4] ); hold all;
+%             subplot(3, 2 , [3 4] );
             plot(1:ite ,out.EvolutionBestCost(1:ite,tries) ,  1:ite ,out.EvolutionMedianCost(1:ite,tries) );
             xlabel('Generations','FontSize',16);
             ylabel('Mean AUC','FontSize',16);
             legend('Best','Median','Location','NorthWest'); %'RMSE train','AUC' ,
             set(gcf,'CurrentAxes',options.CurrentScoreAxe);
             % TODO Get the plot function hangle and plot
-            %subplot(3, 2 , 5);
-            %  plot_ROC(img,AUC) ;
-            %subplot(3, 2 , 6);
+%             subplot(3, 2 , 5); % ROC
+            plot(out.EvolutionGenomeStats{ite,tries}.roc.x,out.EvolutionGenomeStats{ite,tries}.roc.y,'b--');
+            xlabel('Sensitivity'); ylabel('1-Specificity');
+%             subplot(3, 2 , 6);
             set(gcf,'CurrentAxes',options.CurrentPopulationAxe);
             imagesc(~parent);
             xlabel('Variables','FontSize',16);
@@ -147,8 +154,8 @@ for tries = 1:options.Repetitions
                 ((iteTime/ite* (options.MaxIterations-ite) * (options.Repetitions-tries)))/3600);
         end
     end
-    out.GenomePlot{1,tries}=im;
-    [~,~,out.BestGenomeStats{1,tries}] = evaluate( DATA , outcome , parent(1,:), options );
+    out.GenomePlot{1,tries}=im(:,:,tries);
+    [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options);
     out.BestGenome{1,tries} = parent(1,:)==1;
     out.IterationTime(1,tries)=iteTime/options.MaxIterations;
     % COMMENT : Louis Mayaud July-1st-11 :  I think the next 4 lines should

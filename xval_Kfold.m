@@ -4,7 +4,7 @@ function [ tr_idx, t_idx, D ] = xval_Kfold( data_target, options )
 %
 %   [ tr_idx, t_idx, D ] = xval_Kfold( data_target, options )
 
-
+% TODO: Move these defaults to the proper place
 if isempty(options.CrossValidationParam)
     D=10;
 else

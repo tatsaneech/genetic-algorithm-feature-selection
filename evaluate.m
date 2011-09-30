@@ -22,11 +22,7 @@ for individual=1:P
     FS = parents(individual,:)==1;
     % If enough variables selected to regress               
     if sum(FS)>0
-        DATA = OriginalData(:,FS);
-        % RUN PCA if needed to avoid linear correlation between input
-        % variables
-        % model = pca(DATA',0.01); % 1% variance is discarded only
-        % DATA = linproj(DATA',model);
+        DATA = OriginalData(:,FS);        
         tr_cost=zeros(KI,1);
         t_cost=zeros(KI,1);
         

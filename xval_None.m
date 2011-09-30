@@ -1,10 +1,10 @@
 function [ tr_idx, t_idx, D ] = xval_None( data_target, options )
 %XVAL_NONE No Cross Validation used.
 %   Default is 50 randomly assigned indices 70%/30% training/test.
-
+% TODO: Move these defaults to ga_opt_set, or whever is more appropriate
 if isempty(options.CrossValidationParam)
-    D=50;
-    P=0.3;
+    D=50; % Number of fitness repetitions
+    P=0.3; % Data split
 else
     D=options.CrossValidationParam(1);
     P=options.CrossValidationParam(2);

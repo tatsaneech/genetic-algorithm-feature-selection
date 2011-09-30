@@ -41,6 +41,7 @@ parfor individual=1:P
             test_target = data_target(test(:,ki));
             
             % Use fitness function to calculate costs
+            % TODO: Split up fitFcn and costFcn here
             [ tr_cost(ki), t_cost(ki) ]  = feval(fitFcn,...
                 train_data,train_target,test_data,test_target,...
                 costFcn);
