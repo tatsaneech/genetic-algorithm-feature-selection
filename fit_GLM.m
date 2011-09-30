@@ -1,4 +1,4 @@
-function [ tr_cost, t_cost ] = fit_GLM(train_data,train_target,test_data,test_target,costFcn)
+function [ tr_cost, t_cost, train_pred, test_pred  ] = fit_GLM(train_data,train_target,test_data,test_target,costFcn)
 
 % train the multivariate linear regression using GLM
 b2=glmfit(train_data,train_target,'normal','link','identity','constant','off');

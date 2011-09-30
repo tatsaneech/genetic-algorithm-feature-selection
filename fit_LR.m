@@ -1,4 +1,5 @@
-function [ tr_cost, t_cost ] = fit_LR(train_data,train_target,test_data,test_target,costFcn)
+function [ tr_cost, t_cost, train_pred, test_pred ] = ...
+    fit_LR(train_data,train_target,test_data,test_target,costFcn)
 
 b2 = robustfit(train_data,train_target,[],[],'off');
 

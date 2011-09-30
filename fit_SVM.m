@@ -1,4 +1,4 @@
-function [ tr_cost, t_cost ] = fit_SVM(train_data,train_target,test_data,test_target,costFcn)
+function [ tr_cost, t_cost, train_pred, test_pred  ] = fit_SVM(train_data,train_target,test_data,test_target,costFcn)
 
 % train the SVM using LIBSVM
 mdl = svmtrain(train_target, train_data, '-b 1');

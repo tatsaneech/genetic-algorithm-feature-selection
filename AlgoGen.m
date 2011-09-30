@@ -30,11 +30,11 @@ verbose=true; % Set true to view time evaluations
 
 Nbre_var=size(DATA,2);
 
+% Initialise visualization variable
+im = zeros(options.MaxIterations,Nbre_var,options.Repetitions);
+    
 if strcmpi(options.Display,'plot')
- %   close all
-    % Initialise visualization variable
-    im = [];
-%    h = figure;
+    h = figure;
 end
 
 % min or maximize cost
@@ -54,13 +54,13 @@ else
 end
 
 % Initialize outputs
-    out.EvolutionBestCost = zeros(options.MaxIterations,options.Repetitions);
-    out.EvolutionBestCostTest = zeros(options.MaxIterations,options.Repetitions) ;
-    out.EvolutionMedianCost = zeros(options.MaxIterations,options.Repetitions);
-    out.BestGenomeStats = cell(1,options.Repetitions);
-    out.BestGenome = cell(1,options.Repetitions) ;
-    out.GenomePlot=cell(1,options.Repetitions);
-    out.IterationTime=zeros(1,options.Repetitions);
+out.EvolutionBestCost = zeros(options.MaxIterations,options.Repetitions);
+out.EvolutionBestCostTest = zeros(options.MaxIterations,options.Repetitions) ;
+out.EvolutionMedianCost = zeros(options.MaxIterations,options.Repetitions);
+out.BestGenomeStats = cell(1,options.Repetitions);
+out.BestGenome = cell(1,options.Repetitions) ;
+out.GenomePlot=cell(1,options.Repetitions);
+out.IterationTime=zeros(1,options.Repetitions);
     
 repTime=0;
 for tries = 1:options.Repetitions
@@ -77,7 +77,7 @@ for tries = 1:options.Repetitions
     
     % Check if early-stop criterion is met
     % if not: continue
-    ite = 0 ; early_stop = false ; im=[];
+    ite = 0 ; early_stop = false ;
     iteTime=0;
     while ite < options.MaxIterations && early_stop == false
         tic;
@@ -106,17 +106,18 @@ for tries = 1:options.Repetitions
         
         %% Save and display results
         %%-------------------------+
-        im = [im ; FS];
+        im(ite,:,tries)=FS;
         if strcmpi(options.Display,'plot')
+            figure(h);
             %             saveas(h,['AG-current_' int2str(patient_type) '.jpg'])
             set(gcf,'CurrentAxes',options.PopulationEvolutionAxe) ; 
-            %subplot(3, 2 , [1 2]);
-            imagesc(~im');
+            subplot(3, 2 , [1 2]); hold all;
+            imagesc(~im(1:ite,:,tries)'); % Plot features selected
             colormap('gray');
             title([int2str(sum(FS)) ' selected variables'],'FontSize',16);
             ylabel('Variables','FontSize',16);
             set(gcf,'CurrentAxes',options.FitFunctionEvolutionAxe);
-            %subplot(3, 2 , [3 4] );
+            subplot(3, 2 , [3 4] ); hold all;
             plot(1:ite ,out.EvolutionBestCost(1:ite,tries) ,  1:ite ,out.EvolutionMedianCost(1:ite,tries) );
             xlabel('Generations','FontSize',16);
             ylabel('Mean AUC','FontSize',16);

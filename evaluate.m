@@ -62,9 +62,10 @@ if nargout>2
     % Assumes running a final validation, and t_cost has carried over from
     % single loop iteration above
     [~,idx]=min(abs(t_cost-nanmedian(t_cost))); % find median
-    b2 = robustfit(DATA(train(:,idx),:),data_target(train(:,idx)),[],[],'off');
-    test_data=DATA(test(:,idx),:);
-    test_pred = test_data*b2 ;
-    stats=stat_calc_struct(test_pred,data_target(test(:,idx)));
+    [ tr_cost, t_cost, train_pred, test_pred ]  = feval(fitFcn,...
+                DATA(train(:,idx),:),data_target(train(:,idx)),...
+                DATA(test(:,idx),:),data_target(test(:,idx)),...
+                costFcn);
+    [stats,stats.roc]=stat_calc_struct(test_pred,data_target(test(:,idx)));
 end
 
