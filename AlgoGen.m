@@ -74,8 +74,7 @@ for tries = 1:options.Repetitions
     % - options.ConfoundingFactors genes (variables) having these indexes being
     % activated by default
     
-    %TODO: Remove redundant inputs
-    parent = initialise_pop(options.PopulationSize,options,Nbre_var);
+    parent = initialise_pop(Nbre_var,options);
     % Check if early-stop criterion is met
     % if not: continue
     ite = 0 ; early_stop = false ;
