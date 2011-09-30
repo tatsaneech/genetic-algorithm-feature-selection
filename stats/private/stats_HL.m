@@ -40,7 +40,7 @@ bins=10;
 % sort predictions from lowest to highest
 [pred,ind]=sort(pred,1,'ascend');
 target=target(ind);
-G=zeros(10,1);
+stat=zeros(10,1);
 
 
 bin = floor(1+length(pred)*(0:bins)/bins);
@@ -50,9 +50,9 @@ for q = 1:bins
     E=sum((pred(int))); % expected
     O=sum(round(target(int))); % observed
     Eprob = mean(pred(int)) ; % expected probability
-    G(q) = (E-O)^2 / (Eprob*N*(1-Eprob));
+    stat(q) = (E-O)^2 / (Eprob*N*(1-Eprob));
 end
-G = sum(G);
+stat = sum(stat);
 
 
 

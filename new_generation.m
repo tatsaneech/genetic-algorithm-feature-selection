@@ -67,7 +67,8 @@ for i = 1:2*POP_xover
     end
 end
 if sum(twins)>0
-    children(twins==1,:) = initialise_pop(sum(twins),options,VAR_NUM);
+    options.PopulationSize=sum(twins); % Temporary change.
+    children(twins==1,:) = initialise_pop(VAR_NUM,options);
 end
 
 parent = [elderly ; children] ;

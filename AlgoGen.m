@@ -16,27 +16,27 @@ verbose=true; % Set true to view time evaluations
 % Define main parameters
 [options] = ...
     parse_inputs(options);
-    % COMMENT Louis 1st July 2011 : Why not parsing parameters and
-    % functions handles when initializing/defining the options?
-    
-    % COMMENT Alistair 14 Sep 2011 : ga_opt_set checks the parameters are
-    % valid and defaults undefined to []. parse_inputs makes sure they are 
-    % internally consistent: i.e., ConfFact < Nbre_tot_var, etc
-    %
-    % To add an option field, follow these steps:
-    %   Add to options in ga_opt_set (also add comment)
-    %   Add to check_args subfunction in ga_opt_set
-    %   Add to def_opt in parse_options (in AlgoGen.m)
-    %   If it is a new type of sub-function, you will also need to 
-    %       add it to parse_functions (in AlgoGen.m)
-    % TODO: Also document changes needed in GUI
+% COMMENT Louis 1st July 2011 : Why not parsing parameters and
+% functions handles when initializing/defining the options?
+
+% COMMENT Alistair 14 Sep 2011 : ga_opt_set checks the parameters are
+% valid and defaults undefined to []. parse_inputs makes sure they are
+% internally consistent: i.e., ConfFact < Nbre_tot_var, etc
+%
+% To add an option field, follow these steps:
+%   Add to options in ga_opt_set (also add comment)
+%   Add to check_args subfunction in ga_opt_set
+%   Add to def_opt in parse_options (in AlgoGen.m)
+%   If it is a new type of sub-function, you will also need to
+%       add it to parse_functions (in AlgoGen.m)
+% TODO: Also document changes needed in GUI
 Nbre_var=size(DATA,2);
 
 % Initialise visualization variable
 im = zeros(options.MaxIterations,Nbre_var,options.Repetitions);
-    
+
 if strcmpi(options.Display,'plot')
-%     h = figure;
+    %     h = figure;
     out.EvolutionGenomeStats= cell(options.MaxIterations,options.Repetitions);
 end
 
@@ -64,7 +64,7 @@ out.BestGenomeStats = cell(1,options.Repetitions);
 out.BestGenome = cell(1,options.Repetitions) ;
 out.GenomePlot=cell(1,options.Repetitions);
 out.IterationTime=zeros(1,options.Repetitions);
-    
+
 repTime=0;
 for tries = 1:options.Repetitions
     
@@ -105,7 +105,7 @@ for tries = 1:options.Repetitions
         % this section will have to recalculate the genome fitness, etc.
         FS = parent(1,:)==1;
         [aT,aTR] = evaluate(DATA,outcome,FS,options); % 1 individual - do not need to parallelize
-       
+        
         out.EvolutionBestCost(ite,tries) = feval(min_or_max,aTR) ;
         out.EvolutionBestCostTest(ite,tries) = feval(min_or_max,aT) ;
         out.EvolutionMedianCost(ite,tries) = nanmedian(aT);
@@ -115,26 +115,26 @@ for tries = 1:options.Repetitions
         im(ite,:,tries)=FS;
         if strcmpi(options.Display,'plot')
             [~,~,out.EvolutionGenomeStats{ite,tries}] = evaluate(DATA, outcome, parent(1,:), options);
-%             figure(h); clf; hold all;
+            %             figure(h); clf; hold all;
             %             saveas(h,['AG-current_' int2str(patient_type) '.jpg'])
-            set(gcf,'CurrentAxes',options.PopulationEvolutionAxe) ; 
-%             subplot(3, 2 , [1 2]);
+            set(gcf,'CurrentAxes',options.PopulationEvolutionAxe) ;
+            %             subplot(3, 2 , [1 2]);
             imagesc(~im(1:ite,:,tries)'); % Plot features selected
             colormap('gray');
             title([int2str(sum(FS)) ' selected variables'],'FontSize',16);
             ylabel('Variables','FontSize',16);
             set(gcf,'CurrentAxes',options.FitFunctionEvolutionAxe);
-%             subplot(3, 2 , [3 4] );
+            %             subplot(3, 2 , [3 4] );
             plot(1:ite ,out.EvolutionBestCost(1:ite,tries) ,  1:ite ,out.EvolutionMedianCost(1:ite,tries) );
             xlabel('Generations','FontSize',16);
             ylabel('Mean AUC','FontSize',16);
             legend('Best','Median','Location','NorthWest'); %'RMSE train','AUC' ,
             set(gcf,'CurrentAxes',options.CurrentScoreAxe);
             % TODO Get the plot function hangle and plot
-%             subplot(3, 2 , 5); % ROC
+            %             subplot(3, 2 , 5); % ROC
             plot(out.EvolutionGenomeStats{ite,tries}.roc.x,out.EvolutionGenomeStats{ite,tries}.roc.y,'b--');
             xlabel('Sensitivity'); ylabel('1-Specificity');
-%             subplot(3, 2 , 6);
+            %             subplot(3, 2 , 6);
             set(gcf,'CurrentAxes',options.CurrentPopulationAxe);
             imagesc(~parent);
             xlabel('Variables','FontSize',16);
@@ -156,17 +156,18 @@ for tries = 1:options.Repetitions
         end
     end
     out.GenomePlot{1,tries}=im(:,:,tries);
+    % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
     [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options);
     out.BestGenome{1,tries} = parent(1,:)==1;
     out.IterationTime(1,tries)=iteTime/options.MaxIterations;
     % COMMENT : Louis Mayaud July-1st-11 :  I think the next 4 lines should
     % be removed
-        if strcmpi(options.Display,'plot')
-%             figure(h);
-%             subplot(3, 2 , 5);
-
-%             plot(out.BestGenomeStats{1,tries}.;
-        end
+    if strcmpi(options.Display,'plot')
+        %             figure(h);
+        %             subplot(3, 2 , 5);
+        
+        %             plot(out.BestGenomeStats{1,tries}.;
+    end
     % Save results
     if ~strcmpi(options.Display,'none')
         fid=fopen(options.FileName,'w');
@@ -188,7 +189,7 @@ for tries = 1:options.Repetitions
 end
 
 out.RepetitionTime(1,tries)=repTime;
-    
+
 end
 
 % --------------------------------------------------- %
@@ -202,33 +203,33 @@ okargs=fieldnames(options);
 
 %=== defaults
 def_options=struct( ...
-        'Display', 'Plot', ...
-        'MaxIterations', 100, ...
-        'PopulationSize', 50, ...
-        'NumActiveFeatures', [], ...
-        'ConfoundingFactors', [], ...
-        'Repetitions', 100, ...
-        'OptDir', 0, ...
-        'FitnessFcn', 'fit_LR', ...% This should have the exact same name as the .m function
-        'CostFcn', 'cost_RMSE', ... % This should have the exact same name as the .m function
-        'CrossoverFcn', 'crsov_SP', ... % This should have the exact same name as the .m function
-        'MutationFcn', 'mut_SP', ...
-        'MutationRate', 0.06, ...
-        'CrossValidationFcn', 'xval_None', ...
-        'CrossValidationParam',[], ...
-        'PlotFcn', 'plot_All', ...% This should have the exact same name as the .m function
-        'ErrorGradient', 0.01, ...
-        'ErrorIterations', 10, ...
-        'FileName','AlgoGenOutput.csv', ...
-        'Parallelize', 0, ...
-        'Elitism',10 , ...
-        'MinimizeFeatures',false, ...
-        'PopulationEvolutionAxe', [],...
-        'FitFunctionEvolutionAxe', [],...
-        'CurrentPopulationAxe', [],...
-        'CurrentScoreAxe', []...
-        );
-    
+    'Display', 'Plot', ...
+    'MaxIterations', 100, ...
+    'PopulationSize', 50, ...
+    'NumActiveFeatures', [], ...
+    'ConfoundingFactors', [], ...
+    'Repetitions', 100, ...
+    'OptDir', 0, ...
+    'FitnessFcn', 'fit_LR', ...% This should have the exact same name as the .m function
+    'CostFcn', 'cost_RMSE', ... % This should have the exact same name as the .m function
+    'CrossoverFcn', 'crsov_SP', ... % This should have the exact same name as the .m function
+    'MutationFcn', 'mut_SP', ...
+    'MutationRate', 0.06, ...
+    'CrossValidationFcn', 'xval_None', ...
+    'CrossValidationParam',[], ...
+    'PlotFcn', 'plot_All', ...% This should have the exact same name as the .m function
+    'ErrorGradient', 0.01, ...
+    'ErrorIterations', 10, ...
+    'FileName','AlgoGenOutput.csv', ...
+    'Parallelize', 0, ...
+    'Elitism',10 , ...
+    'MinimizeFeatures',false, ...
+    'PopulationEvolutionAxe', [],...
+    'FitFunctionEvolutionAxe', [],...
+    'CurrentPopulationAxe', [],...
+    'CurrentScoreAxe', []...
+    );
+
 def_fn=fieldnames(def_options);
 
 %=== parse inputs, replace empty fields with default values
@@ -245,7 +246,7 @@ opt_fn=fieldnames(options);
 fcn_idx=strfind(opt_fn, 'Fcn'); % Find field names which store functions
 fcn_idx=find(cellfun(@(x) ~isempty(x),fcn_idx)==1);
 for k=1:length(fcn_idx)
-    % Parse functions into cells containing function handles    
+    % Parse functions into cells containing function handles
     [options.(opt_fn{fcn_idx(k)})] = ...
         parse_functions(opt_fn{fcn_idx(k)},options.(opt_fn{fcn_idx(k)}));
 end
@@ -260,7 +261,7 @@ function [fcn] = ...
     parse_functions(fcn_type,fcn)
 
 % % NEW VERSION OF THE FUNCTION RIGHT HERE
-% if ~isa(fcn,'function_handle') 
+% if ~isa(fcn,'function_handle')
 %     if iscell(fcn)
 %         fcn=fcn{1};
 %     end
@@ -312,8 +313,8 @@ lf=length(fcn_type); % number of functions
 for k=1:lf
     fcn_idx=find(strcmpi(okfcns,fcn_type{k}));
     if isempty(fcn_idx)
-            error(sprintf('Options:%s:IncorrectFunctionType',mfilename),...
-                'Specified function type does not exist.');
+        error(sprintf('Options:%s:IncorrectFunctionType',mfilename),...
+            'Specified function type does not exist.');
         
     end
     fcn_strs=okfcn_strs{fcn_idx};
@@ -329,10 +330,10 @@ for k=1:lf
     
     % convert from function handle to string
     if isa(fcn{k},'function_handle')
-            fcn_cmp=cellfun(@(x) isequal(x,fcn{k}),fcn_handles);
-            if max(fcn_cmp)==1
-                continue; % next iteration
-            end
+        fcn_cmp=cellfun(@(x) isequal(x,fcn{k}),fcn_handles);
+        if max(fcn_cmp)==1
+            continue; % next iteration
+        end
         error(sprintf('Options:%s:IncorrectFunctionHandles',mfilename),...
             'Specified function handle does not exist.');
     end

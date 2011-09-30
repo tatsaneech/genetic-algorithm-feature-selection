@@ -3,7 +3,7 @@ function [ SCORE_test SCORE_train ] = evaluate_par( OriginalData , data_target ,
 fitFcn=options.FitnessFcn; 
 costFcn=options.CostFcn;
 xvalFcn=options.CrossValidationFcn;
-optDir=options.optDir;
+optDir=options.OptDir;
 
 % Pre-allocate
 P=size(parents,1);

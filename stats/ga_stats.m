@@ -65,7 +65,7 @@ function [ out, roc ] = ga_stats( pred, target, statsDesired )
 %           % Also calculates the ROC curve points
 
 % Scan private folder for available functions
-statsFcns = arrayfun(@(x) x.name,dir('./private/*.m'),'UniformOutput',false);
+statsFcns = arrayfun(@(x) x.name,dir('./stats/private/*.m'),'UniformOutput',false);
 
 % Ensure that functions scanned are correct
 [startIndex,endIndex]=regexp(statsFcns,'stats_');
@@ -96,7 +96,7 @@ statsFcns=regexprep(statsFcns,'.m','');
 statsFieldNames=regexprep(statsFcns,'stats_','');
 
 % Check if 'all' exists
-allFlag=strcmp(statsFieldNames,'all');
+allFlag=any(strcmp(statsDesired,'all'));
 
 if allFlag
     % Return all possible statistics

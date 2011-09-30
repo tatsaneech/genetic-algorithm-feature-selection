@@ -40,6 +40,6 @@ FP=sum(pred(target==0) >= 0.5);
 FN=sum(pred(target==1) < 0.5);
 TN=sum(pred(target==0) < 0.5);
 
-out.ppv=out.TP/(out.TP+out.FP);
+stat=TP/(TP+FP);
 
 end
