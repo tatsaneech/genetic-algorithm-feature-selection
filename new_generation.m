@@ -35,56 +35,53 @@ repro = parent( BestPerfAIdx(1:POP_xover) , : ) ;
 
 %% Make sure that confounding factors are still included + Max/Min vars
 
-if MaxVar==MinVar
-    % Save on processing time by forcing features
+if ~isempty(ConfFact) && ConfFact~=0
+    % Force confounding factors
+    children(:,ConfFact)=true(size(children,1),length(ConfFact));
+end
     
-else
-    if ~isempty(ConfFact) && ConfFact~=0
-        % Force confounding factors
-        children(:,ConfFact)=true(size(children,1),length(ConfFact));
-    end
+% TODO: Possible to save on processing time when MinFeat=MaxFeat ?
+
+varSum=sum(children,2);
+if MaxVar>0 % Ensure number of features < MaxVar
+    % Find locations which have too many variables
+    maxVarIdx=find((varSum>MaxVar) == 1);
     
-    varSum=sum(children,2);
-    if MaxVar>0 % Ensure number of features < MaxVar
-        % Find locations which have too many variables
-        maxVarIdx=find((varSum>MaxVar) == 1);
+    % Randomly select true bits to flip
+    for k=1:length(maxVarIdx) % TODO: Good luck vectorizing this.
+        kthChild=find(children(maxVarIdx(k),:)==1); % Indices of true bits
+        [~,maxRandPerm] = sort(rand(1,varSum(maxVarIdx(k)))); % Random indices of true bits
         
-        % Randomly select true bits to flip
-        for k=1:length(maxVarIdx) % TODO: Good luck vectorizing this.
-            kthChild=find(children(maxVarIdx(k),:)==1); % Indices of true bits
-            [~,maxRandPerm] = sort(rand(1,varSum(maxVarIdx(k)))); % Random indices of true bits
-            
-            % The number of parameters we must flip ..
-            nFlip=length(maxRandPerm)-MaxVar;
-            
-            % Do not flip confounding factors
-            maxRandPerm=setdiff(maxRandPerm,ConfFact);
-            
-            
-            if nFlip>=length(maxRandPerm) % Still have enough factors to flip
-                children(maxVarIdx(k),kthChild(maxRandPerm(1:nFlip)))=0;
-            else
-                % Oh well, flip what we can and complain
-                children(maxVarIdx(k),kthChild(maxRandPerm(1:end)))=0;
-                warning('GA:AlgoGen:new_generation:Confounded', ...
-                    ['More confounding factors entered than maximally\n' ...
-                    'allowed features. The MaxFeatures parameter should\n' ...
-                    'be lowered.']);
-            end
-        end
-        %         [trueBitsI,trueBitsJ]=ind2sub(size(children(maxVarIdx,:)),find(children(maxVarIdx,:)==1)); % Linear index
-    end
-    
-    if MinVar>0 % Ensure number of features > MinVar
-        % Find locations which have too few variables
-        minVarIdx=find((varSum<MinVar) == 1);
+        % The number of parameters we must flip ..
+        nFlip=length(maxRandPerm)-MaxVar;
         
-        % Randomly select false bits to flip
-        for k=1:length(minVarIdx) % TODO: Good luck vectorizing this.
-            kthChild=find(children(minVarIdx(k),:)==0); % Indices of false bits
-            [~,minRandPerm] = sort(rand(1,varSum(minVarIdx(k)))); % Random indices of false bits
-            children(minVarIdx(k),kthChild(minRandPerm(1:MinVar-varSum(k))))=1;
+        % Do not flip confounding factors
+        maxRandPerm=setdiff(maxRandPerm,ConfFact);
+        
+        
+        if nFlip>=length(maxRandPerm) % Still have enough factors to flip
+            children(maxVarIdx(k),kthChild(maxRandPerm(1:nFlip)))=0;
+        else
+            % Oh well, flip what we can and complain
+            children(maxVarIdx(k),kthChild(maxRandPerm(1:end)))=0;
+            warning('GA:AlgoGen:new_generation:Confounded', ...
+                ['More confounding factors entered than maximally\n' ...
+                'allowed features. The MaxFeatures parameter should\n' ...
+                'be lowered.']);
         end
+    end
+    %         [trueBitsI,trueBitsJ]=ind2sub(size(children(maxVarIdx,:)),find(children(maxVarIdx,:)==1)); % Linear index
+end
+
+if MinVar>0 % Ensure number of features > MinVar
+    % Find locations which have too few variables
+    minVarIdx=find((varSum<MinVar) == 1);
+    
+    % Randomly select false bits to flip
+    for k=1:length(minVarIdx) % TODO: Good luck vectorizing this.
+        kthChild=find(children(minVarIdx(k),:)==0); % Indices of false bits
+        [~,minRandPerm] = sort(rand(1,varSum(minVarIdx(k)))); % Random indices of false bits
+        children(minVarIdx(k),kthChild(minRandPerm(1:MinVar-varSum(k))))=1;
     end
 end
 
