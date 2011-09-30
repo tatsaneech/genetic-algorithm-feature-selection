@@ -30,6 +30,7 @@ verbose=true; % Set true to view time evaluations
 %   If it is a new type of sub-function, you will also need to
 %       add it to parse_functions (in AlgoGen.m)
 % TODO: Also document changes needed in GUI
+
 Nbre_var=size(DATA,2);
 
 % Initialise visualization variable
@@ -173,8 +174,8 @@ for tries = 1:options.Repetitions
         repTime=repTime+toc;
         if verbose % Time elapsed reports
             fprintf('Iteration %d of %d. Time: %2.2fs. Total Time: %2.2fs. Projected: %2.2fh. \n',...
-                ite,options.MaxIterations,toc, iteTime,...
-                ((iteTime/ite* (options.MaxIterations-ite) * (options.Repetitions-tries)))/3600);
+                ite,options.MaxIterations, toc, iteTime,...
+                (((iteTime/ite * (options.MaxIterations) * (options.Repetitions)))-repTime)/3600);
         end
     end
     out.GenomePlot{1,tries}=im(:,:,tries);
