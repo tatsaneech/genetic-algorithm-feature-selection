@@ -1,4 +1,4 @@
-function [ SCORE_test SCORE_train  ] = evaluate_par( OriginalData , data_target , parents, options )
+function [ SCORE_test SCORE_train stats ] = evaluate_par( OriginalData , data_target , parents, options )
 
 fitFcn=options.FitnessFcn; 
 costFcn=options.CostFcn;
@@ -41,10 +41,13 @@ parfor individual=1:P
             test_target = data_target(test(:,ki));
             
             % Use fitness function to calculate costs
-            % TODO: Split up fitFcn and costFcn here
-            [ tr_cost(ki), t_cost(ki) ]  = feval(fitFcn,...
-                train_data,train_target,test_data,test_target,...
-                costFcn);
+            [ train_pred, test_pred ]  = feval(fitFcn,...
+                train_data,train_target,test_data,test_target);
+            
+            [ tr_cost(ki) ] = feval(costFcn,...
+                train_pred, train_target);
+            [ t_cost(ki) ] = feval(costFcn,...
+                test_pred, test_target);
         end
         
         % ...and get the results on TEST and TRAIN set 
@@ -58,14 +61,20 @@ parfor individual=1:P
     end
 end
 
+% TODO: Is this functionality needed in the parallel version of evaluate.m?
+%   It should be noted that t_cost, and consequently idx, are non-deterministic.
 if nargout>2
     % Assumes running a final validation, and t_cost has carried over from
     % single loop iteration above
     [~,idx]=min(abs(t_cost-nanmedian(t_cost))); % find median
-    [ tr_cost, t_cost, train_pred, test_pred ]  = feval(fitFcn,...
-                DATA(train(:,idx),:),data_target(train(:,idx)),...
-                DATA(test(:,idx),:),data_target(test(:,idx)),...
-                costFcn);
+    FS=parents(1,:); % Best features
+    train_data = OriginalData(train(:,ki),FS);
+    train_target = data_target(train(:,ki));
+    test_data = OriginalData(test(:,ki),FS);
+    test_target = data_target(test(:,ki));
+    
+    [ train_pred, test_pred ]  = feval(fitFcn,...
+        train_data,train_target,test_data,test_target);
+    
     [stats,stats.roc]=stat_calc_struct(test_pred,data_target(test(:,idx)));
 end
-
