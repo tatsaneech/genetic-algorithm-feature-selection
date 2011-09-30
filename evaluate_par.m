@@ -1,8 +1,9 @@
-function [ SCORE_test SCORE_train stats ] = evaluate_par( OriginalData , data_target , parents, options )
+function [ SCORE_test SCORE_train ] = evaluate_par( OriginalData , data_target , parents, options )
 
 fitFcn=options.FitnessFcn; 
 costFcn=options.CostFcn;
 xvalFcn=options.CrossValidationFcn;
+optDir=options.optDir;
 
 % Pre-allocate
 P=size(parents,1);
@@ -56,25 +57,7 @@ parfor individual=1:P
         
     else
         %TODO: Figure out a better upper limit than 9999
-        SCORE_test(individual) = options.OptDir*9999;
-        SCORE_train(individual) = options.OptDir*9999;
+        SCORE_test(individual) = optDir*9999;
+        SCORE_train(individual) = optDir*9999;
     end
-end
-
-% TODO: Is this functionality needed in the parallel version of evaluate.m?
-%   It should be noted that t_cost, and consequently idx, are non-deterministic.
-if nargout>2
-    % Assumes running a final validation, and t_cost has carried over from
-    % single loop iteration above
-    [~,idx]=min(abs(t_cost-nanmedian(t_cost))); % find median
-    FS=parents(1,:); % Best features
-    train_data = OriginalData(train(:,ki),FS);
-    train_target = data_target(train(:,ki));
-    test_data = OriginalData(test(:,ki),FS);
-    test_target = data_target(test(:,ki));
-    
-    [ train_pred, test_pred ]  = feval(fitFcn,...
-        train_data,train_target,test_data,test_target);
-    
-    [stats,stats.roc]=stat_calc_struct(test_pred,data_target(test(:,idx)));
 end
