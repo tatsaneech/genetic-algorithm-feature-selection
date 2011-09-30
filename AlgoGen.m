@@ -36,7 +36,31 @@ Nbre_var=size(DATA,2);
 im = zeros(options.MaxIterations,Nbre_var,options.Repetitions);
 
 if strcmpi(options.Display,'plot')
-    %     h = figure;
+    if isempty(options.PopulationEvolutionAxe)
+        % If axes are empty, then the GUI is not used, must set up figure
+        figure;
+        subplot(3, 2 , [1 2]);
+        colormap('gray');
+        title(['Selected variables'],'FontSize',16);
+        ylabel('Variables','FontSize',16);
+        options.PopulationEvolutionAxe = gca;
+        
+        subplot(3, 2 , [3 4] );
+        xlabel('Generations','FontSize',16);
+        ylabel('Mean AUC','FontSize',16);
+        options.FitFunctionEvolutionAxe = gca;
+        
+        
+        subplot(3, 2 , 5); % ROC
+        xlabel('Sensitivity'); ylabel('1-Specificity');
+        options.CurrentScoreAxe = gca;
+        
+        subplot(3, 2 , 6);
+        xlabel('Variables','FontSize',16);
+        ylabel('Genomes','FontSize',16);
+        title('Current Population','FontSize',16);
+        options.CurrentPopulationAxe = gca;
+    end
     out.EvolutionGenomeStats= cell(options.MaxIterations,options.Repetitions);
 end
 
@@ -115,26 +139,23 @@ for tries = 1:options.Repetitions
         im(ite,:,tries)=FS;
         if strcmpi(options.Display,'plot')
             [~,~,out.EvolutionGenomeStats{ite,tries}] = evaluate(DATA, outcome, parent(1,:), options);
-            %             figure(h); clf; hold all;
-            %             saveas(h,['AG-current_' int2str(patient_type) '.jpg'])
+            %  saveas(h,['AG-current_' int2str(patient_type) '.jpg'])
             set(gcf,'CurrentAxes',options.PopulationEvolutionAxe) ;
-            %             subplot(3, 2 , [1 2]);
             imagesc(~im(1:ite,:,tries)'); % Plot features selected
             colormap('gray');
             title([int2str(sum(FS)) ' selected variables'],'FontSize',16);
             ylabel('Variables','FontSize',16);
+
             set(gcf,'CurrentAxes',options.FitFunctionEvolutionAxe);
-            %             subplot(3, 2 , [3 4] );
             plot(1:ite ,out.EvolutionBestCost(1:ite,tries) ,  1:ite ,out.EvolutionMedianCost(1:ite,tries) );
-            xlabel('Generations','FontSize',16);
-            ylabel('Mean AUC','FontSize',16);
+            xlabel('Generations','FontSize',16); ylabel('Mean AUC','FontSize',16);
             legend('Best','Median','Location','NorthWest'); %'RMSE train','AUC' ,
-            set(gcf,'CurrentAxes',options.CurrentScoreAxe);
+            
             % TODO Get the plot function hangle and plot
-            %             subplot(3, 2 , 5); % ROC
+            set(gcf,'CurrentAxes',options.CurrentScoreAxe);
             plot(out.EvolutionGenomeStats{ite,tries}.roc.x,out.EvolutionGenomeStats{ite,tries}.roc.y,'b--');
             xlabel('Sensitivity'); ylabel('1-Specificity');
-            %             subplot(3, 2 , 6);
+            
             set(gcf,'CurrentAxes',options.CurrentPopulationAxe);
             imagesc(~parent);
             xlabel('Variables','FontSize',16);
@@ -147,9 +168,10 @@ for tries = 1:options.Repetitions
         %         if auc>80
         %             eval(['save RAMB_MODELDIM_' num2str(floor(options.NumActiveFeatures),'%d') '_AUC_' num2str(floor(auc),'%d') '.mat FS AUC']);
         %         end
+        
         iteTime=iteTime+toc;
         repTime=repTime+toc;
-        if verbose
+        if verbose % Time elapsed reports
             fprintf('Iteration %d of %d. Time: %2.2fs. Total Time: %2.2fs. Projected: %2.2fh. \n',...
                 ite,options.MaxIterations,toc, iteTime,...
                 ((iteTime/ite* (options.MaxIterations-ite) * (options.Repetitions-tries)))/3600);
