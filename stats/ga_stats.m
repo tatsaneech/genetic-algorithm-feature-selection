@@ -18,6 +18,7 @@ function [ out, roc ] = ga_stats( pred, target, statsDesired )
 %
 %   The following statistical tests are possible:
 %
+%       all       - Returns all statistics available
 %       AUROC     - Area under the receiver operator (characteristic) curve
 %       HL        - Hosmer-Lemeshow Statistic
 %       Accuracy  - Mean prediction accuracy using a threshold of 0.5
@@ -94,6 +95,13 @@ statsFcns=regexprep(statsFcns,'.m','');
 % Remove stats_ prefix for field names
 statsFieldNames=regexprep(statsFcns,'stats_','');
 
+% Check if 'all' exists
+allFlag=strcmp(statsFieldNames,'all');
+
+if allFlag
+    % Return all possible statistics
+    statsDesired=statsFieldNames;
+end
 
 % Loop across input stats to calculate desired statistics
 for k=1:length(statsDesired)
@@ -105,8 +113,8 @@ for k=1:length(statsDesired)
     else
         warning('GA:ga_stats:UnknownStatistic', ...
             ['Specified statistic ' statsDesired{k} ' does not have a\n' ...
-             'corresponding function and was not calculated. An empty\n' ...
-             'matrix was output instead.']);
+            'corresponding function and was not calculated. An empty\n' ...
+            'matrix was output instead.']);
         out.(statsDesired{k})=[];
     end
 end

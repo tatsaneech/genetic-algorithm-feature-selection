@@ -4,6 +4,8 @@ function [out,options] = AlgoGen(DATA, outcome, options)
 %       outcome - Nx1 double or logical array containing N observations.
 %       options - Options specified by function ga_opt_set
 
+addpath('./stats'); % ensure stats is in the path
+
 %% Initialisation
 if nargin <3
     options=ga_opt_set;

@@ -71,6 +71,6 @@ if nargout>2
     [ train_pred, test_pred ]  = feval(fitFcn,...
         train_data,train_target,test_data,test_target);
     
-    [stats,stats.roc]=stat_calc_struct(test_pred,data_target(test(:,idx)));
+    [stats,stats.roc]=ga_stats(test_pred,data_target(test(:,idx)),'all');
 end
 
