@@ -141,9 +141,15 @@ while k<=numargs
         % the string indicating the confounding variables in the GUI to
         % some readable format. ->Not sure this should go here<-
 
-
+        %TODO: Make sure command line input style (linear indices) and GUI
+        %input style (label titles) work seemlessly here
+        %Additionally, allow for both input types!
         if strcmp(pname,'ConfoundingFactors') 
-            eval(['pval = ' pval{1}]);
+            if iscell(pval) % Assumed GUI input - cell array
+                eval(['pval = ' pval{1}]);
+            elseif isnumeric(pval)
+                % TODO: Do something! Anything!
+            end
         end
         [valid,errmsg]=check_args(okargs{param},pval);
         if valid

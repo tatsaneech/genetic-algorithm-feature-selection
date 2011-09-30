@@ -27,18 +27,18 @@ else
 end
 
 % Initialize population
-parents = zeros(options.PopulationSize,Nbre_tot_var-length(options.ConfoundingFactors));
+parents = zeros(options.PopulationSize,Nbre_tot_var);
 
 % Generate vector with "numFeatures" true values
-tmp = [ones(1,numFeatures-length(options.ConfoundingFactors)) zeros(1,Nbre_tot_var-numFeatures)];
+tmp = [ones(1,numFeatures) zeros(1,Nbre_tot_var-numFeatures)];
 for i=1:options.PopulationSize
     % Randomly assign "numFeatures" true values in the population
     % TODO: Vectorize this.
-    parents(i,:) = tmp(randperm(Nbre_tot_var-length(options.ConfoundingFactors)));
+    parents(i,:) = tmp(randperm(Nbre_tot_var));
 end        
 
 
-if ~isempty(options.ConfoundingFactors)
+if ~isempty(options.ConfoundingFactors) && (length(options.ConfoundingFactors)>1 || options.ConfoundingFactors==0)
     % Force confounding factors
     parents(:,options.ConfoundingFactors) = ones(options.PopulationSize,length(options.ConfoundingFactors));
 else
