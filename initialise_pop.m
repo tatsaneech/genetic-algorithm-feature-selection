@@ -11,7 +11,7 @@ function parents = initialise_pop(Nbre_tot_var,options)
 %       options.ConfoundingFactors - Numeric indices of flags in genomes which must be true
 %           (forcably included features)
 
-if options.MaxFeatures == options.MinFeatures && options.MinFeatures~=0 
+if options.MaxFeatures == options.MinFeatures && options.MaxFeatures~=0 
     % forced number of features
     numFeatures=options.MaxFeatures;
 else
@@ -19,9 +19,9 @@ else
     numFeatures = round(sqrt(Nbre_tot_var));
     
     % Check to ensure this is does not violate min/max
-    if numFeatures>options.MaxFeatures
+    if numFeatures>options.MaxFeatures && options.MaxFeatures~=0 
         numFeatures=options.MaxFeatures;
-    elseif numFeatures<options.MinFeatures
+    elseif numFeatures<options.MinFeatures 
         numFeatures=options.MinFeatures;
     end
 end

@@ -22,7 +22,7 @@ function varargout = GA_GUI(varargin)
 
 % Edit the above text to modify the response to help GA_GUI
 
-% Last Modified by GUIDE v2.5 30-Sep-2011 20:48:57
+% Last Modified by GUIDE v2.5 04-Oct-2011 16:54:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -429,7 +429,8 @@ opts = ga_opt_set('Display','plot',...
     'CurrentPopulationAxe',handles.axes4,...
     'CurrentScoreAxe',handles.axes3,...
     'PopulationSize',str2double( get(handles.edit5,'String') ),...
-    'GUIFlag',true...
+    'GUIFlag',true,...
+    'OptDir', get(handles.checkbox3,'Value')...
     );
 
 if isfield(handles,'ExportFile')
@@ -542,3 +543,12 @@ function MinFeatures_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in checkbox3.
+function checkbox3_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox3
