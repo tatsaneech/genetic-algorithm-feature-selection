@@ -99,7 +99,9 @@ else
         'PopulationEvolutionAxe', [],...
         'FitFunctionEvolutionAxe', [],...
         'CurrentPopulationAxe', [],...
-        'CurrentScoreAxe', []);
+        'CurrentScoreAxe', [],...
+        'GUIFlag', false...
+        );
 end
 
 if nargin==0
@@ -148,7 +150,7 @@ while k<=numargs
             if iscell(pval) % Assumed GUI input - cell array
                 eval(['pval = ' pval{1}]);
             elseif isnumeric(pval)
-                % TODO: Do something! Anything!
+                % TODO: Do something! Anything! Yes, let's buy a new car!
             end
         end
         [valid,errmsg]=check_args(okargs{param},pval);
@@ -177,7 +179,7 @@ switch param
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a string with a valid three char extension.',param);
             return
         end
-         % Louis July 6th 11 : Commented the whole thing because it crashed 
+         % Louis July 6th 11 : Commented the whole thing because it crashed (very wise thing to do isn't it?) 
     case 'FileName'
 %         if ~ischar(val) || ...
 %                 (~strcmpi(param,'none') && ~strcmpi(param,'plot') && ~strcmpi(param,'text'))
@@ -230,6 +232,8 @@ switch param
     case {'PopulationEvolutionAxe','FitFunctionEvolutionAxe',...
             'CurrentPopulationAxe','CurrentScoreAxe'}
         % TODO check if the axe exists. If not: error
+    case {'GUIFlag'}
+        % Nothing to do here really    
     otherwise
         valid=0; 
         errmsg = sprintf('Unknown parameter field %s', param);

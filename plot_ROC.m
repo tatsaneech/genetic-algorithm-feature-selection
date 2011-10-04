@@ -1,4 +1,12 @@
 function plot_ROC(img,AUC)
+% plot_ROC: plots ROC curve and its 25%-75% percentile to show how spread
+% the result is.
+% Input: 
+%   - img : (nxp double) where p={1,2,3} is indexes for 25%, 50% and 75% quantiles, respectively.
+%   - AUC : (double) value for AUC to be displayed
+%
+%   Oct. 4th 2011, Louis Mayaud
+
 
 
 x = (0:(size(img,1)))/size(img,1) ;

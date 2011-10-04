@@ -1,18 +1,28 @@
 function [ train_pred, test_pred  ] = ...
-    fit_SVM(train_data,train_target,test_data,test_target)
+    fit_TEMPLATE(train_data,train_target,test_data,test_target)
+% Apply the TEMPLATE model to the data
+% [ train_pred, test_pred  ] = 
+%   fit_TEMPLATE(train_data,train_target,test_data,test_target)
+% Louis Mayaud, Oct. 4th 2011
 
-% train the SVM using LIBSVM
-mdl = svmtrain(train_target, train_data, '-b 1');
-[train_pred, tr_acc, tr_prob] = svmpredict(train_target, train_data, mdl, '-b 1');
-[test_pred, v_acc, t_prob] = svmpredict(test_target, test_data, mdl, '-b 1');
 
-if sum(round(t_prob(:,1)))==sum(test_pred)
-    train_pred=tr_prob(:,1);
-    test_pred=t_prob(:,1);
-else
-    train_pred=tr_prob(:,2);
-    test_pred=t_prob(:,2);
-end
+% train your model
+model = train_funtion(train_data,train_target) ;
+
+% Apply to your data
+[train_pred] = apply_model( train_data , model );
+[test_pred] = apply_model( test_data , model );
+
+
+    function model  = train_funtion(train_data,train_target)
+        % train your model here
+        
+    end
+
+    function prediction = apply_model( test_data , model )
+        % Apply your model here
+        
+    end
 
 end
   

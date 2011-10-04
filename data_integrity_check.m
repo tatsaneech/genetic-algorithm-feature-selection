@@ -1,4 +1,4 @@
-function data_integrity_check(data,outcome,labels)
+function [data outcome labels] = data_integrity_check(data,outcome,labels)
 
     % Check if variables are defined
     if ~exist('labels','var')
@@ -31,3 +31,13 @@ function data_integrity_check(data,outcome,labels)
         errordlg(errmsg);
         error('GA_GUI:Database',errmsg);
     end 
+    
+    % Make sure data and outcomes are in the right format
+    if size(outcome,1)<size(outcome,2)
+        outcome = outcome';
+    end
+    if size(outcome,1)==size(data,2)
+        data = data';
+    end
+    outcome = outcome + 0.;
+    

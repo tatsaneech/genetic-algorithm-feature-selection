@@ -32,7 +32,7 @@ verbose=true; % Set true to view time evaluations
 % TODO: Also document changes needed in GUI
 
 Nbre_var=size(DATA,2);
-GUIflag=true;
+GUIflag=options.GUIFlag;
 % Initialise visualization variable
 im = zeros(options.MaxIterations,Nbre_var,options.Repetitions);
 
@@ -142,7 +142,7 @@ for tries = 1:options.Repetitions
         if strcmpi(options.Display,'plot')
             [~,~,out.EvolutionGenomeStats{ite,tries}] = evaluate(DATA, outcome, parent(1,:), options);
             %  saveas(h,['AG-current_' int2str(patient_type) '.jpg'])
-            if GUIflag
+            if ~GUIflag
                 figure(h);
             end
             set(gcf,'CurrentAxes',options.PopulationEvolutionAxe) ;
@@ -156,8 +156,9 @@ for tries = 1:options.Repetitions
             xlabel('Generations','FontSize',16); ylabel('Mean AUC','FontSize',16);
             legend('Best','Median','Location','NorthWest'); %'RMSE train','AUC' ,
             
-            % TODO Get the plot function hangle and plot
+            % TODO Get the plot function handle and plot : options.PlotFcn
             set(gcf,'CurrentAxes',options.CurrentScoreAxe);
+            
             plot(out.EvolutionGenomeStats{ite,tries}.roc.x,out.EvolutionGenomeStats{ite,tries}.roc.y,'b--');
             xlabel('Sensitivity'); ylabel('1-Specificity');
             

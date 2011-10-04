@@ -84,6 +84,7 @@ set(handles.popupmenu6,'String' , Fcost)
  
 % Initialize GA parameters
 handles.GA_options = GA_OPT_SET();
+handles.GA_options.GUIflag = true;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -108,7 +109,7 @@ function pushbutton1_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-[handles.DataFile , handles.DataFilePath] = uigetfile({'*.xls','Excel File';'*.csv','CSV file';'*.mat','Matlab file'}, 'Please select your pre-formated database');
+[handles.DataFile , handles.DataFilePath] = uigetfile({'*.mat','Matlab file';'*.xls','Excel File';'*.csv','CSV file'}, 'Please select your pre-formated database');
 
 if handles.DataFile~=0
     %% Get and process input data
@@ -139,7 +140,7 @@ if handles.DataFile~=0
     % handles.outcomeType = 
 
     % Data integrity check
-        data_integrity_check(data,outcome,labels);
+         [data outcome labels] = data_integrity_check(data,outcome,labels);
 
     % Save data
         handles.data = data ;
@@ -427,7 +428,8 @@ opts = ga_opt_set('Display','plot',...
     'FitFunctionEvolutionAxe',handles.axes2,...
     'CurrentPopulationAxe',handles.axes4,...
     'CurrentScoreAxe',handles.axes3,...
-    'PopulationSize',str2double( get(handles.edit5,'String') )...
+    'PopulationSize',str2double( get(handles.edit5,'String') ),...
+    'GUIFlag',true...
     );
 
 if isfield(handles,'ExportFile')
