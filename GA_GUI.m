@@ -58,7 +58,7 @@ handles.output = hObject;
 
 %%Scan files and find specific functions
 files = dir;
-Fplot = {}; Ffit = {}; Fxval = {} ; Fmating = {};
+Fplot = {}; Ffit = {}; Fxval = {} ; Fmating = {}; Fcost = {};
 for f=1:length(files)
     if regexp(files(f).name,'plot_.*.\S?') % there is a plot function
         Fplot = [Fplot ; files(f).name(1:(end-2)) ];
