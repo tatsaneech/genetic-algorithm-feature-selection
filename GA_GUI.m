@@ -73,7 +73,7 @@ for f=1:length(files)
         Fmating = [Fmating ; files(f).name(1:(end-2)) ];
     end
     if regexp(files(f).name,'cost_.*\.m$') % there is a Mating function
-        Fcost = [Fmating ; files(f).name(1:(end-2)) ];
+        Fcost = [Fcost ; files(f).name(1:(end-2)) ];
     end
 end
 set(handles.popupmenu1,'String' , Fmating)
