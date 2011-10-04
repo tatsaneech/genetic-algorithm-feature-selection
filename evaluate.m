@@ -60,6 +60,7 @@ for individual=1:P
         %TODO: Figure out a better upper limit than 9999
         SCORE_test(individual) = options.OptDir*9999;
         SCORE_train(individual) = options.OptDir*9999;
+        t_cost = 0;
     end
 end
 
