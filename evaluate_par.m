@@ -20,6 +20,10 @@ parfor individual=1:P
     % If you want to remove multiples warnings
     warning off all
     
+    %TODO: Figure out a better upper limit than 9999
+    tr_cost=zeros(KI,1)*optDir*9999;
+    t_cost=zeros(KI,1)*optDir*9999;
+    
     % Convert Gene into selected variables
     FS = parents(individual,:)==1;
     % If enough variables selected to regress               
@@ -29,9 +33,6 @@ parfor individual=1:P
         % variables
         % model = pca(DATA',0.01); % 1% variance is discarded only
         % DATA = linproj(DATA',model);
-        
-        tr_cost=zeros(KI,1);
-        t_cost=zeros(KI,1);
         
         % repeat until the mean of the AUC is significant
         for ki=1:KI
@@ -51,13 +52,11 @@ parfor individual=1:P
                 test_pred, test_target);
         end
         
-        % ...and get the results on TEST and TRAIN set 
-        SCORE_test(individual) =  nanmedian(t_cost );
-        SCORE_train(individual) =  nanmedian(tr_cost );
         
     else
-        %TODO: Figure out a better upper limit than 9999
-        SCORE_test(individual) = optDir*9999;
-        SCORE_train(individual) = optDir*9999;
+        % Use pre-allocated "bad" costs when no features selected
     end
+    % ...get median results on TEST and TRAIN set
+    SCORE_test(individual) =  nanmedian(t_cost );
+    SCORE_train(individual) =  nanmedian(tr_cost );
 end
