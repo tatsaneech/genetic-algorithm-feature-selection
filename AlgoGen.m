@@ -78,6 +78,10 @@ end
 % parallelize?
 if options.Parallelize==1
     evalFcn=@evaluate_par;
+    % Put data on each worker
+    spmd
+        labData=DATA;
+    end
 else
     evalFcn=@evaluate;
 end

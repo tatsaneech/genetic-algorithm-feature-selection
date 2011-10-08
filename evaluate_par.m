@@ -14,11 +14,11 @@ SCORE_train=zeros(P,1);
 % Determine cross validation indices
 [ train, test, KI ] = feval(xvalFcn,data_target,options);
 
-% For each individual (parallelized)
-% TODO: Change this to send different data to each core (doc spmd)
-parfor individual=1:P
-    % If you want to remove multiples warnings
-    warning off all
+spmd % spmd by default uses as many workers as are in the pool
+    warning off all % Remove warnings
+    
+    % Distribute parents across labs
+    labParents=codistributed(parents, codistributor('1d',1));
     
     %TODO: Figure out a better upper limit than 9999
     tr_cost=zeros(KI,1)*optDir*9999;
