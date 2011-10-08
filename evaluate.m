@@ -19,8 +19,8 @@ for individual=1:P
     warning off all   
     
     %TODO: Figure out a better upper limit than 9999
-    tr_cost=zeros(KI,1)*options.OptDir*9999;
-    t_cost=zeros(KI,1)*options.OptDir*9999;
+    tr_cost=ones(KI,1)*options.OptDir*9999;
+    t_cost=ones(KI,1)*options.OptDir*9999;
     
     % Convert Gene into selected variables
     FS = parents(individual,:)==1;
