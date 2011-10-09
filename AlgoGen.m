@@ -81,6 +81,7 @@ if options.Parallelize==1
     % Put data on each worker
     spmd
         labData=DATA;
+        labTarget=outcome;
     end
 else
     evalFcn=@evaluate;
