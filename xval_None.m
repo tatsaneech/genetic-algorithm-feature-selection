@@ -11,7 +11,7 @@ else
 end
 
 N=length(data_target);
-    
+
 %     random indices from 1:N
 [~,temp] = sort(rand(N,D),1);
   
