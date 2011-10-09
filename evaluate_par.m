@@ -19,18 +19,15 @@ spmd % spmd by default uses as many workers as are in the pool
     % Distribute parents across labs by rows
     labParents=codistributed(parents==1, codistributor1d(1));
     
-    % Initialize final scores as codistributed arrays
-    SCORE_train=zeros(P,1,'double',codistributor('1d',1));
-    SCORE_test=zeros(P,1,'double',codistributor('1d',1));
+    % Initialize scores as codistributed arrays
+    %TODO: Figure out a better upper limit than 9999
+    SCORE_train=(optDir*9999)*ones(P,KI,'double',codistributor('1d',1));
+    SCORE_test=(optDir*9999)*ones(P,KI,'double',codistributor('1d',1));
     
     % For each parent genome on the lab
     for individual=drange(1:size(labParents,1))
-        %TODO: Figure out a better upper limit than 9999
-        tr_cost=ones(KI,1)*optDir*9999;
-        t_cost=ones(KI,1)*optDir*9999;
-        
         % If enough variables selected to regress
-        if sum(labParents(individual,:))>0            
+        if sum(labParents(individual,:))>0
             % repeat until the mean of the AUC is significant
             for ki=1:KI
                 %TODO: Use arrayfun and a wrapper to vectorize this
@@ -43,20 +40,24 @@ spmd % spmd by default uses as many workers as are in the pool
                 [ train_pred, test_pred ]  = feval(fitFcn,...
                     train_data,train_target,test_data,test_target);
                 
-                [ tr_cost(ki) ] = feval(costFcn,...
+                [ SCORE_train(individual,ki) ] = feval(costFcn,...
                     train_pred, train_target);
-                [ t_cost(ki) ] = feval(costFcn,...
+                [ SCORE_test(individual,ki) ] = feval(costFcn,...
                     test_pred, test_target);
             end
         else
             % Use pre-allocated "bad" costs when no features selected
         end
-        % ...get median results on TEST and TRAIN set
-        SCORE_test(individual) =  nanmedian(t_cost);
-        SCORE_train(individual) =  nanmedian(tr_cost);
     end
     
+end
+
 % Extract SCOREs from codistributed arrays
 SCORE_train=gather(SCORE_train);
 SCORE_test=gather(SCORE_test);
+
+% ...and get median results on TEST and TRAIN set
+SCORE_train(individual) =  nanmedian(SCORE_train);
+SCORE_test(individual) =  nanmedian(SCORE_test);
+
 end
