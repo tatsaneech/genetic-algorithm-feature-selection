@@ -30,11 +30,11 @@ for individual=1:P
         
         % repeat until the mean of the AUC is significant
         for ki=1:KI
-            %TODO: Use arrayfun and a wrapper to vectorize this
             train_data = DATA(train(:,ki),:);
             train_target = data_target(train(:,ki));
             test_data = DATA(test(:,ki),:);
             test_target = data_target(test(:,ki));
+            
             
             % Use fitness function to calculate costs
             [ train_pred, test_pred ]  = feval(fitFcn,...
