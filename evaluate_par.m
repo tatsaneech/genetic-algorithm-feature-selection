@@ -57,7 +57,7 @@ SCORE_train=gather(SCORE_train);
 SCORE_test=gather(SCORE_test);
 
 % ...and get median results on TEST and TRAIN set
-SCORE_train(individual) =  nanmedian(SCORE_train);
-SCORE_test(individual) =  nanmedian(SCORE_test);
+SCORE_train =  nanmedian(SCORE_train,2);
+SCORE_test =  nanmedian(SCORE_test,2);
 
 end
