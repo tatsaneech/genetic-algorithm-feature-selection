@@ -68,11 +68,11 @@ if nargout>2
     % Assumes running a final validation, and t_cost has carried over from
     % single loop iteration above
     [~,idx]=min(abs(t_cost-nanmedian(t_cost))); % find median
-    FS=parents(idx,:)==1; % Best features
-    train_data = OriginalData(train(:,ki),FS);
-    train_target = data_target(train(:,ki));
-    test_data = OriginalData(test(:,ki),FS);
-    test_target = data_target(test(:,ki));
+    FS=parents(1,:)==1; % Best features
+    train_data = OriginalData(train(:,idx),FS);
+    train_target = data_target(train(:,idx));
+    test_data = OriginalData(test(:,idx),FS);
+    test_target = data_target(test(:,idx));
     
     [ train_pred, test_pred ]  = feval(fitFcn,...
         train_data,train_target,test_data,test_target);
