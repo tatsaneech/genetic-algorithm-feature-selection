@@ -80,10 +80,14 @@ if options.Parallelize==1
     evalFcn=@evaluate_par;
     % Put data on each worker
     spmd
+        % Define variables as composites
         labData=DATA;
         labTarget=outcome;
     end
 else
+    % Define variables as standard client matrices
+    labData=DATA;
+    labTarget=outcome;
     evalFcn=@evaluate;
 end
 
@@ -123,7 +127,7 @@ for tries = 1:options.Repetitions
         end
         
         %% Evaluate parents are create new generation
-        [PerfA] = feval(evalFcn,DATA,outcome,parent, options);
+        [PerfA] = feval(evalFcn,labData,labTarget,parent, options);
         % TODO:
         %   Change eval function to return:
         %       model, outputs with predictions+indices, statistics
