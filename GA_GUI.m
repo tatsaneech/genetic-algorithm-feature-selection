@@ -83,7 +83,7 @@ set(handles.popupmenu5,'String' , Fplot)
 set(handles.popupmenu6,'String' , Fcost)
  
 % Initialize GA parameters
-handles.GA_options = GA_OPT_SET();
+handles.GA_options = ga_opt_set();
 handles.GA_options.GUIflag = true;
 
 % Update handles structure

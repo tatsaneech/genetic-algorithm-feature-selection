@@ -1,11 +1,17 @@
 function parents = initialise_pop(Nbre_tot_var,options)
-% Note (Louis Mayaud July-1st-11: Var model could be negative indicating
-% that the model should be VarModel and exactly it where a positive value
-% would set the higher value of the model size  )
-% Note (Alistair Sept-14-11: I have no idea what the above means.)
+% Note (Louis Mayaud July-1st-11: Nbre_tot_var could be negative integer indicating
+% that the model should include Nbre_tot_var variables and exactly it, whereas a positive value
+% would set Nbre_tot_var as the max number of variables to be included in the model. 
+% Nbre_tot_var=0 would leave the choice of variables to the algortihm  )
 %
 %   Variable list
 %       Nbre_tot_var - Number of dimensions of each genome
+%           - positive integer sets the higher limit of number of
+%                   variables to be included in the model
+%           - 0 leaves the number of variables undefined and automatically
+%                   setup by the algortihm
+%           - negative integer set the exact number of variables and
+%                   exactly it.
 %       options.PopulationSize - Number of genomes to generate
 %       numFeatures - Number of true values in each genome
 %       options.ConfoundingFactors - Numeric indices of flags in genomes which must be true
