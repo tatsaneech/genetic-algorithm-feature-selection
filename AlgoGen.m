@@ -158,8 +158,8 @@ for tries = 1:options.Repetitions
             
             % TODO Get the plot function handle and plot : options.PlotFcn
             set(gcf,'CurrentAxes',options.CurrentScoreAxe);
-            
             plot(out.EvolutionGenomeStats{ite,tries}.roc.x,out.EvolutionGenomeStats{ite,tries}.roc.y,'b--');
+            
             xlabel('Sensitivity'); ylabel('1-Specificity');
             
             set(gcf,'CurrentAxes',options.CurrentPopulationAxe);

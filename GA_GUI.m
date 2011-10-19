@@ -138,9 +138,16 @@ if handles.DataFile~=0
     % - binary
     % - multiclass
     % handles.outcomeType = 
-
+    
+    % TODO: Add parsing to the input data to allow for variable field names
+    %   Possible request input from user that data has been scanned
+    %   properly
+    if exist('data','var') && exist('labels','var') && exist('outcome','var')
     % Data integrity check
          [data outcome labels] = data_integrity_check(data,outcome,labels);
+    elseif exist('X','var') && exist('labels','var') && exist('y','var')
+         [data outcome labels] = data_integrity_check(X,y,labels);
+    end
 
     % Save data
         handles.data = data ;
