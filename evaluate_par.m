@@ -51,12 +51,10 @@ parfor individual=1:P
             [ t_cost(ki) ] = feval(costFcn,...
                 test_pred, test_target);
         end
-        
-        
     else
         % Use pre-allocated "bad" costs when no features selected
     end
     % ...get median results on TEST and TRAIN set
-    SCORE_test(individual) =  nanmedian(t_cost );
-    SCORE_train(individual) =  nanmedian(tr_cost );
+    SCORE_test(individual) =  nanmedian(t_cost);
+    SCORE_train(individual) =  nanmedian(tr_cost);
 end

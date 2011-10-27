@@ -26,15 +26,13 @@ for individual=1:P
     FS = parents(individual,:)==1;
     % If enough variables selected to regress               
     if sum(FS)>0
-        DATA = OriginalData(:,FS);     
-        
+        DATA = OriginalData(:,FS);
         % repeat until the mean of the AUC is significant
         for ki=1:KI
             train_data = DATA(train(:,ki),:);
             train_target = data_target(train(:,ki));
             test_data = DATA(test(:,ki),:);
             test_target = data_target(test(:,ki));
-            
             
             % Use fitness function to calculate costs
             [ train_pred, test_pred ]  = feval(fitFcn,...
@@ -53,8 +51,6 @@ for individual=1:P
         
         % Check/perform minimal feature selection is desired
         [ tr_cost, t_cost ] = fs_opt( tr_cost, t_cost, FS, options );
-        
-        
     else
         % Do nothing - leave costs as they were preallocated
     end
@@ -77,6 +73,6 @@ if nargout>2
     [ train_pred, test_pred ]  = feval(fitFcn,...
         train_data,train_target,test_data,test_target);
     
-    [stats,stats.roc]=ga_stats(test_pred,data_target(test(:,idx)),'all');
+    [stats,stats.roc]=ga_stats(test_pred,test_target,'all');
 end
 

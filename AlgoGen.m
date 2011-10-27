@@ -118,7 +118,7 @@ for tries = 1:options.Repetitions
         end
         
         %% Evaluate parents are create new generation
-        [PerfA] = feval(evalFcn,DATA,outcome,parent, options);
+        [PerfA] = feval(evalFcn,DATA,outcome,parent,options);
         % TODO:
         %   Change eval function to return:
         %       model, outputs with predictions+indices, statistics
@@ -126,7 +126,6 @@ for tries = 1:options.Repetitions
         parent = new_generation(parent,PerfA,sort_str,options);
         
         %% FINAL VALIDATION
-        % Removed redundant calculation in this section.
         % If tracking best genome statistics is desirable during run-time,
         % this section will have to recalculate the genome fitness, etc.
         FS = parent(1,:)==1;

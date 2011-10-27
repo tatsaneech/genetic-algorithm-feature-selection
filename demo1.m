@@ -2,7 +2,7 @@
 % % This demo shows the user how to perform feature selection with the GA
 % % toolbox using all default parameters.
 % loaddata;
-load AlistairDATA_mv2.mat
+% load AlistairDATA_mv2.mat
 matlabpool;
 fprintf('Here we go! \n');
 % % First, load the data
