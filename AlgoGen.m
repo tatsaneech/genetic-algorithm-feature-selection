@@ -187,6 +187,7 @@ for tries = 1:options.Repetitions
     [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options);
     out.BestGenome{1,tries} = parent(1,:)==1;
     out.IterationTime(1,tries)=iteTime/options.MaxIterations;
+    out.RepetitionTime(1,tries)=iteTime;
     % COMMENT : Louis Mayaud July-1st-11 :  I think the next 4 lines should
     % be removed
     if strcmpi(options.Display,'plot')
@@ -210,12 +211,10 @@ for tries = 1:options.Repetitions
         fprintf(fid,'\n');
         fclose(fid);
     end
-    toc
     
     
 end
 
-out.RepetitionTime(1,tries)=repTime;
 
 end
 
