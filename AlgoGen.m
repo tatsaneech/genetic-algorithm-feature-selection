@@ -93,7 +93,6 @@ out.IterationTime=zeros(1,options.Repetitions);
 
 repTime=0;
 for tries = 1:options.Repetitions
-    
     %% Initialise GA
     % Create a random population of genomes with :
     % - options.PopulationSize genomes
@@ -168,11 +167,6 @@ for tries = 1:options.Repetitions
             title('Current Population','FontSize',16);
             pause(0.5);
         end
-        %
-        %         auc = mean(AUC) ;
-        %         if auc>80
-        %             eval(['save RAMB_MODELDIM_' num2str(floor(options.NumActiveFeatures),'%d') '_AUC_' num2str(floor(auc),'%d') '.mat FS AUC']);
-        %         end
         
         iteTime=iteTime+toc;
         repTime=repTime+toc;
