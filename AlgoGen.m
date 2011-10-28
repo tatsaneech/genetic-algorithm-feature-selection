@@ -150,8 +150,8 @@ for tries = 1:options.Repetitions
             ylabel('Variables','FontSize',16);
 
             set(gcf,'CurrentAxes',options.FitFunctionEvolutionAxe);
-            plot(1:ite ,out.EvolutionBestCostTest(1:ite,tries) ,  1:ite ,out.EvolutionMedianCost(1:ite,tries) );
-            xlabel('Generations','FontSize',16); ylabel('Mean AUC','FontSize',16);
+            plot(1:ite, out.EvolutionBestCostTest(1:ite,tries), 'b--', 1:ite, out.EvolutionMedianCost(1:ite,tries), 'g-');
+            xlabel('Generations','FontSize',16); ylabel('Mean cost','FontSize',16);
             legend('Best','Median','Location','NorthWest'); %'RMSE train','AUC' ,
             
             % TODO Get the plot function handle and plot : options.PlotFcn
