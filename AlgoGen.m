@@ -111,7 +111,7 @@ for tries = 1:options.Repetitions
         tic;
         ite = ite + 1;
         if ite>(options.ErrorIterations+1) % Enough iterations have passed
-            win = out.EvolutionBestCost((ite-(options.ErrorIterations+1)):(ite-1));
+            win = out.EvolutionBestCostTest((ite-(options.ErrorIterations+1)):(ite-1));
             if abs(max(win) - min(win)) < options.ErrorGradient
                 early_stop = true ;
             end
@@ -151,7 +151,7 @@ for tries = 1:options.Repetitions
             ylabel('Variables','FontSize',16);
 
             set(gcf,'CurrentAxes',options.FitFunctionEvolutionAxe);
-            plot(1:ite ,out.EvolutionBestCost(1:ite,tries) ,  1:ite ,out.EvolutionMedianCost(1:ite,tries) );
+            plot(1:ite ,out.EvolutionBestCostTest(1:ite,tries) ,  1:ite ,out.EvolutionMedianCost(1:ite,tries) );
             xlabel('Generations','FontSize',16); ylabel('Mean AUC','FontSize',16);
             legend('Best','Median','Location','NorthWest'); %'RMSE train','AUC' ,
             
