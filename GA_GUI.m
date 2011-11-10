@@ -115,7 +115,7 @@ if handles.DataFile~=0
     %% Get and process input data
     if strcmp(handles.DataFile((end-2):end),'mat')
         % this is a MAT file
-        eval(['load ' handles.DataFilePath  handles.DataFile ';']);
+        eval(['load ''' handles.DataFilePath  handles.DataFile ''';']);
 
     elseif strcmp(handles.DataFile((end-2):end),'csv')
         % This is a CSV file
