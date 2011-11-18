@@ -116,11 +116,45 @@ numargs=length(varargin);
 k=1; % Varargin index
 % Check if first input is a structure
 if isstruct(varargin{k})
-    % Replace current options fields in options with old options
-    
-    k=k+1;
+    fn=fieldnames(varargin{k});
+    fn_L=length(fn);
+    s=1; % Structure field name index
+    while s<=fn_L
+        % Replace current options fields in options with old options
+        pname = fn{s};
+        pval = varargin{k}.(fn{s});
+        param = find(strcmpi(pname, okargs)==1,1);
+        if isempty(param) % Bad parameter name
+            error(sprintf('Options:%s:UnknownParameterName', mfilename), ...
+                'Unknown parameter name: %s.',pname);
+        else % Add parameter to options
+            % check if value is valid
+            
+            % COMMENT: Louis July 1st 11 : The next 3 lines are converting
+            % the string indicating the confounding variables in the GUI to
+            % some readable format. ->Not sure this should go here<-
+            
+            %TODO: Make sure command line input style (linear indices) and GUI
+            %input style (label titles) work seemlessly here
+            %Additionally, allow for both input types!
+            if strcmp(pname,'ConfoundingFactors')
+                if iscell(pval) % Assumed GUI input - cell array
+                    eval(['pval = ' pval{1}]);
+                elseif isnumeric(pval)
+                    % TODO: Do something! Anything! Yes, let's buy a new car!
+                end
+            end
+            [valid,errmsg]=check_args(okargs{param},pval);
+            if valid
+                options.(okargs{param})=pval;
+            else
+                error(sprintf('Options:%s:invalidParamVal',mfilename),errmsg);
+            end
+        end
+        
+        s=s+1;
+    end
 end
-
 
 %=== check for the right number of inputs
 if (k==1 && rem(nargin,2) == 1) || (k==2 && rem(nargin,2) == 0)
