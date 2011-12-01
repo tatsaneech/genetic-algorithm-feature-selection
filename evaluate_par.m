@@ -4,6 +4,7 @@ fitFcn=options.FitnessFcn;
 costFcn=options.CostFcn;
 xvalFcn=options.CrossValidationFcn;
 optDir=options.OptDir;
+minFeatures = options.MinimizeFeatures;
 
 % Pre-allocate
 P=size(parents,1);
@@ -51,6 +52,8 @@ parfor individual=1:P
             [ t_cost(ki) ] = feval(costFcn,...
                 test_pred, test_target);
         end
+        % Check/perform minimal feature selection is desired
+        [ tr_cost, t_cost ] = fs_opt( tr_cost, t_cost, FS, minFeatures );
     else
         % Use pre-allocated "bad" costs when no features selected
     end

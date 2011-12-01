@@ -4,6 +4,7 @@ function [ children ] = crsov_SP( repro )
 
 POP_xover=size(repro,1);
 VAR_NUM=size(repro,2);
+
 % compute genetic distance between genomes
 gen_dist = zeros(POP_xover,POP_xover);
 for i = 1:POP_xover
@@ -17,6 +18,9 @@ for i = 1:POP_xover
     father = repro( i , : ) ;
     [dist j] = max(gen_dist(i,:)) ;
     mother = repro( j , : ) ;
+    %TODO: Check if repro(j,:) being removed from possible mate genomes
+    %improves featureconvergence
+    
     % random crossing point
     Xpoint = floor(rand(1,1)*VAR_NUM) ;
     children(i,:) = [ father(1:Xpoint) mother((Xpoint+1):end) ] ;
