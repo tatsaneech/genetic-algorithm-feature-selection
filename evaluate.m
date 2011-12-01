@@ -43,14 +43,15 @@ for individual=1:P
                 test_pred = test_pred';
             end
             
+            % TODO: do the next line only if nvargout>1
             [ tr_cost(ki) ] = feval(costFcn,...
-                train_pred, train_target);
+                            train_pred, train_target);
             [ t_cost(ki) ] = feval(costFcn,...
-                test_pred, test_target);
+                            test_pred, test_target);
         end
         
         % Check/perform minimal feature selection is desired
-        [ tr_cost, t_cost ] = fs_opt( tr_cost, t_cost, FS, options );
+       % [ tr_cost, t_cost ] = fs_opt( tr_cost, t_cost, FS, options );
     else
         % Do nothing - leave costs as they were preallocated
     end

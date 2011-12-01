@@ -119,7 +119,7 @@ for k=1:length(statsDesired)
     end
 end
 
-if nargout>1 % Calculate roc curves
+if nargout>1 && length(pred)>1 % Calculate roc curves 
     [roc.x,roc.y]=perfcurve(target,pred,1);
 end
 

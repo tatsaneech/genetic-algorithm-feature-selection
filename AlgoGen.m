@@ -56,8 +56,7 @@ if strcmpi(options.Display,'plot')
         xlabel('Generations','FontSize',16);
         ylabel('Mean AUC','FontSize',16);
         options.FitFunctionEvolutionAxe = gca;
-        
-        
+                
         subplot(3, 2 , 5); % ROC
         xlabel('Sensitivity'); ylabel('1-Specificity');
         options.CurrentScoreAxe = gca;
@@ -70,7 +69,7 @@ if strcmpi(options.Display,'plot')
     end
     out.EvolutionGenomeStats= cell(options.MaxIterations,options.Repetitions);
 end
-
+  
 % min or maximize cost
 if options.OptDir==1
     min_or_max=@max;
@@ -284,7 +283,7 @@ else
     elseif islogical(outcome)
         outcome = double(outcome);
         
-    elseif isdouble(outcome)
+    elseif isnumeric(outcome) % LM 1/12/11: isdouble() just crashes here so replaced with isnumeric()
         % Assume higher outcome is positive class
         outcome = double(outcome > min(uniqOut));
     else
