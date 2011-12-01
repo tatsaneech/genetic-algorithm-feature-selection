@@ -51,7 +51,7 @@ for individual=1:P
         end
         
         % Check/perform minimal feature selection is desired
-       % [ tr_cost, t_cost ] = fs_opt( tr_cost, t_cost, FS, options );
+        [ tr_cost, t_cost ] = fs_opt( tr_cost, t_cost, FS, options );
     else
         % Do nothing - leave costs as they were preallocated
     end

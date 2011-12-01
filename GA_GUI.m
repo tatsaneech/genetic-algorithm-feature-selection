@@ -405,6 +405,7 @@ function pushbutton3_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+
 %% GET input parameters
 fitFs = get(handles.popupmenu4,'String')
 fitFIdx = get(handles.popupmenu4,'Value')
@@ -451,7 +452,7 @@ if  ~isfield(handles, {'data','labels','outcome'})
     errordlg('The datafile is not loaded, please select a database and try again');
     error('GA_GUI:Start','No data to process')
 end
-    
+
 % Load matlabpool
 % If you want to use parallel threats
 if ~isempty(opts.Parallelize) && opts.Parallelize==1 && matlabpool('size')<=0
@@ -467,7 +468,6 @@ tic;
 %         matlabpool close;
 %     end
 %     rethrow(me)
-%     
 % end
 
 

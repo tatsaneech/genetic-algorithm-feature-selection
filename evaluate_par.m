@@ -53,7 +53,7 @@ parfor individual=1:P
                 test_pred, test_target);
         end
         % Check/perform minimal feature selection is desired
-        [ tr_cost, t_cost ] = fs_opt( tr_cost, t_cost, FS, minFeatures );
+        [ tr_cost, t_cost ] = fs_opt( tr_cost, t_cost, FS, options );
     else
         % Use pre-allocated "bad" costs when no features selected
     end
