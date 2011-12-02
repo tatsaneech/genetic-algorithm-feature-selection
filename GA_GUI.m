@@ -507,8 +507,8 @@ repTime=0;
 tries = 0;
 while tries <= options.Repetitions && ~get(handles.pushbutton4,'UserData')
     tries = tries + 1;
-    %% Initialise GA
     
+    %% Initialise GA    
     parent = initialise_pop(Nbre_var,options);
     % Check if early-stop criterion is met
     % if not: continue
@@ -590,36 +590,22 @@ while tries <= options.Repetitions && ~get(handles.pushbutton4,'UserData')
     out.BestGenome{1,tries} = parent(1,:)==1;
     out.IterationTime(1,tries)=iteTime/options.MaxIterations;
     out.RepetitionTime(1,tries)=iteTime;
-    % COMMENT : Louis Mayaud July-1st-11 :  I think the next 4 lines should
-    % be removed
-    if strcmpi(options.Display,'plot')
-        %             figure(h);
-        %             subplot(3, 2 , 5);
-        
-        %             plot(out.BestGenomeStats{1,tries}.;
-    end
-    % Save results
-    if ~strcmpi(options.Display,'none')
-        fid=fopen(options.FileName,'w');
-        fprintf(fid,'%.2f\t',min(PerfA));
-        fprintf(fid,'%.2f\t',nanmedian(aT(:,1)));
-        fprintf(fid,'%d\t',ite);
-        for v=1:length(FS)
-            if FS(v)==1
-                fprintf(fid,'%d\t', 1 );
-            else fprintf(fid,'\t');
-            end
-        end
-        fprintf(fid,'\n');
-        fclose(fid);
-    end
-    
+  
     
 end
 
 if get(handles.pushbutton4,'UserData') % then this was stopped on user's demand
     display('Algorithm STOPPED!');
     set(handles.pushbutton4,'UserData',false); % reset
+    FileName = [ options.FileName '_earlystopped_' ];
+else % The algorithm ended normally
+    FileName = options.FileName;
+end
+
+% Save results
+if ~isempty(options.FileName) % If a file has been selected for saving
+    export_results( FileName , out , handles.labels , options );
+   
 end
 
 %catch me
