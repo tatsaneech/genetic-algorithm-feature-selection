@@ -443,7 +443,8 @@ opts = ga_opt_set('Display','plot',...
     'CurrentScoreAxe',handles.axes3,...
     'PopulationSize',str2double( get(handles.edit5,'String') ),...
     'GUIFlag',true,...
-    'OptDir', get(handles.checkbox3,'Value')...
+    'OptDir', get(handles.checkbox3,'Value'),...
+    'ErrorGradient',0.0001...
     );
 
 if isfield(handles,'ExportFile')
@@ -604,16 +605,9 @@ end
 
 % Save results
 if ~isempty(options.FileName) % If a file has been selected for saving
-    export_results( FileName , out , handles.labels , options );
-   
+    export_results( FileName , out , handles.labels , options );   
 end
 
-%catch me
-%     if ~isempty(opts.Parallelize) && opts.Parallelize==1 && matlabpool('size')>0
-%         matlabpool close;
-%     end
-%     rethrow(me)
-% end
 
 
 guidata(hObject, handles);
