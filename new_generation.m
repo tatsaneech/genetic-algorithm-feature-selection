@@ -10,8 +10,9 @@ mutation_rate=options.MutationRate;
 
 POP_SIZE = size(parent,1) ;
 VAR_NUM = size(parent,2) ;
-POP_elite = ceil( options.Elitism/100*POP_SIZE ) ;
 POP_xover = floor( (1-options.Elitism/100)*POP_SIZE/2 ) ;
+POP_elite =  POP_SIZE - POP_xover ;
+
 mutation_prop = .2 ; % TODO: Make this a parameter in options
 
 

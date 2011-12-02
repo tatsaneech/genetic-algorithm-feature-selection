@@ -22,7 +22,7 @@ function varargout = GA_GUI(varargin)
 
 % Edit the above text to modify the response to help GA_GUI
 
-% Last Modified by GUIDE v2.5 04-Oct-2011 16:54:34
+% Last Modified by GUIDE v2.5 02-Dec-2011 14:56:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,6 +55,11 @@ function GA_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for GA_GUI
 handles.output = hObject;
+set(handles.pushbutton4,'UserData',false); % Initialize this paramter for user stop request
+
+
+% Update toolboxes path
+addpath('./stats'); % ensure stats is in the path
 
 %%Scan files and find specific functions
 files = dir;
@@ -459,10 +464,164 @@ if ~isempty(opts.Parallelize) && opts.Parallelize==1 && matlabpool('size')<=0
     matlabpool 8;
 end
 tic;
-% ALGO GEN
-%try
-    display('RUNNING!!!')
-    [ga_out, ga_options] =  AlgoGen(handles.data,handles.outcome,opts);
+
+%%% START ALGO GEN
+display('RUNNING!!!')
+    
+% Rename variables
+DATA= handles.data ; 
+options=opts;
+ 
+%% Initialisation
+verbose=true; % Set true to view time evaluations
+
+% Define main parameters
+[options] = parse_inputs(options);
+[Nbre_obs,Nbre_var]=size(DATA);
+[DATA, outcome] = errChkInput(DATA, handles.outcome , options);
+GUIflag=options.GUIFlag;
+
+% Initialise visualization/output variable
+im = zeros(options.MaxIterations,Nbre_var,options.Repetitions);
+
+% min or maximize cost
+if options.OptDir==1
+    min_or_max=@max;
+    sort_str='descend';
+else
+    min_or_max=@min;
+    sort_str='ascend';
+end
+
+% parallelize?
+if options.Parallelize==1
+    evalFcn=@evaluate_par;
+else
+    evalFcn=@evaluate;
+end
+
+% Initialize outputs
+out = initialize_output(options) ;
+
+repTime=0;
+tries = 0;
+while tries <= options.Repetitions && ~get(handles.pushbutton4,'UserData')
+    tries = tries + 1;
+    %% Initialise GA
+    
+    parent = initialise_pop(Nbre_var,options);
+    % Check if early-stop criterion is met
+    % if not: continue
+    ite = 0 ; early_stop = false ;
+    iteTime=0;
+    while ite < options.MaxIterations && ~early_stop && ~get(handles.pushbutton4,'UserData')
+        tic;
+        ite = ite + 1;
+        if ite>(options.ErrorIterations+1) % Enough iterations have passed to estimate early stop
+            win = out.EvolutionBestCostTest((ite-(options.ErrorIterations+1)):(ite-1));
+            if abs(max(win) - min(win)) < options.ErrorGradient
+                early_stop = true ;
+            end
+        end
+        
+        %% Evaluate parents are create new generation
+        [PerfA] = feval(evalFcn,DATA,outcome,parent,options);
+        % TODO:
+        %   Change eval function to return:
+        %       model, outputs with predictions+indices, statistics
+        
+        parent = new_generation(parent,PerfA,sort_str,options);
+        
+        %% FINAL VALIDATION
+        % If tracking best genome statistics is desirable during run-time,
+        % this section will have to recalculate the genome fitness, etc.
+        FS = parent(1,:)==1;
+        [aT,aTR] = evaluate(DATA,outcome,FS,options); % 1 individual - do not need to parallelize
+        
+        out.EvolutionBestCost(ite,tries) = feval(min_or_max,aTR) ;
+        out.EvolutionBestCostTest(ite,tries) = feval(min_or_max,aT) ;
+        out.EvolutionMedianCost(ite,tries) = nanmedian(aT);
+        
+        %% Save and display results
+        %%-------------------------+
+        im(ite,:,tries)=FS;
+        if strcmpi(options.Display,'plot')
+            [~,~,out.EvolutionGenomeStats{ite,tries}] = evaluate(DATA, outcome, parent(1,:), options);
+            %  saveas(h,['AG-current_' int2str(patient_type) '.jpg'])
+            if ~GUIflag
+                figure(h);
+            end
+            set(gcf,'CurrentAxes',options.PopulationEvolutionAxe) ;
+            imagesc(~im(1:ite,:,tries)'); % Plot features selected
+            colormap('gray');
+            title([int2str(sum(FS)) ' selected variables'],'FontSize',16);
+            ylabel('Variables','FontSize',16);
+
+            set(gcf,'CurrentAxes',options.FitFunctionEvolutionAxe);
+            plot(1:ite, out.EvolutionBestCostTest(1:ite,tries), 'b--', 1:ite, out.EvolutionMedianCost(1:ite,tries), 'g-');
+            xlabel('Generations','FontSize',16); ylabel('Mean cost','FontSize',16);
+            legend('Best','Median','Location','NorthWest'); %'RMSE train','AUC' ,
+            
+            % TODO Get the plot function handle and plot : options.PlotFcn
+            set(gcf,'CurrentAxes',options.CurrentScoreAxe);
+            plot(out.EvolutionGenomeStats{ite,tries}.roc.x,out.EvolutionGenomeStats{ite,tries}.roc.y,'b--');
+            
+            xlabel('Sensitivity'); ylabel('1-Specificity');
+            
+            set(gcf,'CurrentAxes',options.CurrentPopulationAxe);
+            imagesc(~parent);
+            xlabel('Variables','FontSize',16);
+            ylabel('Genomes','FontSize',16);
+            title('Current Population','FontSize',16);
+            pause(0.5);
+        end
+        
+        iteTime=iteTime+toc;
+        repTime=repTime+toc;
+        if verbose % Time elapsed reports
+            fprintf('Iteration %d of %d. Time: %2.2fs. Total Time: %2.2fs. Projected: %2.2fh. \n',...
+                ite,options.MaxIterations, toc, iteTime,...
+                (((iteTime/ite * (options.MaxIterations) * (options.Repetitions)))-repTime)/3600);
+        end
+    end
+    out.GenomePlot{1,tries}=im(:,:,tries);
+    % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
+    [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options);
+    out.BestGenome{1,tries} = parent(1,:)==1;
+    out.IterationTime(1,tries)=iteTime/options.MaxIterations;
+    out.RepetitionTime(1,tries)=iteTime;
+    % COMMENT : Louis Mayaud July-1st-11 :  I think the next 4 lines should
+    % be removed
+    if strcmpi(options.Display,'plot')
+        %             figure(h);
+        %             subplot(3, 2 , 5);
+        
+        %             plot(out.BestGenomeStats{1,tries}.;
+    end
+    % Save results
+    if ~strcmpi(options.Display,'none')
+        fid=fopen(options.FileName,'w');
+        fprintf(fid,'%.2f\t',min(PerfA));
+        fprintf(fid,'%.2f\t',nanmedian(aT(:,1)));
+        fprintf(fid,'%d\t',ite);
+        for v=1:length(FS)
+            if FS(v)==1
+                fprintf(fid,'%d\t', 1 );
+            else fprintf(fid,'\t');
+            end
+        end
+        fprintf(fid,'\n');
+        fclose(fid);
+    end
+    
+    
+end
+
+if get(handles.pushbutton4,'UserData') % then this was stopped on user's demand
+    display('Algorithm STOPPED!');
+    set(handles.pushbutton4,'UserData',false); % reset
+end
+
 %catch me
 %     if ~isempty(opts.Parallelize) && opts.Parallelize==1 && matlabpool('size')>0
 %         matlabpool close;
@@ -559,3 +718,13 @@ function checkbox3_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of checkbox3
+
+
+% --- Executes on button press in pushbutton4.
+function pushbutton4_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton4 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+display('Manual algortihm break recorded !');
+set(handles.pushbutton4,'UserData',true);
+guidata(hObject, handles);
