@@ -444,7 +444,8 @@ opts = ga_opt_set('Display','plot',...
     'PopulationSize',str2double( get(handles.edit5,'String') ),...
     'GUIFlag',true,...
     'OptDir', get(handles.checkbox3,'Value'),...
-    'ErrorGradient',0.0001...
+    'ErrorGradient',0,... % If zero, then ignore
+    'MinimizeFeatures',true...
     );
 
 if isfield(handles,'ExportFile')
@@ -520,7 +521,7 @@ while tries <= options.Repetitions && ~get(handles.pushbutton4,'UserData')
         ite = ite + 1;
         if ite>(options.ErrorIterations+1) % Enough iterations have passed to estimate early stop
             win = out.EvolutionBestCostTest((ite-(options.ErrorIterations+1)):(ite-1));
-            if abs(max(win) - min(win)) < options.ErrorGradient
+            if abs(max(win) - min(win)) < options.ErrorGradient && options.ErrorGradient ~=0
                 early_stop = true ;
             end
         end
@@ -539,9 +540,9 @@ while tries <= options.Repetitions && ~get(handles.pushbutton4,'UserData')
         FS = parent(1,:)==1;
         [aT,aTR] = evaluate(DATA,outcome,FS,options); % 1 individual - do not need to parallelize
         
-        out.EvolutionBestCost(ite,tries) = feval(min_or_max,aTR) ;
-        out.EvolutionBestCostTest(ite,tries) = feval(min_or_max,aT) ;
-        out.EvolutionMedianCost(ite,tries) = nanmedian(aT);
+        out.EvolutionBestCost(ite,tries) = aTR ;
+        out.EvolutionBestCostTest(ite,tries) = aT ;
+        out.EvolutionMedianCost(ite,tries) = nanmedian(PerfA);
         
         %% Save and display results
         %%-------------------------+
