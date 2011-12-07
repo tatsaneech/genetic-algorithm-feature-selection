@@ -10,11 +10,11 @@ mutation_rate=options.MutationRate;
 
 POP_SIZE = size(parent,1) ;
 VAR_NUM = size(parent,2) ;
-POP_xover = floor( (1-options.Elitism/100)*POP_SIZE/2 ) ;
-POP_elite =  POP_SIZE - POP_xover ;
+
+POP_xover = POP_SIZE/2 ;
+POP_elite = floor( (options.Elitism/100)*POP_SIZE ) ;
 
 mutation_prop = .2 ; % TODO: Make this a parameter in options
-
 
 %% Selection
 
@@ -87,17 +87,21 @@ if MinVar>0 % Ensure number of features > MinVar
 end
 
 %% Replace twins by aliens
-twins = zeros(POP_xover,1);
+diff = ones(2*POP_xover,2*POP_xover);
 % nonTwinIdx=true(2*POP_xover,1);
 % twinCmpFcn=@(children,i) any(sqrt(sum((children(i,:)-children(1:i-1,:)).^2))==0);
 for i = 1:2*POP_xover
-    tmpValue=bsxfun(@minus,children(1:i-1,:),children(i,:));
-    twins(i)=any(sqrt(sum(tmpValue.^2))==0);
+    for j=(i+1):2*POP_xover
+        diff(i,j) = sum((children(i,:)-children(j,:)).^2);
+    end
 end
-if sum(twins)>0
-    options.PopulationSize=sum(twins); % Temporary change.
-    children(twins==1,:) = initialise_pop(VAR_NUM,options);
-end
+[r,c] = find(diff==0);
+twins = unique([r ; c]);
+ 
+if length(twins)>0
+    options.PopulationSize=length(twins); % Temporary change.
+    children(twins,:) = initialise_pop(VAR_NUM,options);
+end 
 
 parent = [elderly ; children] ;
 parent = parent(1:POP_SIZE,:);

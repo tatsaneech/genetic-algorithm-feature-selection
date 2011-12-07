@@ -60,7 +60,7 @@ if size(parents,1)>1 % There is more than one individual to evaluate (return fit
         SCORE_test(individual) =  nanmedian(t_cost );
         SCORE_train(individual) =  nanmedian(tr_cost );
     end
-else % There is only one individual to estimate then, this is final validation
+else  % There is only one individual to estimate   then, this is final validation
     FS = parents ==1;
     for ki=1:KI
         DATA = OriginalData(:,FS);
@@ -70,14 +70,15 @@ else % There is only one individual to estimate then, this is final validation
         test_target = data_target(test(:,ki));
 
         % Use fitness function to calculate costs
-        [ train_pred, test_pred(ki) ]  = feval(fitFcn,...
+        [ train_pred, test_pred ]  = feval(fitFcn,...
             train_data,train_target,test_data,test_target);
 
         % TODO: do the next line only if nvargout>1
         [ tr_cost(ki) ] = feval(costFcn,...
                         train_pred, train_target);
         [ t_cost(ki) ] = feval(costFcn,...
-                        test_pred(ki), test_target);
+                        test_pred, test_target);
+         L1O_test_pred(ki) = mean(test_pred);        
     end
     
     % ...get median results on TEST and TRAIN set 
@@ -87,7 +88,7 @@ else % There is only one individual to estimate then, this is final validation
     % Is it LeaveOne Out? ( there is only one observation in test per data split)
     if sum(sum(test,1))==size(test,2) 
                                     % Remove observed from RMSE to get predicted     
-        [stats,stats.roc]=ga_stats( test_pred' , data_target ,'all');
+        [stats,stats.roc]=ga_stats( L1O_test_pred' , data_target ,'all');
         
     else % All other cross validation techniques
         [~,idx]=min(abs(t_cost-nanmedian(t_cost))); % find split that provides median value

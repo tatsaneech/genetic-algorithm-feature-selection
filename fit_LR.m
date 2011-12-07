@@ -4,7 +4,7 @@ function [ train_pred, test_pred ] = ...
 train_target(train_target==0)=-1;
 test_target(test_target==0)=-1;
 
-b2 = robustfit(train_data,train_target,[],[],'off');
+b2 = robustfit(full(train_data),train_target,[],[],'off');
 
 train_pred = train_data*b2;
 test_pred = test_data*b2 ;

@@ -3,7 +3,7 @@ function [ tr_idx, t_idx, D ] = xval_TrainTest( data_target, options )
 %   Default assigne indices 70%/30% training/test.
 
 D=1; % Number of fitness repetitions
-P=1/3; % Data split
+P=1/2; % Data split
 N=length(data_target);
     
 tr_idx = false(N,1);
