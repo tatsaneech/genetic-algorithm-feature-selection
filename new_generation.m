@@ -87,6 +87,8 @@ if MinVar>0 % Ensure number of features > MinVar
 end
 
 %% Replace twins by aliens
+twins = 1;
+
 diff = ones(2*POP_xover,2*POP_xover);
 % nonTwinIdx=true(2*POP_xover,1);
 % twinCmpFcn=@(children,i) any(sqrt(sum((children(i,:)-children(1:i-1,:)).^2))==0);
@@ -101,7 +103,7 @@ twins = unique([r ; c]);
 if length(twins)>0
     options.PopulationSize=length(twins); % Temporary change.
     children(twins,:) = initialise_pop(VAR_NUM,options);
-end 
+end % Some twins might still be present after generation of random aliens BUT we don't care that much 
 
 parent = [elderly ; children] ;
 parent = parent(1:POP_SIZE,:);
