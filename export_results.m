@@ -46,7 +46,7 @@ if ~isempty(regexp(FileName,'xls')) % then save as XLS
         FileName = [ FileName(1:(end-4)) '.csv'];
     end
 elseif ~isempty(regexp(FileName,'csv')) % then save as CSV
-    fidCSV = fopen(fileName,'w');
+    fidCSV = fopen(FileName,'w');
     for r=1:(Nlabels+3)
         for c=1:(Ntries+2)
             if c==1 | (c==2 & r<4) % then print a string
