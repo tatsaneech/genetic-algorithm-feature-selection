@@ -35,6 +35,6 @@ function [ stat ] = stats_SMR(pred,target)
 
 %	Copyright 2011 Alistair Johnson
 
-stat=sum(target)/sum(round(pred));
+stat=sum(target)/sum(pred);
 
 end

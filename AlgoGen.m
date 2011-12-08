@@ -31,7 +31,12 @@ verbose=true; % Set true to view time evaluations
 %       add it to parse_functions (in AlgoGen.m)
 % TODO: Also document changes needed in GUI
 
-Nbre_var=size(DATA,2);
+
+[Nbre_obs,Nbre_var]=size(DATA);
+
+origOutcome = outcome;
+[DATA, outcome] = errChkInput(DATA, outcome, options);
+
 GUIflag=options.GUIFlag;
 % Initialise visualization variable
 im = zeros(options.MaxIterations,Nbre_var,options.Repetitions);
@@ -63,7 +68,6 @@ if strcmpi(options.Display,'plot')
         title('Current Population','FontSize',16);
         options.CurrentPopulationAxe = gca;
     end
-    out.EvolutionGenomeStats= cell(options.MaxIterations,options.Repetitions);
 end
 
 % min or maximize cost
@@ -83,13 +87,7 @@ else
 end
 
 % Initialize outputs
-out.EvolutionBestCost = zeros(options.MaxIterations,options.Repetitions);
-out.EvolutionBestCostTest = zeros(options.MaxIterations,options.Repetitions) ;
-out.EvolutionMedianCost = zeros(options.MaxIterations,options.Repetitions);
-out.BestGenomeStats = cell(1,options.Repetitions);
-out.BestGenome = cell(1,options.Repetitions) ;
-out.GenomePlot=cell(1,options.Repetitions);
-out.IterationTime=zeros(1,options.Repetitions);
+out = initialize_output(options);
 
 repTime=0;
 for tries = 1:options.Repetitions
@@ -106,7 +104,7 @@ for tries = 1:options.Repetitions
     % if not: continue
     ite = 0 ; early_stop = false ;
     iteTime=0;
-    while ite < options.MaxIterations && early_stop == false
+    while ite < options.MaxIterations && ~early_stop
         tic;
         ite = ite + 1;
         if ite>(options.ErrorIterations+1) % Enough iterations have passed
@@ -182,31 +180,12 @@ for tries = 1:options.Repetitions
     out.BestGenome{1,tries} = parent(1,:)==1;
     out.IterationTime(1,tries)=iteTime/options.MaxIterations;
     out.RepetitionTime(1,tries)=iteTime;
-    % COMMENT : Louis Mayaud July-1st-11 :  I think the next 4 lines should
-    % be removed
-    if strcmpi(options.Display,'plot')
-        %             figure(h);
-        %             subplot(3, 2 , 5);
-        
-        %             plot(out.BestGenomeStats{1,tries}.;
-    end
+  
     % Save results
-    if ~strcmpi(options.Display,'none')
-        fid=fopen(options.FileName,'w');
-        fprintf(fid,'%.2f\t',min(PerfA));
-        fprintf(fid,'%.2f\t',nanmedian(aT(:,1)));
-        fprintf(fid,'%d\t',ite);
-        for v=1:length(FS)
-            if FS(v)==1
-                fprintf(fid,'%d\t', 1 );
-            else fprintf(fid,'\t');
-            end
-        end
-        fprintf(fid,'\n');
-        fclose(fid);
+    if ~isempty(options.FileName) % If a file has been selected for saving
+        export_results( FileName , out , handles.labels , options );   
     end
     
-    
 end
 
 
@@ -214,166 +193,78 @@ end
 
 % --------------------------------------------------- %
 % --------------------------------------------------- %
-function [options] = ...
-    parse_inputs(options)
-% Parse input PV pairs.
+function [data, outcome] = ...
+    errChkInput(data, outcome, options)
 
-%=== allowed parameters
-okargs=fieldnames(options);
+[Nbre_obs,Nbre_var]=size(data);
 
-%=== defaults
-def_options=struct( ...
-    'Display', 'Plot', ...
-    'MaxIterations', 100, ...
-    'PopulationSize', 50, ...
-    'MaxFeatures', 0, ...
-    'MinFeatures', 0, ...
-    'ConfoundingFactors', [], ...
-    'Repetitions', 100, ...
-    'OptDir', 0, ...
-    'FitnessFcn', 'fit_LR', ...% This should have the exact same name as the .m function
-    'CostFcn', 'cost_RMSE', ... % This should have the exact same name as the .m function
-    'CrossoverFcn', 'crsov_SP', ... % This should have the exact same name as the .m function
-    'MutationFcn', 'mut_SP', ...
-    'MutationRate', 0.06, ...
-    'CrossValidationFcn', 'xval_None', ...
-    'CrossValidationParam',[], ...
-    'PlotFcn', 'plot_All', ...% This should have the exact same name as the .m function
-    'ErrorGradient', 0.01, ...
-    'ErrorIterations', 10, ...
-    'FileName','AlgoGenOutput.csv', ...
-    'Parallelize', 0, ...
-    'Elitism',10 , ...
-    'MinimizeFeatures',false, ...
-    'PopulationEvolutionAxe', [],...
-    'FitFunctionEvolutionAxe', [],...
-    'CurrentPopulationAxe', [],...
-    'CurrentScoreAxe', []...
-    );
-
-def_fn=fieldnames(def_options);
-
-%=== parse inputs, replace empty fields with default values
-for k = 1:length(def_fn)
-    idx=strcmp(okargs,def_fn{k});
-    if isempty(options.(okargs{idx}))
-        options.(okargs{idx})=def_options.(okargs{idx});
+%=== Error check data
+if Nbre_var > Nbre_obs
+    if options.MaxFeatures==0
+    warning('GAFS:AlgoGen:HighDimensionality', ...
+        ['The data input has more features than observations. This may\n' ...
+        'result in selection of more features than observations. \n' ...
+        'You should use caution, and perhaps set the MaxFeatures field.']);
+    elseif options.MaxFeatures > Nbre_var
+        warning('GAFS:AlgoGen:HighMaxFeatures', ...
+            ['The data input has more features than observations, and the\n' ...
+            'MaxFeatures field is set higher than the number of observations.\n' ...
+            'This may result in selection of more features than observations, \n' ...
+            'causing an error. You should set the MaxFeatures field to a lower value.']);
     end
 end
 
-
-% Parse functions
-opt_fn=fieldnames(options);
-fcn_idx=strfind(opt_fn, 'Fcn'); % Find field names which store functions
-fcn_idx=find(cellfun(@(x) ~isempty(x),fcn_idx)==1);
-for k=1:length(fcn_idx)
-    % Parse functions into cells containing function handles
-    [options.(opt_fn{fcn_idx(k)})] = ...
-        parse_functions(opt_fn{fcn_idx(k)},options.(opt_fn{fcn_idx(k)}));
+%=== Error check outcome
+oSz = size(outcome);
+if oSz(1) == 1
+    outcome = outcome'; % column vector preferred
+elseif oSz(2) == 1
+    % Column vector is a good input, do nothing
+else
+    error('GAFS:AlgoGen:TooManyTargetVectors',...
+        ['The target input has more than one vector of targets. \n' ...
+        'Multinomial classification is currently unsupported.']);
 end
 
-%TODO: Check xvalFcn and xvalParam are internally consistent
-end
+uniqOut = unique(outcome);
 
-% --------------------------------------------------- %
-% --------------------------------------------------- %
-% Parses functions, including translating strings into function handles
-function [fcn] = ...
-    parse_functions(fcn_type,fcn)
-
-% % NEW VERSION OF THE FUNCTION RIGHT HERE
-% if ~isa(fcn,'function_handle')
-%     if iscell(fcn)
-%         fcn=fcn{1};
-%     end
-%     eval(['fcnH=@' fcn ';' ]);
-% end
-
-% allowable function types
-okfcns={'FitnessFcn', 'CrossoverFcn','MutationFcn','CrossValidationFcn','PlotFcn','CostFcn'};
-okfcns_abbr={'fit_.*.m$','crsov_.*.m$','mut_.*.m$','xval_.*.m$','plot_.*.m$','cost_.*.m$'};
-
-% Scan files and find specific functions
-files = dir('*.m');
-
-% fcn_strs will be a cell array, with each cell containing the file names
-% corresponding to that function type
-
-okfcn_strs=cell(1,length(okfcns));
-% Fplot = {}; Ffit = {}; Fxval = {} ; Fcrsov = {}; Fmut = {};
-for f=1:length(files)
-    tmp=regexp(files(f).name,okfcns_abbr);
-    tmp_idx=find(~cellfun(@isempty,tmp)==1,1);
-    if ~isempty(tmp_idx) % Pattern exists and has been found in file name
-        if tmp{tmp_idx}==1 % Ensure pattern is found at beginning of file name
-            okfcn_strs{tmp_idx}=[okfcn_strs{tmp_idx};{files(f).name(1:(end-2))}];
-        end
-    end
-end
-
-% Parse inputs if in non-cell form, i.e. just one function type and name
-if ~iscell(fcn_type) || ~iscell(fcn)
-    if ~iscell(fcn_type) && ~iscell(fcn)
-        % Convert to cells
-        fcn_type={fcn_type}; fcn={fcn};
-    else
-        error(sprintf('Options:%s:IncorrectFunctionType',mfilename),...
-            'Function type and string should be of the same data type (cell or char).');
-    end
-end
-
-% If inputs are unequal in size, throw error
-if length(fcn_type)~=length(fcn)
-    error(sprintf('Options:%s:IncorrectNumberOfArguments',mfilename),...
-        'Number of function handles must equal number of corresponding function types.');
-end
-
-lf=length(fcn_type); % number of functions
-
-% for each passed function string
-for k=1:lf
-    fcn_idx=find(strcmpi(okfcns,fcn_type{k}));
-    if isempty(fcn_idx)
-        error(sprintf('Options:%s:IncorrectFunctionType',mfilename),...
-            'Specified function type does not exist.');
+if size(uniqOut,1) > 2
+    % Not a binary classification problem
+    warning('GAFS:AlgoGen:NotBinaryClassification', ...
+        ['The target vector contains more than 2 possible values.\n' ...
+        'Regression is not fully supported yet, and errors may occur.\n' ...
+        'Buyer beware.']);
+else
+    if iscell(outcome)
+        % Pick a random outcome as the positive outcome
+        warning('GAFS:AlgoGen:UnspecifiedPositiveTarget', ...
+            ['The target input does not have a clear positive target.\n' ...
+            'You should perhaps set the outcome to a double vector of \n' ...
+            'and negative targets (i.e., 0 and 1).']);
         
+        fprintf('Positive target is assumed to be %s \n',uniqOut{1});
+        
+        outcome = double(strcmp(outcome,uniqOut{1}));
+    elseif ischar(outcome)
+        % Pick a random outcome as the positive outcome
+        warning('GAFS:AlgoGen:UnspecifiedPositiveTarget', ...
+            ['The target input does not have a clear positive target.\n' ...
+            'You should perhaps set the outcome to a double vector of \n' ...
+            'and negative targets (i.e., 0 and 1).']);
+        
+        fprintf('Positive target is assumed to be %s \n',uniqOut(1,:));
+        
+        outcome = double(arrayfun(@(x) strcmp(x,uniqOut(1,:)),outcome));
+    elseif islogical(outcome)
+        outcome = double(outcome);
+        
+    elseif isnumeric(outcome) % isdouble() just crashes here so replaced with isnumeric()
+        % Assume higher outcome is positive class
+        outcome = double(outcome > min(uniqOut));
+    else
+        error('GAFS:AlgoGen:UnknownTargetType', ...
+            'The target input should be of type cell, char, logical, or double.');
     end
-    fcn_strs=okfcn_strs{fcn_idx};
-    fcn_handles=cell(1,length(fcn_strs));
-    for q=1:length(fcn_strs)
-        fcn_handles{q}=str2func(fcn_strs{q});
-    end
-    
-    % If it's a nested cell, get cell contents
-    if iscell(fcn_type{k})
-        fcn_type(k)=fcn_type{k};
-    end
-    
-    % convert from function handle to string
-    if isa(fcn{k},'function_handle')
-        fcn_cmp=cellfun(@(x) isequal(x,fcn{k}),fcn_handles);
-        if max(fcn_cmp)==1
-            continue; % next iteration
-        end
-        error(sprintf('Options:%s:IncorrectFunctionHandles',mfilename),...
-            'Specified function handle does not exist.');
-    end
-    
-    if ischar(fcn{k})
-        fcn_idx=strcmpi(fcn_strs,fcn{k});
-        if ~any(fcn_idx)
-            % Function string not found
-            error(sprintf('Options:%s:IncorrectFunctionString',mfilename),...
-                'Specified function string does not exist.');
-        else
-            fcn{k}=fcn_handles{fcn_idx};
-        end
-    end
-    
-end
-
-if lf==1 % Convert from cell with one element to function handle
-    fcn=fcn{k};
 end
 
 end
