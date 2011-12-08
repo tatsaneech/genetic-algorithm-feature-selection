@@ -30,7 +30,7 @@ function [ train_pred, test_pred  ] = ...
 model = svmtrain(train_data,train_target,'-s 0 -t 2 -b 1');
 
 % Apply to your data
-[train_pred, train_acc, train_prob] = svmpredict(train_target, train_data, model, '-s 0 -b 1');
+[train_pred, train_acc, train_prob] = svmpredict(train_target, train_data, model, '-b 1');
 [test_pred, test_acc, test_prob] = svmpredict(test_target, test_data, model, '-b 1');
 
 train_pred=train_prob(:,1);
