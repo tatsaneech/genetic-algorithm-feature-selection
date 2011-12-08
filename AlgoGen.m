@@ -183,7 +183,7 @@ for tries = 1:options.Repetitions
   
     % Save results
     if ~isempty(options.FileName) % If a file has been selected for saving
-        export_results( FileName , out , handles.labels , options );   
+        export_results( options.FileName , out , handles.labels , options );   
     end
     
 end

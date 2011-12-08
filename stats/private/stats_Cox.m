@@ -39,7 +39,6 @@ function [ stat ] = stats_Cox(pred,target)
 %	Copyright 2011 Alistair Johnson
 
 
-b=glmfit(target,pred,'normal');
+b=glmfit(pred,target,'binomial','link','identity');
 stat.A=b(1); stat.B=b(2);
-
 end
