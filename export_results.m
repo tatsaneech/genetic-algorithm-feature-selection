@@ -18,7 +18,7 @@ sheet{3,1} = 'Variable Name';
 %   all best genomes
 %   - the genomes sorted according to their score on test set
 [~,IdxLabels] = sort(sum(Genomes),'descend');
-[~,IdxTries] = sort(TestCost,'descend');
+[~,IdxTries] = sort(TestCost(1:Ntries),'descend');
 
 
 sheet{1,2} = 'Test Score';     sheet(1,2+(1:Ntries)) = num2cell(TestCost(IdxTries));  
@@ -26,7 +26,7 @@ sheet{2,2} = 'Training Score'; sheet(2,2+(1:Ntries)) = num2cell(TrainingCost(Idx
 sheet{3,2} = 'Number of selections'; 
     ModelDim=sum(Genomes,2);
     sheet(3,2+(1:Ntries)) = num2cell(ModelDim(IdxTries)');
-    SelectPer = 100*sum(Genomes)/size(Genomes,1) ;
+    SelectPer = 100*sum(Genomes,1)/size(Genomes,1) ;
     sheet(3+(1:Nlabels),2) =  num2cell( SelectPer( IdxLabels ) );
 
 sheet{3,1} = 'Variables Names';     

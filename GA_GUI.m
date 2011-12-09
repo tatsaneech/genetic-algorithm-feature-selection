@@ -590,7 +590,7 @@ while tries <= options.Repetitions && ~get(handles.pushbutton4,'UserData')
     out.GenomePlot{1,tries}=im(:,:,tries);
     % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
     [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options);
-    out.BestGenome{1,tries} = parent(1,:)==1;
+    out.BestGenome{tries} = parent(1,:)==1;
     out.IterationTime(1,tries)=iteTime/options.MaxIterations;
     out.RepetitionTime(1,tries)=iteTime;
   
@@ -600,7 +600,8 @@ end
 if get(handles.pushbutton4,'UserData') % then this was stopped on user's demand
     display('Algorithm STOPPED!');
     set(handles.pushbutton4,'UserData',false); % reset
-    FileName = [ options.FileName '_earlystopped_' ];
+    FileName = [  'earlystopped_' options.FileName ];
+    out.BestGenome((tries+1):end) = [];
 else % The algorithm ended normally
     FileName = options.FileName;
 end
