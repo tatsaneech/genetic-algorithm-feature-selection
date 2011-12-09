@@ -2,9 +2,10 @@ function [data outcome labels] = data_integrity_check(data,outcome,labels)
 
     % Check if variables are defined
     if ~exist('labels','var')
-        errmsg = sprintf('Variable -labels- are not defined in the data file');
-        errordlg(errmsg);
-        error('GA_GUI:LoadFile',errmsg);
+        errmsg = sprintf('Variable -labels- are not defined in the data file,!!! Creating standard labels...');
+        warndlg(errmsg);
+        warning('GA_GUI:LoadFile',errmsg);
+        labels = generate_labels(varNum);
     elseif ~exist('data','var')
         errmsg =  sprintf('Variable -data- is not defined in the data file');
         errordlg(errmsg);
@@ -39,5 +40,33 @@ function [data outcome labels] = data_integrity_check(data,outcome,labels)
     if size(outcome,1)==size(data,2)
         data = data';
     end
+    
+    % check labels are in the right format (cell array)
+    if ~iscell(labels)
+        if isstr(labels) % then it is a string array instead
+            if size(labels,1)~=varNum % just transpose if not right
+                labels = labels';
+            end
+            for v=1:varNum % convert strings to cell array
+                lab_tmp{v} = labels(v,:);
+            end
+            labels = lab_tmp;
+        else
+            warning('CheckData:wrongLabels','Labels are inconsistants: creating new labels');
+            labels = generate_labels(varNum);
+        end
+    end
+            
     outcome = outcome + 0.;
     
+function labels = generate_labels(Nvar)
+% generate label names for Nvar variables
+
+labels = cell{Nvar,1};
+for v=1:Nvar
+    labels(Nvar) = ['var' int2str(Nvar)];
+end
+
+end
+
+end
