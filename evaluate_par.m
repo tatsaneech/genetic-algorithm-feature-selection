@@ -3,7 +3,7 @@ function [ SCORE_test SCORE_train stats ] = evaluate( OriginalData , data_target
 fitFcn=options.FitnessFcn; 
 costFcn=options.CostFcn;
 xvalFcn=options.CrossValidationFcn;
-
+optDir = options.OptDir;
 % Pre-allocate
 P=size(parents,1);
 SCORE_test=zeros(P,1);
@@ -18,10 +18,20 @@ if size(parents,1)>1 % There is more than one individual to evaluate (return fit
     parfor individual=1:P
         % If you want to remove multiples warnings
         warning off all   
-
-        %TODO: Figure out a better upper limit than 9999
-        tr_cost=zeros(KI,1)*options.OptDir*9999;
-        t_cost=zeros(KI,1)*options.OptDir*9999;
+        
+        %=== Default cost values to very sub-optimal
+        %=== If the algorithm does not assign a cost value (due to missing
+        %values, or unselected features), the genome will be heavily
+        %penalized
+        
+        %TODO: Figure out a better limits than 9999 and -9999
+        if optDir
+            tr_cost=ones(KI,1)*9999;
+            t_cost=ones(KI,1)*9999;
+        else
+            tr_cost=ones(KI,1)*-9999;
+            t_cost=ones(KI,1)*-9999;
+        end
 
         % Convert Gene into selected variables
         FS = parents(individual,:)==1;
