@@ -26,12 +26,12 @@ if size(parents,1)>1 % There is more than one individual to evaluate (return fit
         %penalized
         
         %TODO: Figure out a better limits than 9999 and -9999
-        if optDir
-            tr_cost=ones(KI,1)*9999;
-            t_cost=ones(KI,1)*9999;
-        else
+        if optDir % Maximizing cost -> low default value
             tr_cost=ones(KI,1)*-9999;
             t_cost=ones(KI,1)*-9999;
+        else % Minimizing cost -> high default value
+            tr_cost=ones(KI,1)*9999;
+            t_cost=ones(KI,1)*9999;
         end
         
         
@@ -80,14 +80,14 @@ else  % There is only one individual to estimate   then, this is final validatio
     %values, or unselected features), the genome will be heavily
     %penalized
     
-    %TODO: Figure out a better limits than 9999 and -9999
-    if optDir
-        tr_cost=ones(KI,1)*9999;
-        t_cost=ones(KI,1)*9999;
-    else
-        tr_cost=ones(KI,1)*-9999;
-        t_cost=ones(KI,1)*-9999;
-    end
+        %TODO: Figure out a better limits than 9999 and -9999
+        if optDir % Maximizing cost -> low default value
+            tr_cost=ones(KI,1)*-9999;
+            t_cost=ones(KI,1)*-9999;
+        else % Minimizing cost -> high default value
+            tr_cost=ones(KI,1)*9999;
+            t_cost=ones(KI,1)*9999;
+        end
     
     if sum(FS)>0
         for ki=1:KI
