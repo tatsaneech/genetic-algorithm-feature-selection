@@ -50,7 +50,8 @@ if size(parents,1)>1 % There is more than one individual to evaluate (return fit
                 % Use fitness function to calculate costs
                 [ train_pred, test_pred ]  = feval(fitFcn,...
                     train_data,train_target,test_data,test_target);
-                
+                %TODO: Remove this check and ensure that train_pred is
+                %always output in proper format (rows = observations)
                 if size(train_pred,2)>size(train_pred,1)
                     train_pred = train_pred';
                     test_pred = test_pred';
