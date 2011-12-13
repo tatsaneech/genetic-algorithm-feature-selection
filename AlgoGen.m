@@ -117,7 +117,7 @@ for tries = 1:options.Repetitions
         end
         
         %% Evaluate parents are create new generation
-        [PerfA] = feval(evalFcn,DATA,outcome,parent,options);
+        [PerfA] = feval(evalFcn,DATA,outcome,parent,options , train, test, KI);
         % TODO:
         %   Change eval function to return:
         %       model, outputs with predictions+indices, statistics
@@ -138,7 +138,7 @@ for tries = 1:options.Repetitions
         %%-------------------------+
         im(ite,:,tries)=FS;
         if strcmpi(options.Display,'plot')
-            [~,~,out.EvolutionGenomeStats{ite,tries}] = evaluate(DATA, outcome, parent(1,:), options);
+            [~,~,out.EvolutionGenomeStats{ite,tries}] = evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
             %  saveas(h,['AG-current_' int2str(patient_type) '.jpg'])
             if ~GUIflag
                 figure(h);
@@ -178,7 +178,7 @@ for tries = 1:options.Repetitions
     end
     out.GenomePlot{1,tries}=im(:,:,tries);
     % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
-    [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options);
+    [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
     out.BestGenome{1,tries} = parent(1,:)==1;
     out.IterationTime(1,tries)=iteTime/options.MaxIterations;
     out.RepetitionTime(1,tries)=iteTime;

@@ -1,8 +1,7 @@
-function [ SCORE_test SCORE_train stats ] = evaluate( OriginalData , data_target , parents, options )
+function [ SCORE_test SCORE_train stats ] = evaluate( OriginalData , data_target , parents, options ,train, test, KI)
 
 fitFcn=options.FitnessFcn; 
 costFcn=options.CostFcn;
-xvalFcn=options.CrossValidationFcn;
 optDir = options.OptDir;
 % Pre-allocate
 P=size(parents,1);
@@ -11,7 +10,6 @@ SCORE_train=zeros(P,1);
 
 % Calculate indices from crossvalidation
 % Determine cross validation indices
-[ train, test, KI ] = feval(xvalFcn,data_target,options);
 
 if size(parents,1)>1 % There is more than one individual to evaluate (return fitness function)
     % For each individual

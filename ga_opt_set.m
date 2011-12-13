@@ -237,12 +237,12 @@ switch param
         end
         % Positive definite doubles
     case {'MaxFeatures','MinFeatures','MaxIterations','PopulationSize',...
-            'Repetitions'}
+            'Repetitions','InitialFeatureNum'}
         if ~isnumeric(val) || val<0
             valid = 0;
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive numeric',param);
         end
-        if (val-floor(val))>1e-15 % Not an integer
+        if abs(val-floor(val))>1e-15 % Not an integer
             valid = 0;
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive numeric',param);
         end

@@ -116,6 +116,14 @@ function pushbutton1_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 [handles.DataFile , handles.DataFilePath] = uigetfile({'*.mat','Matlab file';'*.xls','Excel File';'*.csv','CSV file'}, 'Please select your pre-formated database(s)','MultiSelect','on');
 
+
+if iscell(handles.DataFile)~=1
+    handles.DataFile = { handles.DataFile} ;
+end
+if handles.DataFile{1}==0
+    handles.DataFile=[];
+end
+
 for f=1:length(handles.DataFile)
     %% Get and process input data
     if strcmp(handles.DataFile{f}((end-2):end),'mat')
@@ -445,7 +453,8 @@ options = ga_opt_set('Display','plot',...
     'OptDir', get(handles.checkbox3,'Value'),...
     'ErrorGradient',0.00001,... % If zero, then ignore
     'MinimizeFeatures',false,...
-    'FileName','SimulationOutput.csv'...
+    'FileName','SimulationOutput.csv',...
+    'InitialFeatureNum',0 ...
     );
 
 if isfield(handles,'ExportFile')
@@ -471,13 +480,7 @@ tic;
 display('RUNNING!!!')
     
 % Define main parameters
-<<<<<<< HEAD
-[options] = parse_inputs(options);
-=======
 %[options] = parse_inputs(options);
-[Nbre_obs,Nbre_var]=size(DATA);
-[DATA, outcome] = errChkInput(DATA, handles.outcome , options);
->>>>>>> 295ecbdb0a128eee83009b2e4a25dd4837094e4d
 GUIflag=options.GUIFlag;
 
 % min or maximize cost
@@ -535,7 +538,7 @@ for f=1:length(handles.data)
         % Calculate indices from crossvalidation
         % Determine cross validation indices
         xvalFcn=options.CrossValidationFcn;
-        [ train, test, KI ] = feval(xvalFcn,data_target,options);
+        [ train, test, KI ] = feval(xvalFcn,outcome,options);
         
         while ite < options.MaxIterations && ~early_stop && ~get(handles.pushbutton4,'UserData')
             tic;
@@ -548,7 +551,7 @@ for f=1:length(handles.data)
             end
 
             %% Evaluate parents are create new generation
-            [PerfA,Perf_train] = feval(evalFcn,DATA,outcome,parent,options);
+            [PerfA,Perf_train] = feval(evalFcn,DATA,outcome,parent,options, train, test, KI);
             % TODO:
             %   Change eval function to return:
             %       model, outputs with predictions+indices, statistics
@@ -569,7 +572,7 @@ for f=1:length(handles.data)
             %%-------------------------+
             im(ite,:,tries)=FS;
             if strcmpi(options.Display,'plot')
-                [~,~,out.EvolutionGenomeStats{ite,tries}] = evaluate(DATA, outcome, parent(1,:), options);
+                [~,~,out.EvolutionGenomeStats{ite,tries}] = evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
                 %  saveas(h,['AG-current_' int2str(patient_type) '.jpg'])
                 if ~GUIflag
                     figure(h);
@@ -610,7 +613,7 @@ for f=1:length(handles.data)
         end
         out.GenomePlot{1,tries}=im(:,:,tries);
         % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
-        [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options);
+        [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
         out.BestGenome{tries} = parent(1,:)==1;
         out.IterationTime(1,tries)=iteTime/options.MaxIterations;
         out.RepetitionTime(1,tries)=iteTime;
@@ -618,7 +621,7 @@ for f=1:length(handles.data)
 
     end
     
-    FileName = [handles.DataFile{f}(1:(end-4)) '.csv'];
+    options.FileName = [handles.DataFile{f}(1:(end-4)) '_results.csv'];
     if get(handles.pushbutton4,'UserData') % then this was stopped on user's demand
         display('Algorithm STOPPED!');
         set(handles.pushbutton4,'UserData',false); % reset
@@ -630,7 +633,7 @@ for f=1:length(handles.data)
 
     % Save results
     if ~isempty(options.FileName) % If a file has been selected for saving
-        export_results( FileName , out , handles.labels{f} , options );   
+        export_results( options.FileName , out , handles.labels{f} , options );   
     end
 
 end
