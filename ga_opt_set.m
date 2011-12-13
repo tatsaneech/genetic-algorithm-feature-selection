@@ -218,7 +218,7 @@ if regexp(pname,'Fcn') > 1
     % Determine which function type is used
     fcn = strcmp(okfcns,pname); % temporary index
     fcn_type = okfcns(fcn); % Type of function
-    fcn = okfcns_abbr(fcn); % Function template for directory scanning
+    fcn = okfcns_abbr{fcn}; % Function template for directory scanning
     
     if isempty(fcn_type)
         %=== This error would only happen if a new fcn has been added to
@@ -235,9 +235,9 @@ if regexp(pname,'Fcn') > 1
     
     %=== If pval is a function handle, get the field name
     if ischar(pval)
-        pvalName = pval;
+        pvalName = [pval '.m'];
     else
-        pvalName = func2str(pval);
+        pvalName = [func2str(pval) '.m'];
     end
     
     %=== Check if pname exists in file names
@@ -254,17 +254,6 @@ if regexp(pname,'Fcn') > 1
     end
 else
     % No membership set, return normally
-end
-
-%=== 
-% Parse functions
-opt_fn=fieldnames(options);
-fcn_idx=strfind(opt_fn, 'Fcn'); % Find field names which store functions
-fcn_idx=find(cellfun(@(x) ~isempty(x),fcn_idx)==1);
-for k=1:length(fcn_idx)
-    % Parse functions into cells containing function handles
-    [options.(opt_fn{fcn_idx(k)})] = ...
-        parse_functions(opt_fn{fcn_idx(k)},options.(opt_fn{fcn_idx(k)}));
 end
 
 %TODO: Check xvalFcn and xvalParam are internally consistent
