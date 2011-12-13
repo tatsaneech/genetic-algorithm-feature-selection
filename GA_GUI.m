@@ -479,7 +479,7 @@ options=opts;
 verbose=true; % Set true to view time evaluations
 
 % Define main parameters
-[options] = parse_inputs(options);
+%[options] = parse_inputs(options);
 [Nbre_obs,Nbre_var]=size(DATA);
 [DATA, outcome] = errChkInput(DATA, handles.outcome , options);
 GUIflag=options.GUIFlag;

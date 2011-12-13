@@ -69,137 +69,208 @@ function [ options ] = ga_opt_set( varargin )
 %                               [ axe handle | 0 | {0} ]  
 
 if nargin==0 && nargout==0
-    % display all field names
+    % TODO: display all field names with descriptions
     
     return;
 else
-    % create default options
-    options=struct('Display', [], ...
-        'MaxIterations', [], ...
-        'PopulationSize', [], ...
-        'MaxFeatures', [], ...
-        'MinFeatures', [], ...
+    %=== create defaults
+    options=struct( ...
+        'Display', 'Plot', ...
+        'MaxIterations', 100, ...
+        'PopulationSize', 50, ...
+        'MaxFeatures', 0, ...
+        'MinFeatures', 0, ...
         'ConfoundingFactors', [], ...
-        'Repetitions', [], ...
-        'OptDir', [], ...
-        'FitnessFcn', [], ...
-        'CostFcn', [], ...
-        'CrossoverFcn', [], ...
-        'MutationFcn', [], ...
-        'MutationRate', [], ...
-        'CrossValidationFcn', [], ...
-        'CrossValidationParam', [], ...
-        'PlotFcn', [], ...
-        'ErrorGradient', [], ...
-        'ErrorIterations', [], ...
-        'FileName', [], ...
-        'Parallelize', [], ...
-        'Elitism',[], ...
-        'MinimizeFeatures',[],...
+        'Repetitions', 100, ...
+        'OptDir', 0, ...
+        'FitnessFcn', 'fit_LR', ...% This should have the exact same name as the .m function
+        'CostFcn', 'cost_RMSE', ... % This should have the exact same name as the .m function
+        'CrossoverFcn', 'crsov_SP', ... % This should have the exact same name as the .m function
+        'MutationFcn', 'mut_SP', ...
+        'MutationRate', 0.06, ...
+        'CrossValidationFcn', 'xval_None', ...
+        'CrossValidationParam',[], ...
+        'PlotFcn', 'plot_All', ...% This should have the exact same name as the .m function
+        'ErrorGradient', 0.01, ...
+        'ErrorIterations', 10, ...
+        'FileName',[], ...
+        'Parallelize', 0, ...
+        'Elitism',10 , ...
+        'MinimizeFeatures',false, ...
         'PopulationEvolutionAxe', [],...
         'FitFunctionEvolutionAxe', [],...
         'CurrentPopulationAxe', [],...
-        'CurrentScoreAxe', [],...
-        'GUIFlag', false...
+        'CurrentScoreAxe', []...
         );
 end
+
+%=== allowed parameters
+okargs=fieldnames(options);
+numargs=length(varargin);
 
 if nargin==0
     return;
 end
 
-%=== allowed parameters
-okargs=fieldnames(options);
-N=size(okargs,1);
-numargs=length(varargin);
-
+%=== Loop through input arguments
 k=1; % Varargin index
-% Check if first input is a structure
+
+%=== Check if first input is a structure
 if isstruct(varargin{k})
+    %=== Scan through structure, use values if appropriate
     fn=fieldnames(varargin{k});
     fn_L=length(fn);
-    s=1; % Structure field name index
-    while s<=fn_L
-        % Replace current options fields in options with old options
-        pname = fn{s};
-        pval = varargin{k}.(fn{s});
-        param = find(strcmpi(pname, okargs)==1,1);
-        if isempty(param) % Bad parameter name
-            error(sprintf('Options:%s:UnknownParameterName', mfilename), ...
-                'Unknown parameter name: %s.',pname);
-        else % Add parameter to options
-            % check if value is valid
-            
-            % COMMENT: Louis July 1st 11 : The next 3 lines are converting
-            % the string indicating the confounding variables in the GUI to
-            % some readable format. ->Not sure this should go here<-
-            
-            %TODO: Make sure command line input style (linear indices) and GUI
-            %input style (label titles) work seemlessly here
-            %Additionally, allow for both input types!
-            if strcmp(pname,'ConfoundingFactors')
-                if iscell(pval) % Assumed GUI input - cell array
-                    eval(['pval = ' pval{1}]);
-                elseif isnumeric(pval)
-                    % TODO: Do something! Anything! Yes, let's buy a new car!
-                end
-            end
-            [valid,errmsg]=check_args(okargs{param},pval);
-            if valid
-                options.(okargs{param})=pval;
-            else
-                error(sprintf('Options:%s:invalidParamVal',mfilename),errmsg);
-            end
-        end
-        
-        s=s+1;
+    %=== Loop through input options
+    for s=1:fn_L
+        %=== Commented code left for readability
+        %         pname = fn{s};
+        %         pval = varargin{k}.(fn{s});
+        %         param = find(strcmpi(pname, okargs)==1,1);
+        [options] = updateOptionsField(options, ...
+            fn{s}, varargin{k}.(fn{s}), find(strcmpi(fn{s}, okargs)==1,1));
     end
+    k=k+1;
 end
 
-%=== check for the right number of inputs
-if (k==1 && rem(nargin,2) == 1) || (k==2 && rem(nargin,2) == 0)
+%=== check for incorrect number of inputs
+if (k==1 && rem(nargin,2) == 1) || ... % No structure, odd number of inputs
+        (k==2 && rem(nargin,2) == 0) % Structure, even number of inputs
     error(sprintf('Options:%s:IncorrectNumberOfArguments',mfilename),...
         'Incorrect number of arguments to %s.',mfilename);
 end
 
-%=== parse inputs
+%=== Parse remaining Parameter/Value inputs
 while k<=numargs
-    pname = varargin{k};
-    pval = varargin{k+1};
-    param = find(strcmpi(pname, okargs));
-    if isempty(param) % Bad parameter name
-        error(sprintf('Options:%s:UnknownParameterName', mfilename), ...
-            'Unknown parameter name: %s.',pname);
-    else % Add parameter to options
-        % check if value is valid
-        
-        % COMMENT: Louis July 1st 11 : The next 3 lines are converting
-        % the string indicating the confounding variables in the GUI to
-        % some readable format. ->Not sure this should go here<-
-
-        %TODO: Make sure command line input style (linear indices) and GUI
-        %input style (label titles) work seemlessly here
-        %Additionally, allow for both input types!
-        if strcmp(pname,'ConfoundingFactors') 
-            if iscell(pval) % Assumed GUI input - cell array
-                eval(['pval = ' pval{1}]);
-            elseif isnumeric(pval)
-                % TODO: Do something! Anything! Yes, let's buy a new car!
-            end
-        end
-        [valid,errmsg]=check_args(okargs{param},pval);
-        if valid
-            options.(okargs{param})=pval;
-        else
-            error(sprintf('Options:%s:invalidParamVal',mfilename),errmsg);
-        end
-    end
+    [options] = updateOptionsField(options, ...
+        varargin{k}, varargin{k+1}, find(strcmpi(varargin{k}, okargs)==1,1));
     k=k+2;
 end
 
 end
 
-function [valid, errmsg] = check_args(param, val)
+function [options] = updateOptionsField(options, pname, pval, param)
+% This function validates the input parameter name/value and updates the
+% associated value in options
+% This function calls the following other subfunctions:
+%   validateParamType - Validates that the parameter is of the right type
+%   validateParamIsSubset - Validates that the parameter has a correct value from a
+%           set of acceptable values
+
+if isempty(param) % Parameter name not found in okargs
+    warning(sprintf('ga_opt_set:%s:UnknownParameterName', mfilename), ...
+        'Unknown parameter %s was ignored.',pname);
+    return;
+else % Parameter name found
+    
+    % COMMENT: Louis July 1st 11 : The next 3 lines are converting
+    % the string indicating the confounding variables in the GUI to
+    % some readable format. ->Not sure this should go here<-
+    
+    %TODO: Make sure command line input style (linear indices) and
+    %GUI input style (label titles) work seemlessly here
+    %Additionally, allow for both input types!
+    if strcmp(pname,'ConfoundingFactors')
+        if iscell(pval) % Assumed GUI input - cell array
+            eval(['pval = ' pval{1}]);
+        elseif isnumeric(pval)
+            % TODO: Do something! Anything! Yes, let's buy a new car!
+        end
+    end
+    
+    %=== Check if parameter is of valid variable type
+    [valid1,errmsg1]=validateParamType(pname,pval);
+    %=== Check if parameter is one of a set of acceptable values
+    [valid2,errmsg2]=validateParamIsSubset(pname,pval);
+    
+    if valid1==1 && valid2==1 % Everything is OK, don't panic.
+        options.(pname)=pval;
+    elseif valid2==2 % Parameter must be converted to function handle
+        options.(pname)=str2func(pval);
+    elseif valid2==0
+        % Parameter is not one of a set of acceptable defaults
+        error(sprintf('ga_opt_set:%s:invalidParamVal',mfilename),errmsg2);
+    else
+        % Parameter is not of the right type
+        error(sprintf('ga_opt_set:%s:invalidParamVal',mfilename),errmsg1);
+    end
+end
+
+end
+
+function [valid,errmsg] = validateParamIsSubset(pname,pval)
+% This function ensures that the given functions are members of a
+% pre-defined set.
+% For example:
+%   pname - 'costFcn'
+%   pval  - 'cost_AUROC'
+% Ensure pval is a valid member of the costFcn set - i.e. that pval exists
+% in the directory as a function
+valid=1;
+errmsg='';
+
+%=== Get pname
+if regexp(pname,'Fcn') > 1
+    %=== Parse function
+    % Define allowable function types
+    okfcns={'FitnessFcn', 'CrossoverFcn','MutationFcn','CrossValidationFcn','PlotFcn','CostFcn'};
+    okfcns_abbr={'fit_*.m','crsov_*.m','mut_*.m','xval_*.m','plot_*.m','cost_*.m'};
+    
+    % Determine which function type is used
+    fcn = strcmp(okfcns,pname); % temporary index
+    fcn_type = okfcns(fcn); % Type of function
+    fcn = okfcns_abbr(fcn); % Function template for directory scanning
+    
+    if isempty(fcn_type)
+        %=== This error would only happen if a new fcn has been added to
+        %the default options but not to this subfunction
+        error(sprintf('validateParamIsSubset:%s:invalidParamVal',mfilename),...
+        'Function has been defined in ga_opt_set but not in subfunction validateParamIsSubset');
+    end
+    
+    % Scan files and find specific functions
+    files = dir(fcn);
+    
+    % Get acceptable file names
+    okpnames = arrayfun(@(x) x.name,files,'UniformOutput',false);
+    
+    %=== If pval is a function handle, get the field name
+    if ischar(pval)
+        pvalName = pval;
+    else
+        pvalName = func2str(pval);
+    end
+    
+    %=== Check if pname exists in file names
+    idxPval = strcmp(okpnames,pvalName);
+    if any(idxPval)
+        if ischar(pval)
+            valid=2; % Informs caller to convert char->function handle
+        else
+            valid=1;
+        end
+    else
+        valid=0;
+        errmsg='Function name provided does not match any found in local directory';
+    end
+else
+    % No membership set, return normally
+end
+
+%=== 
+% Parse functions
+opt_fn=fieldnames(options);
+fcn_idx=strfind(opt_fn, 'Fcn'); % Find field names which store functions
+fcn_idx=find(cellfun(@(x) ~isempty(x),fcn_idx)==1);
+for k=1:length(fcn_idx)
+    % Parse functions into cells containing function handles
+    [options.(opt_fn{fcn_idx(k)})] = ...
+        parse_functions(opt_fn{fcn_idx(k)},options.(opt_fn{fcn_idx(k)}));
+end
+
+%TODO: Check xvalFcn and xvalParam are internally consistent
+end
+
+function [valid, errmsg] = validateParamType(param, val)
 valid=1; errmsg='';
 if isempty(val) % Default used
     return;
@@ -260,7 +331,7 @@ switch param
         % For Confounding factors the input should look like '[1 3 4]' when
         % more than one factor or simply '2' when only one confounding
         % factor variable #2 in this case
-        % This should be done in parse_inputs in the AlgoGen.m function
+        % This should be done in validateParamIsSubset in the AlgoGen.m function
         
     % Axe handles
     case {'PopulationEvolutionAxe','FitFunctionEvolutionAxe',...

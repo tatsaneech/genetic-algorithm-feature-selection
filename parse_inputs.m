@@ -1,4 +1,3 @@
-
 function [options] = ...
     parse_inputs(options)
 % Parse input PV pairs.
