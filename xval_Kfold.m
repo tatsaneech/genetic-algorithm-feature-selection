@@ -6,14 +6,15 @@ function [ tr_idx, t_idx, D ] = xval_Kfold( data_target, options )
 
 % TODO: Move these defaults to the proper place
 if isempty(options.CrossValidationParam)
-    D=10;
+    D=5;
 else
     D=options.CrossValidationParam(1);
 end
 N=length(data_target);
     
 %     random indices from 1:N
-[~,temp] = sort(rand(N,1),1);
+%[~,temp] = sort(rand(N,1),1);
+temp=1:N; % Shouldn't be random so it is reproducible
 
 % Calculate cross-validation indices (randomly placed integers 1:D)
 xval=mod(temp,D)+1;

@@ -4,7 +4,7 @@ function [ tr_idx, t_idx, D ] = xval_Bootstrapping( data_target, options )
 
 
 if isempty(options.CrossValidationParam)
-    D=250;
+    D=200;
     P=0.3;
 else
     D=options.CrossValidationParam(1);
