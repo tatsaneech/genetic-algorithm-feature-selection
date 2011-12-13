@@ -100,7 +100,8 @@ else
         'FitFunctionEvolutionAxe', [],...
         'CurrentPopulationAxe', [],...
         'CurrentScoreAxe', [],...
-        'GUIFlag', false...
+        'GUIFlag', false,...
+        'InitialFeatureNum', 0 ...
         );
 end
 
@@ -200,7 +201,7 @@ end
 end
 
 function [valid, errmsg] = check_args(param, val)
-valid=1; errmsg='';
+valid=1; errmsg='';  
 if isempty(val) % Default used
     return;
 end
@@ -230,17 +231,25 @@ switch param
     case {'CrossValidationParam'}
         if ~isnumeric(val)
             valid=0;
-            errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive integer',param);
+            errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive numeric',param);
         end
     % Positive definite doubles
-    case {'MaxFeatures','MinFeatures','MaxIterations','PopulationSize',...
-            'ErrorGradient', 'ErrorIterations',...
-            'MutationRate','Repetitions','Elitism'}
+    case {'MaxFeatures','MinFeatures','MaxIterations','PopulationSize','Repetitions'}
+        if ~isnumeric(val) || val<0
+            valid = 0;
+            errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive numeric',param);
+        end    
+        if val-floor(val)~=0
+            valid = 0;
+            errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive numeric',param);           
+        end
+
+   % Posti
+    case { 'ErrorGradient', 'ErrorIterations','MutationRate','Elitism'}
         if ~isnumeric(val) || val<0
             valid = 0;
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive integer',param);
-        end
-            
+        end           
     % Functions/Strings
     case {'FitnessFcn','CrossoverFcn','PlotFcn','CostFcn','CrossValidationFcn','MutationFcn'}
         if ~ischar(val) && ~iscell(val) &&  ~isa(val,'function_handle')

@@ -1,8 +1,7 @@
-function [ SCORE_test SCORE_train stats ] = evaluate( OriginalData , data_target , parents, options )
+function [ SCORE_test SCORE_train stats ] = evaluate( OriginalData , data_target , parents, options,train, test, KI )
 
 fitFcn=options.FitnessFcn;
 costFcn=options.CostFcn;
-xvalFcn=options.CrossValidationFcn;
 optDir = options.OptDir;
 
 % Pre-allocate
@@ -10,9 +9,6 @@ P=size(parents,1);
 SCORE_test=zeros(P,1);
 SCORE_train=zeros(P,1);
 
-% Calculate indices from crossvalidation
-% Determine cross validation indices
-[ train, test, KI ] = feval(xvalFcn,data_target,options);
 
 if size(parents,1)>1 % There is more than one individual to evaluate (return fitness function)
     % For each individual
@@ -39,7 +35,7 @@ if size(parents,1)>1 % There is more than one individual to evaluate (return fit
         FS = parents(individual,:)==1;
         % If enough variables selected to regress
         if sum(FS)>0
-            DATA = OriginalData(:,FS);
+            DATA = full(OriginalData(:,FS));
             % Cross-validation repeat for each data partition
             for ki=1:KI
                 train_data = DATA(train(:,ki),:);
@@ -48,8 +44,9 @@ if size(parents,1)>1 % There is more than one individual to evaluate (return fit
                 test_target = data_target(test(:,ki));
                 
                 % Use fitness function to calculate costs
-                [ train_pred, test_pred ]  = feval(fitFcn,...
+                 [ train_pred, test_pred ]  = feval(fitFcn,...
                     train_data,train_target,test_data,test_target);
+               
                 %TODO: Remove this check and ensure that train_pred is
                 %always output in proper format (rows = observations)
                 if size(train_pred,2)>size(train_pred,1)

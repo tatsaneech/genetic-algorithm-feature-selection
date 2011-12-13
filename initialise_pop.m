@@ -22,8 +22,11 @@ if options.MaxFeatures == options.MinFeatures && options.MaxFeatures~=0
     numFeatures=options.MaxFeatures;
 else
     % default true values to square root of total dimension
-    numFeatures = round(sqrt(Nbre_tot_var));
-    
+    if options.InitialFeatureNum ~= 0
+        numFeatures = options.InitialFeatureNum;
+    else
+        numFeatures = round(sqrt(Nbre_tot_var));
+    end
     % Check to ensure this is does not violate min/max
     if numFeatures>options.MaxFeatures && options.MaxFeatures~=0 
         numFeatures=options.MaxFeatures;
