@@ -39,7 +39,7 @@ function [ options ] = ga_opt_set( varargin )
 %   CrossValidationParam - Parameters of the cross-validation function
 %                       [Double vector | {[]} ]
 %   Elitism             - How many parents (%) should be passed down unchanged to next generation
-%                       [ positive scalar between 0-100 | {10} ] 
+%                       [ positive scalar between 0-100 | {10} ]
 %   MutationRate       - Rate of ramndom mutations applied to children
 %                       [ positive scalar between 0-1 | {.06} ]
 %   OptDir             - The optimization direction, 0 - min, 1 - maximize
@@ -56,17 +56,17 @@ function [ options ] = ga_opt_set( varargin )
 %                       [ logical | 0 | {1} ]
 %   PopulationEvolutionAxe      - Axe handle to plot the population
 %   evolution over generations. Will be created if null.
-%                               [ axe handle | 0 | {0} ]  
-%   FitFunctionEvolutionAxe      - Axe handle to plot the evolution 
+%                               [ axe handle | 0 | {0} ]
+%   FitFunctionEvolutionAxe      - Axe handle to plot the evolution
 %   of fit function value over generations. Will be created if null.
-%                               [ axe handle | 0 | {0} ]   
+%                               [ axe handle | 0 | {0} ]
 %   CurrentPopulationAxe         - Axe handle to plot the current
-%   population. Will be created if null. 
-%                               [ axe handle | 0 | {0} ]   
+%   population. Will be created if null.
+%                               [ axe handle | 0 | {0} ]
 %   CurrentScoreAxe              - Axe handle to plot the performence of
 %   the best genome from the current generation. PlotFcn is the function
 %   used to update this axe. Will be created if null.
-%                               [ axe handle | 0 | {0} ]  
+%                               [ axe handle | 0 | {0} ]
 
 if nargin==0 && nargout==0
     % TODO: display all field names with descriptions
@@ -147,6 +147,9 @@ while k<=numargs
     k=k+2;
 end
 
+%=== Validate intraconsistency of options parameters
+[options] = validateConsistency(options);
+
 end
 
 function [options] = updateOptionsField(options, pname, pval, param)
@@ -225,7 +228,7 @@ if regexp(pname,'Fcn') > 1
         %=== This error would only happen if a new fcn has been added to
         %the default options but not to this subfunction
         error(sprintf('validateParamIsSubset:%s:invalidParamVal',mfilename),...
-        'Function has been defined in ga_opt_set but not in subfunction validateParamIsSubset');
+            'Function has been defined in ga_opt_set but not in subfunction validateParamIsSubset');
     end
     
     % Scan files and find specific functions
@@ -269,31 +272,31 @@ end
 switch param
     % Strings
     case 'Display'
-        if ~ischar(val) 
+        if ~ischar(val)
             valid = 0;
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a string with a valid three char extension.',param);
             return
         end
-         % Louis July 6th 11 : Commented the whole thing because it crashed (very wise thing to do isn't it?) 
+        % Louis July 6th 11 : Commented the whole thing because it crashed (very wise thing to do isn't it?)
     case 'FileName'
-%         if ~ischar(val) || ...
-%                 (~strcmpi(param,'none') && ~strcmpi(param,'plot') && ~strcmpi(param,'text'))
-%                  % TODO: (Louis 1st July 2011: I am not sure I fully understand
-%                  % the IF clause: don't we want something like: 
-%                  % if fopen(FileName,'r')==0 
-%                  %     There is an error here => valid=0; errmsg=...
-%                  % else fclose(fid)
-%          
-%             valid = 0;
-%             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be ''never'' or ''always''.',param);
-%        end
-    % Doubles
+        %         if ~ischar(val) || ...
+        %                 (~strcmpi(param,'none') && ~strcmpi(param,'plot') && ~strcmpi(param,'text'))
+        %                  % TODO: (Louis 1st July 2011: I am not sure I fully understand
+        %                  % the IF clause: don't we want something like:
+        %                  % if fopen(FileName,'r')==0
+        %                  %     There is an error here => valid=0; errmsg=...
+        %                  % else fclose(fid)
+        %
+        %             valid = 0;
+        %             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be ''never'' or ''always''.',param);
+        %        end
+        % Doubles
     case {'CrossValidationParam'}
         if ~isnumeric(val)
             valid=0;
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive integer',param);
         end
-    % Positive definite doubles
+        % Positive definite doubles
     case {'MaxFeatures','MinFeatures','MaxIterations','PopulationSize',...
             'ErrorGradient', 'ErrorIterations',...
             'MutationRate','Repetitions','Elitism'}
@@ -301,38 +304,141 @@ switch param
             valid = 0;
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive integer',param);
         end
-            
-    % Functions/Strings
+        
+        % Functions/Strings
     case {'FitnessFcn','CrossoverFcn','PlotFcn','CostFcn','CrossValidationFcn','MutationFcn'}
         if ~ischar(val) && ~iscell(val) &&  ~isa(val,'function_handle')
             valid = 0;
             errmsg = sprintf('Invalid value for OPTIONS parameter %s',param);
         end
-    % Booleans/Doubles
+        % Booleans/Doubles
     case {'GUIFlag','Parallelize','OptDir','MinimizeFeatures'}
         if ~islogical(val) && ~(isnumeric(val) && (val==1 || val==0))
             valid = 0;
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a logical value, 0 or 1',param);
         end
-    % Lists
+        % Lists
     case {'ConfoundingFactors'}
-        % TODO check variables Idx within confounding factors are smaller
+        % TODO: check variables Idx within confounding factors are smaller
         % than the number of variables in data
         % For Confounding factors the input should look like '[1 3 4]' when
         % more than one factor or simply '2' when only one confounding
         % factor variable #2 in this case
         % This should be done in validateParamIsSubset in the AlgoGen.m function
         
-    % Axe handles
+        % Axe handles
     case {'PopulationEvolutionAxe','FitFunctionEvolutionAxe',...
             'CurrentPopulationAxe','CurrentScoreAxe'}
         % TODO check if the axe exists. If not: error
     case {'GUIFlag'}
-        % Nothing to do here really    
+        % Nothing to do here really
     otherwise
-        valid=0; 
+        valid=0;
         errmsg = sprintf('Unknown parameter field %s', param);
 end
 
+end
+
+function [options] = validateConsistency(options)
+
+paramsChecked = {'CrossValidationParam',...
+    'MinFeatures',...
+    'MaxFeatures',...
+    'ConfoundingFactors'};
+
+for k=1:length(paramsChecked)
+    param = paramsChecked{k};
+    pval = options.(param);
+    switch param
+        case 'CrossValidationParam'
+            %=== Ensure cross validation parameters match function
+            xvalFcn = func2str(options.CrossValidationFcn);
+            switch xvalFcn
+                case {'xval_Bootstrapping','xval_JackKnifing'}
+                    if isempty(options.(param)) % Default values
+                        options.(param) = zeros(1,2);
+                        options.(param)(1)=100;
+                        options.(param)(2)=0.3;
+                    else % Error check
+                        if length(options.(param))<2
+                            error(sprintf('validateConsistency:%s:InvalidParamSize',mfilename),...
+                                ['Invalid CrossValidationParam size. \n' xvalFcn ' requires a 1x2 double vector.']);
+                            
+                        elseif options.(param)(1)<1
+                            error(sprintf('validateConsistency:%s:InvalidParamValue',mfilename),...
+                                ['Invalid CrossValidationParam(1) value. \n' xvalFcn ' requires an integer number of iterations > 0.']);
+                            
+                        elseif options.(param)(2)>=1 || options.(param)(1)<=0
+                            error(sprintf('validateConsistency:%s:InvalidParamValue',mfilename),...
+                                ['Invalid CrossValidationParam(2) value. \n' xvalFcn ' requires a data split value between 0 and 1.']);
+                            
+                        end
+                    end
+                case {'xval_Kfold'}
+                    if isempty(options.(param)) % Default values
+                        options.(param) = zeros(1,1);
+                        options.(param)(1)=5;
+                    else % Error check
+                        if length(options.(param))<1
+                            error(sprintf('validateConsistency:%s:InvalidParamValue',mfilename),...
+                                ['Invalid CrossValidationParam(1) value. \n' xvalFcn ' requires positive integer # of folds.']);
+                            
+                        elseif options.(param)(1)==1
+                            error(sprintf('validateConsistency:%s:InvalidParamValue',mfilename),...
+                                ['Invalid CrossValidationParam(1) value. \n' xvalFcn ' requires at least 2 folds']);
+                            
+                        end
+                    end
+                case {'xval_TrainTest'}
+                    if isempty(options.(param)) % Default values
+                        options.(param) = zeros(1,2);
+                        options.(param)(1)=100;% Number of fitness repetitions
+                        options.(param)(2)=0.3;% Data split
+                    else % Error check
+                        if length(options.(param))<2
+                            error(sprintf('validateConsistency:%s:InvalidParamSize',mfilename),...
+                                ['Invalid CrossValidationParam size. \n' xvalFcn ' requires a 1x2 double vector.']);
+                            
+                        elseif options.(param)(1)<1
+                            error(sprintf('validateConsistency:%s:InvalidParamValue',mfilename),...
+                                ['Invalid CrossValidationParam(1) value. \n' xvalFcn ' requires an integer number of iterations > 0.']);
+                            
+                        elseif options.(param)(2)>=1 || options.(param)(1)<=0
+                            error(sprintf('validateConsistency:%s:InvalidParamValue',mfilename),...
+                                ['Invalid CrossValidationParam(2) value. \n' xvalFcn ' requires a data split value between 0 and 1.']);
+                            
+                        end
+                    end
+                case {'xval_None'}
+                    % Set default values regardless of input
+                    options.(param) = zeros(1,2);
+                    options.(param)(1)=100;
+                    options.(param)(2)=0.3;
+                otherwise
+            end
+        case 'MinFeatures'
+            %=== Less than max features
+            if pval > options.MaxFeatures
+                error(sprintf('validateConsistency:%s:InvalidParamVal',mfilename),...
+                    'Minimum number of features must be less than maximum number of features.');
+            end
+        case 'MaxFeatures'
+            %=== Greater than min features
+            if pval < options.MinFeatures
+                error(sprintf('validateConsistency:%s:InvalidParamVal',mfilename),...
+                    'Minimum number of features must be less than maximum number of features.');
+            end
+            
+        case 'ConfoundingFactors'
+            % TODO: check variables Idx within confounding factors are smaller
+            % than the number of variables in data
+            % For Confounding factors the input should look like '[1 3 4]' when
+            % more than one factor or simply '2' when only one confounding
+            % factor variable #2 in this case
+            % This should be done in validateParamIsSubset in the AlgoGen.m function
+        otherwise
+            % Recite Acadian Poetry ... or do nothing, your choice!
+    end
+end
 end
 
