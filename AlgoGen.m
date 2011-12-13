@@ -9,13 +9,15 @@ addpath('./stats'); % ensure stats is in the path
 %% Initialisation
 if nargin <3
     options=ga_opt_set;
+else
+    options=ga_opt_set(options);
 end
 
 verbose=true; % Set true to view time evaluations
 
 % Define main parameters
-[options] = ...
-    parse_inputs(options);
+% [options] = ...
+%     parse_inputs(options);
 % COMMENT Louis 1st July 2011 : Why not parsing parameters and
 % functions handles when initializing/defining the options?
 

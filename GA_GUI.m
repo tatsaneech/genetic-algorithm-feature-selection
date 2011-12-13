@@ -471,7 +471,13 @@ tic;
 display('RUNNING!!!')
     
 % Define main parameters
+<<<<<<< HEAD
 [options] = parse_inputs(options);
+=======
+%[options] = parse_inputs(options);
+[Nbre_obs,Nbre_var]=size(DATA);
+[DATA, outcome] = errChkInput(DATA, handles.outcome , options);
+>>>>>>> 295ecbdb0a128eee83009b2e4a25dd4837094e4d
 GUIflag=options.GUIFlag;
 
 % min or maximize cost
