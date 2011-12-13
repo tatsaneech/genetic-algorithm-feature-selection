@@ -621,14 +621,14 @@ for f=1:length(handles.data)
 
     end
     
-    options.FileName = [handles.DataFile{f}(1:(end-4)) '_results.csv'];
+    FileName = [handles.DataFile{f}(1:(end-4)) '_GA_results.csv'];
     if get(handles.pushbutton4,'UserData') % then this was stopped on user's demand
         display('Algorithm STOPPED!');
         set(handles.pushbutton4,'UserData',false); % reset
-        FileName = [  'earlystopped_' options.FileName ];
+        FileName = [ handles.DataFilePath  'earlystopped_' FileName ];
         out.BestGenome((tries+1):end) = [];
     else % The algorithm ended normally
-        FileName = options.FileName;
+        FileName = [ handles.DataFilePath FileName];
     end
 
     % Save results
