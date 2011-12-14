@@ -285,11 +285,34 @@ valid=1;
 errmsg='';
 
 %=== Get pname
-if regexp(pname,'Fcn') > 1
+if regexp(pname,'CostFcn')
+    %=== Cost function is a special case - uses embedded stats functions
+    okfcns = arrayfun(@(x) x.name,dir('./stats/private/*.m'),'UniformOutput',false);
+    
+    %=== If pval is a function handle, get the field name
+    if ischar(pval)
+        pvalName = [pval '.m'];
+    else
+        pvalName = [func2str(pval) '.m'];
+    end
+    
+    %=== Check if pname exists in file names
+    fcnIdx = strcmp(okfcns,pvalName);
+    if any(fcnIdx)
+        if ischar(pval)
+            valid=2; % Informs caller to convert char->function handle
+        else
+            valid=1;
+        end
+    else
+        valid=0;
+        errmsg='Function name provided does not match any found in local directory';
+    end
+elseif regexp(pname,'Fcn') > 1
     %=== Parse function
     % Define allowable function types
-    okfcns={'FitnessFcn', 'CrossoverFcn','MutationFcn','CrossValidationFcn','PlotFcn','CostFcn'};
-    okfcns_abbr={'fit_*.m','crsov_*.m','mut_*.m','xval_*.m','plot_*.m','cost_*.m'};
+    okfcns={'FitnessFcn', 'CrossoverFcn','MutationFcn','CrossValidationFcn','PlotFcn'};
+    okfcns_abbr={'fit_*.m','crsov_*.m','mut_*.m','xval_*.m','plot_*.m'};
     
     % Determine which function type is used
     fcn = strcmp(okfcns,pname); % temporary index
