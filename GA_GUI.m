@@ -512,8 +512,6 @@ for f=1:length(handles.data)
     [DATA, outcome] = errChkInput(DATA, handles.outcome{f} , options);
     options.InitialFeatureNum = round(sum(outcome)/20);
     
-    % Initialise visualization/output variable
-    im = zeros(options.MaxIterations,options.NumFeatures,options.Repetitions);
     % Initialize outputs
     out = initialize_output(options) ;
     
@@ -565,10 +563,10 @@ for f=1:length(handles.data)
             
             %% Save and display results
             %%-------------------------+
-            im(ite,:,tries)=FS;
+            out.BestGenomePlot{1,tries}(ite,:)=FS;
             if strcmpi(options.Display,'plot')
                 [~,~,out.EvolutionGenomeStats{ite,tries}] = evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
-                [ out ] = plot_All( out, im, parent, [], options );
+                [ out ] = plot_All( out, parent, [], options );
             end
             
             iteTime=iteTime+toc;
@@ -580,7 +578,6 @@ for f=1:length(handles.data)
                     out.EvolutionGenomeStats{ite,tries}.AUROC);
             end
         end
-        out.GenomePlot{1,tries}=im(:,:,tries);
         % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
         [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
         out.BestGenome{tries} = parent(1,:)==1;

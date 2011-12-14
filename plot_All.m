@@ -1,4 +1,4 @@
-function [ out ] = plot_All( out, im, parent, h, options )
+function [ out ] = plot_All( out, parent, h, options )
 %PLOT_ALL Plots all the possible graphs to the figure
 %   
 % This includes:
@@ -14,9 +14,9 @@ end
 ite = out.CurrentIteration;
 tries = out.CurrentRepetition;
 set(gcf,'CurrentAxes',options.PopulationEvolutionAxe) ;
-imagesc(~im(1:ite,:,tries)'); % Plot features selected
+imagesc(~out.BestGenomePlot{1,tries}(1:ite,:)'); % Plot features selected
 colormap('gray');
-title([int2str(sum(im(ite,:,tries))) ' selected variables'],'FontSize',16);
+title([int2str(sum(out.BestGenomePlot{1,tries}(ite,:))) ' selected variables'],'FontSize',16);
 ylabel('Variables','FontSize',16);
 
 set(gcf,'CurrentAxes',options.FitFunctionEvolutionAxe);

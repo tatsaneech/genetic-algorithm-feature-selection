@@ -24,7 +24,7 @@ verbose=true; % Set true to view time evaluations
 
 [DATA, outcome] = errChkInput(DATA, outcome, options);
 
-%TODO: Remove this and directly reference out.BestGenomeStats
+%TODO: Remove this and directly reference out.BestGenomePlot
 % Initialise visualization variable
 im = zeros(options.MaxIterations,options.NumFeatures,options.Repetitions);
 
@@ -127,12 +127,12 @@ for tries = 1:options.Repetitions
         
         %% Save and display results
         %%-------------------------+
-        im(ite,:,tries)=FS;
+        out.BestGenomePlot{1,tries}(ite,:)=FS;
         if strcmpi(options.Display,'plot')
             
             [~,~,out.EvolutionGenomeStats{ite,tries}] = ...
                 evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
-            [ out ] = plot_All( out, im, parent, h, options );
+            [ out ] = plot_All( out, parent, h, options );
             
         end
         
@@ -146,7 +146,6 @@ for tries = 1:options.Repetitions
         
         out.CurrentIteration=out.CurrentIteration+1;
     end
-    out.GenomePlot{1,tries}=im(:,:,tries);
     % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
     [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
     out.BestGenome{1,tries} = parent(1,:)==1;
