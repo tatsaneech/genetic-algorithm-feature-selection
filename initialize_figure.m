@@ -1,6 +1,8 @@
-function h = initialize_figure(options)
-if isempty(options.PopulationEvolutionAxe)
-    % If axes are empty, then the GUI is not used, must set up figure
+function [h,options] = initialize_figure(options)
+if options.GUIFlag
+    h=gcf; % Use current figure w/ GUI, don't change axes values
+else
+    % The GUI is not used, must set up figure
     h=figure;
     subplot(3, 2 , [1 2]);
     colormap('gray');
@@ -23,8 +25,6 @@ if isempty(options.PopulationEvolutionAxe)
     ylabel('Genomes','FontSize',16);
     title('Current Population','FontSize',16);
     options.CurrentPopulationAxe = gca;
-else
-    h=gcf;
 end
     
 end

@@ -29,7 +29,7 @@ verbose=true; % Set true to view time evaluations
 %example, a ROC curve when that is all that is desired)
 
 if strcmpi(options.Display,'plot')
-    h=initialize_figure;
+    [h,options]=initialize_figure(options);
 end
 
 % min or maximize cost
