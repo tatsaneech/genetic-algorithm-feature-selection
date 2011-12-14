@@ -24,42 +24,12 @@ verbose=true; % Set true to view time evaluations
 
 [DATA, outcome] = errChkInput(DATA, outcome, options);
 
-%TODO: Remove this and directly reference out.BestGenomePlot
-% Initialise visualization variable
-im = zeros(options.MaxIterations,options.NumFeatures,options.Repetitions);
-
 %TODO: Create initialize_plot function which sets up GUI figures depending
 %on which plot_* is used (this will allow the algorithm to only plot, for
 %example, a ROC curve when that is all that is desired)
 
 if strcmpi(options.Display,'plot')
-    if isempty(options.PopulationEvolutionAxe)
-        % If axes are empty, then the GUI is not used, must set up figure
-        h=figure;
-        subplot(3, 2 , [1 2]);
-        colormap('gray');
-        title(['Selected variables'],'FontSize',16);
-        ylabel('Variables','FontSize',16);
-        options.PopulationEvolutionAxe = gca;
-        
-        subplot(3, 2 , [3 4] );
-        xlabel('Generations','FontSize',16);
-        ylabel('Mean cost','FontSize',16);
-        options.FitFunctionEvolutionAxe = gca;
-        
-        
-        subplot(3, 2 , 5); % ROC
-        xlabel('Sensitivity'); ylabel('1-Specificity');
-        options.CurrentScoreAxe = gca;
-        
-        subplot(3, 2 , 6);
-        xlabel('Variables','FontSize',16);
-        ylabel('Genomes','FontSize',16);
-        title('Current Population','FontSize',16);
-        options.CurrentPopulationAxe = gca;
-    else
-        h=gcf;
-    end
+    h=initialize_figure;
 end
 
 % min or maximize cost

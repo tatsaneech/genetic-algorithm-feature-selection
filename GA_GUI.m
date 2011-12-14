@@ -494,8 +494,6 @@ else
     evalFcn=@evaluate;
 end
 
-
-
 % for each data file
 for f=1:length(handles.data)
     % display file name
