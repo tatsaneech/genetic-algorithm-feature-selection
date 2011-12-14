@@ -593,24 +593,16 @@ for f=1:length(handles.data)
     if get(handles.pushbutton4,'UserData') % then this was stopped on user's demand
         display('Algorithm STOPPED!');
         set(handles.pushbutton4,'UserData',false); % reset
-        FileName = [ handles.DataFilePath  '.earlystopped_' FileName ];
+        FileName = [   '.earlystopped_' FileName ];
         out.BestGenome((tries+1):end) = [];
     else % The algorithm ended normally
-        FileName = [ handles.DataFilePath FileName];
+        % then we keep the same file format
     end
+    set(handles.text2,'String',FileName);    
+    FileName = [ handles.DataFilePath FileName];
     
     % Save results
-    if ~isempty(FileName) % If a file has been selected for saving
-<<<<<<< HEAD
-<<<<<<< .merge_file_r6ZQxu
-        export_results( FileName , out , handles.labels{f} , options );   
-=======
-        export_results( FileName , out , handles.labels{f} , options );
->>>>>>> .merge_file_LPB7Qr
-=======
-        export_results( FileName , out , handles.labels{f} , options );
->>>>>>> 06b643375f020b0248bc85294f53f71e4be529a6
-    end
+    export_results( FileName , out , handles.labels{f} , options );    
     
 end
 
