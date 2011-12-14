@@ -27,11 +27,11 @@ function varargout = GA_GUI(varargin)
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
-                   'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @GA_GUI_OpeningFcn, ...
-                   'gui_OutputFcn',  @GA_GUI_OutputFcn, ...
-                   'gui_LayoutFcn',  [] , ...
-                   'gui_Callback',   []);
+    'gui_Singleton',  gui_Singleton, ...
+    'gui_OpeningFcn', @GA_GUI_OpeningFcn, ...
+    'gui_OutputFcn',  @GA_GUI_OutputFcn, ...
+    'gui_LayoutFcn',  [] , ...
+    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
 end
@@ -86,7 +86,7 @@ set(handles.popupmenu3,'String' , Fxval)
 set(handles.popupmenu4,'String' , Ffit)
 set(handles.popupmenu5,'String' , Fplot)
 set(handles.popupmenu6,'String' , Fcost)
- 
+
 % Initialize GA parameters
 handles.GA_options = ga_opt_set();
 handles.GA_options.GUIflag = true;
@@ -99,7 +99,7 @@ guidata(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = GA_GUI_OutputFcn(hObject, eventdata, handles) 
+function varargout = GA_GUI_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -130,44 +130,44 @@ for f=1:length(handles.DataFile)
     if strcmp(handles.DataFile{f}((end-2):end),'mat')
         % this is a MAT file
         eval(['load ''' handles.DataFilePath  handles.DataFile{f} ''';']);
-
+        
     elseif strcmp(handles.DataFile{f}((end-2):end),'csv')
         % This is a CSV file
         % TODO fill import function
         warndlg('CSV file not supported yet, please use MAT file');
         error('GA_GUI:Start','CSV file not supported yet, please use MAT file');
     elseif strcmp(handles.DataFile{f}((end-2):end),'xls')
-        % This is a XLS file    
+        % This is a XLS file
         % TODO fill import function
         warndlg('XLS file not supported yet, please use MAT file');
         error('GA_GUI:Start','XLS file not supported yet, please use MAT file');
     else
         errmsg = sprintf('Input file has undefined extension: %s. Should be .mat, .xls or .csv',handles.DataFile{f}((end-3):end));
         error('GA_GUI:Start',errmsg);
-    end 
-
+    end
+    
     % TODO look at outcome and check what kind of outcome this is:
     % - linear
     % - binary
     % - multiclass
-    % handles.outcomeType = 
+    % handles.outcomeType =
     
     % TODO: Add parsing to the input data to allow for variable field names
     %   Possible request input from user that data has been scanned
     %   properly
     if exist('data','var') && exist('labels','var') && exist('outcome','var')
-    % Data integrity check
-         [data outcome labels] = data_integrity_check(data,outcome,labels);
+        % Data integrity check
+        [data outcome labels] = data_integrity_check(data,outcome,labels);
     elseif exist('X','var') && exist('labels','var') && exist('y','var')
-         [data outcome labels] = data_integrity_check(X,y,labels);
+        [data outcome labels] = data_integrity_check(X,y,labels);
     end
-
-    % Save data
-        handles.data{f} = data ;
-        handles.outcome{f} = outcome ;
-        handles.labels{f} = labels ;
-end
     
+    % Save data
+    handles.data{f} = data ;
+    handles.outcome{f} = outcome ;
+    handles.labels{f} = labels ;
+end
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -435,7 +435,7 @@ options = ga_opt_set('Display','plot',...
     'MinFeatures', str2double( get(handles.MinFeatures,'String') ), ...
     'MaxFeatures', str2double( get(handles.MaxFeatures,'String') ), ...
     'MaxIterations',str2double( get(handles.edit2,'String') ),...
-    'ConfoundingFactors', get(handles.edit4,'String'), ...
+    'ConfoundingFactors', str2double(regexp(get(handles.edit4,'String'),',','split')), ...
     'Repetitions' , str2double( get(handles.edit1,'String') ), ...
     'FitnessFcn', fitFs{fitFIdx}, ...
     'CrossoverFcn',matingFs{matingFIdx}, ...
@@ -455,13 +455,14 @@ options = ga_opt_set('Display','plot',...
     'ErrorGradient',0.00001,... % If zero, then ignore
     'MinimizeFeatures',false,...
     'FileName','SimulationOutput.csv',...
-    'InitialFeatureNum',0 ...
+    'InitialFeatureNum',0, ...
+    'NumFeatures',0 ... % Default to 0 - will be updated later
     );
 
 if isfield(handles,'ExportFile')
     %TODO: (WARNING) This scenario doesn't seem to actually update the the
     %options but to replace them only.
-%   options = ga_opt_set(options , 'FileName', [handles.ExportFilePath handles.ExportFile])
+    %   options = ga_opt_set(options , 'FileName', [handles.ExportFilePath handles.ExportFile])
 end
 
 % Check input data
@@ -479,17 +480,11 @@ tic;
 
 %%% START ALGO GEN
 display('RUNNING!!!')
-    
-% Define main parameters
-%[options] = parse_inputs(options);
-GUIflag=options.GUIFlag;
 
 % min or maximize cost
 if options.OptDir==1
-    min_or_max=@max;
     sort_str='descend';
 else
-    min_or_max=@min;
     sort_str='ascend';
 end
 
@@ -500,42 +495,38 @@ else
     evalFcn=@evaluate;
 end
 
-
-
 % for each data file
 for f=1:length(handles.data)
     % display file name
     set(handles.text1,'String',handles.DataFile{f});
     
     % Rename variables
-    DATA= handles.data{f} ; 
-
+    DATA= handles.data{f} ;
+    
+    %=== Reset options field
+    options = ga_opt_set(options,'NumFeatures',size(DATA,2));
     %% Initialisation
     verbose=true; % Set true to view time evaluations
-
     
-    [Nbre_obs,Nbre_var]=size(DATA);
     [DATA, outcome] = errChkInput(DATA, handles.outcome{f} , options);
     options.InitialFeatureNum = round(sum(outcome)/20);
     
-    % Initialise visualization/output variable
-    im = zeros(options.MaxIterations,Nbre_var,options.Repetitions);
     % Initialize outputs
     out = initialize_output(options) ;
-
+    
     repTime=0;
     tries = 0;
     while tries <= options.Repetitions && ~get(handles.pushbutton4,'UserData')
         tries = tries + 1;
-
-        %% Initialise GA    
-        parent = initialise_pop(Nbre_var,options);
+        
+        %% Initialise GA
+        parent = initialise_pop(options);
         % Check if early-stop criterion is met
         % if not: continue
         ite = 0 ; early_stop = false ;
         iteTime=0;
         
-
+        
         % Calculate indices from crossvalidation
         % Determine cross validation indices
         xvalFcn=options.CrossValidationFcn;
@@ -550,59 +541,33 @@ for f=1:length(handles.data)
                     early_stop = true ;
                 end
             end
-
+            
             %% Evaluate parents are create new generation
             [PerfA,Perf_train] = feval(evalFcn,DATA,outcome,parent,options, train, test, KI);
             % TODO:
             %   Change eval function to return:
             %       model, outputs with predictions+indices, statistics
-
+            
             parent = new_generation(parent,PerfA,sort_str,options);
-
+            
             %% FINAL VALIDATION
             % If tracking best genome statistics is desirable during run-time,
             % this section will have to recalculate the genome fitness, etc.
             FS = parent(1,:)==1;
             [aT,aTR] = evaluate(DATA,outcome,FS,options,train, test, KI ); % 1 individual - do not need to parallelize
-
+            
             out.EvolutionBestCost(ite,tries) = aTR ;
             out.EvolutionBestCostTest(ite,tries) = aT ;
             out.EvolutionMedianCost(ite,tries) = nanmedian(PerfA);
-
+            
             %% Save and display results
             %%-------------------------+
-            im(ite,:,tries)=FS;
+            out.BestGenomePlot{1,tries}(ite,:)=FS;
             if strcmpi(options.Display,'plot')
                 [~,~,out.EvolutionGenomeStats{ite,tries}] = evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
-                %  saveas(h,['AG-current_' int2str(patient_type) '.jpg'])
-                if ~GUIflag
-                    figure(h);
-                end
-                set(gcf,'CurrentAxes',options.PopulationEvolutionAxe) ;
-                imagesc(~im(1:ite,:,tries)'); % Plot features selected
-                colormap('gray');
-                title([int2str(sum(FS)) ' selected variables'],'FontSize',16);
-                ylabel('Variables','FontSize',16);
-
-                set(gcf,'CurrentAxes',options.FitFunctionEvolutionAxe);
-                plot(1:ite, out.EvolutionBestCostTest(1:ite,tries), 'b--', 1:ite, out.EvolutionMedianCost(1:ite,tries), 'g-');
-                xlabel('Generations','FontSize',16); ylabel('Mean cost','FontSize',16);
-                legend('Best','Median','Location','NorthWest'); %'RMSE train','AUC' ,
-
-                % TODO Get the plot function handle and plot : options.PlotFcn
-                set(gcf,'CurrentAxes',options.CurrentScoreAxe);
-                plot(out.EvolutionGenomeStats{ite,tries}.roc.x,out.EvolutionGenomeStats{ite,tries}.roc.y,'b--');
-
-                xlabel('Sensitivity'); ylabel('1-Specificity');
-
-                set(gcf,'CurrentAxes',options.CurrentPopulationAxe);
-                imagesc(~parent);
-                xlabel('Variables','FontSize',16);
-                ylabel('Genomes','FontSize',16);
-                title('Current Population','FontSize',16);
-                pause(0.5);
+                [ out ] = plot_All( out, parent, [], options );
             end
-
+            
             iteTime=iteTime+toc;
             repTime=repTime+toc;
             if verbose % Time elapsed reports
@@ -611,15 +576,14 @@ for f=1:length(handles.data)
                     (((iteTime/ite * (options.MaxIterations) * (options.Repetitions)))-repTime)/3600,...
                     out.EvolutionGenomeStats{ite,tries}.AUROC);
             end
+            out.CurrentIteration=out.CurrentIteration+1;
         end
-        out.GenomePlot{1,tries}=im(:,:,tries);
         % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
         [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
         out.BestGenome{tries} = parent(1,:)==1;
         out.IterationTime(1,tries)=iteTime/options.MaxIterations;
-        out.RepetitionTime(1,tries)=iteTime;
-
-
+        out.RepetitionTime(1,tries)=repTime/tries;
+        out.CurrentRepetition=out.CurrentRepetition+1;
     end
     
     FileName = [handles.DataFile{f}(1:(end-4)) '_GA_results_'  datestr(now, 'mmddyy-HHMM') '.csv'];
@@ -631,12 +595,17 @@ for f=1:length(handles.data)
     else % The algorithm ended normally
         FileName = [ handles.DataFilePath FileName];
     end
-
+    
     % Save results
+<<<<<<< HEAD
     if ~isempty(FileName) % If a file has been selected for saving
         export_results( FileName , out , handles.labels{f} , options );   
+=======
+    if ~isempty(options.FileName) % If a file has been selected for saving
+        export_results( options.FileName , out , handles.labels{f} , options );
+>>>>>>> origin
     end
-
+    
 end
 
 guidata(hObject, handles);
