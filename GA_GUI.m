@@ -434,7 +434,7 @@ options = ga_opt_set('Display','plot',...
     'MinFeatures', str2double( get(handles.MinFeatures,'String') ), ...
     'MaxFeatures', str2double( get(handles.MaxFeatures,'String') ), ...
     'MaxIterations',str2double( get(handles.edit2,'String') ),...
-    'ConfoundingFactors', get(handles.edit4,'String'), ...
+    'ConfoundingFactors', str2double(regexp(get(handles.edit4,'String'),',','split')), ...
     'Repetitions' , str2double( get(handles.edit1,'String') ), ...
     'FitnessFcn', fitFs{fitFIdx}, ...
     'CrossoverFcn',matingFs{matingFIdx}, ...
@@ -575,15 +575,14 @@ for f=1:length(handles.data)
                     (((iteTime/ite * (options.MaxIterations) * (options.Repetitions)))-repTime)/3600,...
                     out.EvolutionGenomeStats{ite,tries}.AUROC);
             end
+            out.CurrentIteration=out.CurrentIteration+1;
         end
         % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
         [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
         out.BestGenome{tries} = parent(1,:)==1;
         out.IterationTime(1,tries)=iteTime/options.MaxIterations;
         out.RepetitionTime(1,tries)=repTime/tries;
-        
-        out.CurrentIteration=out.CurrentIteration+1;
-        
+        out.CurrentRepetition=out.CurrentRepetition+1;
     end
     
     options.FileName = [handles.DataFile{f}(1:(end-4)) '_results.csv'];
@@ -601,7 +600,6 @@ for f=1:length(handles.data)
         export_results( options.FileName , out , handles.labels{f} , options );
     end
     
-    out.CurrentRepetition=out.CurrentRepetition+1;
 end
 
 guidata(hObject, handles);

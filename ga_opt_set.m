@@ -252,25 +252,13 @@ switch param
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a logical value, 0 or 1',param);
         end
         % Lists
-    case {'ConfoundingFactors'}
-        % TODO: check variables Idx within confounding factors are smaller
-        % than the number of variables in data
-        % For Confounding factors the input should look like '[1 3 4]' when
-        % more than one factor or simply '2' when only one confounding
-        % factor variable #2 in this case
-        % This should be done in validateParamIsSubset subfunction
-        
-        % COMMENT: Louis July 1st 11 : The next 3 lines are converting
-        % the string indicating the confounding variables in the GUI to
-        % some readable format. ->Not sure this should go here<-
-        
+    case {'ConfoundingFactors'}        
         %TODO: Make sure command line input style (linear indices) and
         %GUI input style (label titles) work seemlessly here
         %Additionally, allow for both input types!
+        % This probably needs to be done in the GA_GUI function, or
+        % validateConsistency function
         %=== Check if parameter is of valid variable type
-        if iscell(val) % Assumed GUI input - cell array
-            eval(['val = ' val{1}]);
-        end
         
         if ~islogical(val) && ~(isnumeric(val))
             valid = 0;
