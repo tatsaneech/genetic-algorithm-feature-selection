@@ -600,13 +600,8 @@ for f=1:length(handles.data)
     end
     
     % Save results
-<<<<<<< HEAD
     if ~isempty(FileName) % If a file has been selected for saving
-        export_results( FileName , out , handles.labels{f} , options );   
-=======
-    if ~isempty(options.FileName) % If a file has been selected for saving
-        export_results( options.FileName , out , handles.labels{f} , options );
->>>>>>> origin
+        export_results( FileName , out , handles.labels{f} , options );
     end
     
 end
