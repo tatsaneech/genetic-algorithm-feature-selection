@@ -9,9 +9,9 @@ addpath('./stats'); % ensure stats is in the path
 %% Initialisation
 %=== Initialize options
 if nargin < 3
-    options=ga_opt_set;
+    options=ga_opt_set('GUIFlag',false);
 else
-    options=ga_opt_set(options);
+    options=ga_opt_set(options,'GUIFlag',false);
 end
 
 verbose=true; % Set true to view time evaluations
@@ -25,18 +25,20 @@ verbose=true; % Set true to view time evaluations
 
 [Nbre_obs,Nbre_var]=size(DATA);
 
-origOutcome = outcome;
 [DATA, outcome] = errChkInput(DATA, outcome, options);
 
-GUIflag=options.GUIFlag;
+%TODO: Remove this and directly reference out.BestGenomeStats
 % Initialise visualization variable
 im = zeros(options.MaxIterations,Nbre_var,options.Repetitions);
+
+%TODO: Create initialize_plot function which sets up GUI figures depending
+%on which plot_* is used (this will allow the algorithm to only plot, for
+%example, a ROC curve when that is all that is desired)
 
 if strcmpi(options.Display,'plot')
     if isempty(options.PopulationEvolutionAxe)
         % If axes are empty, then the GUI is not used, must set up figure
         h=figure;
-        GUIflag=false;
         subplot(3, 2 , [1 2]);
         colormap('gray');
         title(['Selected variables'],'FontSize',16);
@@ -45,7 +47,7 @@ if strcmpi(options.Display,'plot')
         
         subplot(3, 2 , [3 4] );
         xlabel('Generations','FontSize',16);
-        ylabel('Mean AUC','FontSize',16);
+        ylabel('Mean cost','FontSize',16);
         options.FitFunctionEvolutionAxe = gca;
         
         
@@ -58,6 +60,8 @@ if strcmpi(options.Display,'plot')
         ylabel('Genomes','FontSize',16);
         title('Current Population','FontSize',16);
         options.CurrentPopulationAxe = gca;
+    else
+        h=gcf;
     end
 end
 
@@ -131,7 +135,7 @@ for tries = 1:options.Repetitions
             
             [~,~,out.EvolutionGenomeStats{ite,tries}] = ...
                 evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
-            [ out ] = plot_All( out, im, options, h );
+            [ out ] = plot_All( out, im, parent, h, options );
             
         end
         
@@ -142,6 +146,8 @@ for tries = 1:options.Repetitions
                 ite,options.MaxIterations, toc, iteTime,...
                 (((iteTime/ite * (options.MaxIterations) * (options.Repetitions)))-repTime)/3600);
         end
+        
+        out.CurrentIteration=out.CurrentIteration+1;
     end
     out.GenomePlot{1,tries}=im(:,:,tries);
     % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
@@ -149,11 +155,11 @@ for tries = 1:options.Repetitions
     out.BestGenome{1,tries} = parent(1,:)==1;
     out.IterationTime(1,tries)=iteTime/options.MaxIterations;
     out.RepetitionTime(1,tries)=repTime/tries;
-    
     % Save results
     if ~isempty(options.FileName) % If a file has been selected for saving
         export_results( options.FileName , out , handles.labels , options );
     end
+    out.CurrentRepetition=out.CurrentRepetition+1;
     
 end
 

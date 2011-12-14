@@ -8,3 +8,5 @@ out.BestGenomeStats= cell(1,options.Repetitions);
 out.BestGenome= cell(1,options.Repetitions) ;
 out.GenomePlot= cell(1,options.Repetitions);
 out.IterationTime= zeros(1,options.Repetitions);
+out.CurrentIteration = 1;
+out.CurrentRepetition = 1;

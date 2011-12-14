@@ -1,4 +1,4 @@
-function [ out ] = plot_All( out, im, h, options )
+function [ out ] = plot_All( out, im, parent, h, options )
 %PLOT_ALL Plots all the possible graphs to the figure
 %   
 % This includes:
@@ -8,9 +8,11 @@ function [ out ] = plot_All( out, im, h, options )
 %   Current population
 
 %  saveas(h,['AG-current_' int2str(patient_type) '.jpg'])
-if ~options.GUIflag
+if ~options.GUIFlag
     figure(h);
 end
+ite = out.CurrentIteration;
+tries = out.CurrentRepetition;
 set(gcf,'CurrentAxes',options.PopulationEvolutionAxe) ;
 imagesc(~im(1:ite,:,tries)'); % Plot features selected
 colormap('gray');
