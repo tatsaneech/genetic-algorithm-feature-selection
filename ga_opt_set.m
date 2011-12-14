@@ -128,8 +128,7 @@ if isstruct(varargin{k})
     %=== Loop through input options
     for s=1:fn_L
         %=== Commented code left for readability
-        %         pname = fn{s};
-        %         pval = varargin{k}.(fn{s});
+        %         pname = fn{s}; pval = varargin{k}.(fn{s});
         %         param = find(strcmpi(pname, okargs)==1,1);
         [options] = updateOptionsField(options, ...
             fn{s}, varargin{k}.(fn{s}), find(strcmpi(fn{s}, okargs)==1,1));
@@ -169,23 +168,6 @@ if isempty(param) % Parameter name not found in okargs
         'Unknown parameter %s was ignored.',pname);
     return;
 else % Parameter name found
-    
-    % COMMENT: Louis July 1st 11 : The next 3 lines are converting
-    % the string indicating the confounding variables in the GUI to
-    % some readable format. ->Not sure this should go here<-
-    
-    %TODO: Make sure command line input style (linear indices) and
-    %GUI input style (label titles) work seemlessly here
-    %Additionally, allow for both input types!
-    if strcmp(pname,'ConfoundingFactors')
-        if iscell(pval) % Assumed GUI input - cell array
-            eval(['pval = ' pval{1}]);
-        elseif isnumeric(pval)
-            % TODO: Do something! Anything! Yes, let's buy a new car!
-        end
-    end
-    
-    %=== Check if parameter is of valid variable type
     [valid1,errmsg1]=validateParamType(pname,pval);
     %=== Check if parameter is one of a set of acceptable values
     [valid2,errmsg2]=validateParamIsSubset(pname,pval);
@@ -276,14 +258,28 @@ switch param
         % For Confounding factors the input should look like '[1 3 4]' when
         % more than one factor or simply '2' when only one confounding
         % factor variable #2 in this case
-        % This should be done in validateParamIsSubset in the AlgoGen.m function
+        % This should be done in validateParamIsSubset subfunction
         
+        % COMMENT: Louis July 1st 11 : The next 3 lines are converting
+        % the string indicating the confounding variables in the GUI to
+        % some readable format. ->Not sure this should go here<-
+        
+        %TODO: Make sure command line input style (linear indices) and
+        %GUI input style (label titles) work seemlessly here
+        %Additionally, allow for both input types!
+        %=== Check if parameter is of valid variable type
+        if iscell(val) % Assumed GUI input - cell array
+            eval(['val = ' val{1}]);
+        end
+        
+        if ~islogical(val) && ~(isnumeric(val))
+            valid = 0;
+            errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be numeric or logical indices',param);
+        end
         % Axe handles
     case {'PopulationEvolutionAxe','FitFunctionEvolutionAxe',...
             'CurrentPopulationAxe','CurrentScoreAxe'}
         % TODO check if the axe exists. If not: error
-    case {'GUIFlag'}
-        % Nothing to do here really
     otherwise
         valid=0;
         errmsg = sprintf('Unknown parameter field %s', param);
@@ -450,6 +446,30 @@ for k=1:length(paramsChecked)
             % more than one factor or simply '2' when only one confounding
             % factor variable #2 in this case
             % This should be done in validateParamIsSubset in the AlgoGen.m function
+            
+            if options.NumFeatures~=0
+                % NumFeatures has been set... perform checks..
+                if islogical(options.ConfoundingFactors)
+                    if length(options.ConfoundingFactors) ~= options.NumFeatures
+                        % Logical indices are not correct size
+                error(sprintf('validateConsistency:%s:InvalidParamVal',mfilename),...
+                    'ConfoundingFactors logical indexing does not equal the number of features.');
+                        
+                    end
+                else % numeric
+                    if max(options.ConfoundingFactors) > options.NumFeatures
+                        % Value is too large
+                error(sprintf('validateConsistency:%s:InvalidParamVal',mfilename),...
+                    'ConfoundingFactors contains numerical index greater than the number of features.');
+                    else
+                        % Goldilocks TIME!
+                    end
+                end
+            else
+                % NumFeatures is defaulted - cannot check
+                % ConfoundingFactors yet..
+            end
+            
         otherwise
             % Recite Acadian Poetry ... or do nothing, your choice!
     end
