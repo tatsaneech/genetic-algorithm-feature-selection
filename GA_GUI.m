@@ -63,8 +63,9 @@ addpath('./stats'); % ensure stats is in the path
 
 %%Scan files and find specific functions
 files = dir;
+statFiles = dir('./stats/private/');
 Fplot = {}; Ffit = {}; Fxval = {} ; Fmating = {}; Fcost = {};
-for f=1:length(files)
+for f=1:length(files) %=== Loop through various functions
     if regexp(files(f).name,'plot_.*.\S?') % there is a plot function
         Fplot = [Fplot ; files(f).name(1:(end-2)) ];
     end
@@ -74,11 +75,13 @@ for f=1:length(files)
     if regexp(files(f).name,'xval_.*\.m$') % there is a Cross-validation function
         Fxval = [Fxval ; files(f).name(1:(end-2)) ];
     end
-    if regexp(files(f).name,'crsov.*\.m$') % there is a Mating function
+    if regexp(files(f).name,'crsov_.*\.m$') % there is a Mating function
         Fmating = [Fmating ; files(f).name(1:(end-2)) ];
     end
-    if regexp(files(f).name,'cost_.*\.m$') % there is a Mating function
-        Fcost = [Fcost ; files(f).name(1:(end-2)) ];
+end
+for f=1:length(statFiles) %=== Loop through stat functions
+    if regexp(statFiles(f).name,'stats_.*\.m$') % there is a Cost function
+        Fcost = [Fcost ; statFiles(f).name(1:(end-2)) ];
     end
 end
 set(handles.popupmenu1,'String' , Fmating)
@@ -598,7 +601,11 @@ for f=1:length(handles.data)
     
     % Save results
     if ~isempty(FileName) % If a file has been selected for saving
+<<<<<<< .merge_file_r6ZQxu
         export_results( FileName , out , handles.labels{f} , options );   
+=======
+        export_results( FileName , out , handles.labels{f} , options );
+>>>>>>> .merge_file_LPB7Qr
     end
     
 end

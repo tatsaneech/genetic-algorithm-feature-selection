@@ -166,20 +166,21 @@ if isempty(param) % Parameter name not found in okargs
         'Unknown parameter %s was ignored.',pname);
     return;
 else % Parameter name found
+    %=== Check if parameter is the right type
     [valid1,errmsg1]=validateParamType(pname,pval);
-    %=== Check if parameter is one of a set of acceptable values
-    [valid2,errmsg2]=validateParamIsSubset(pname,pval);
     
-    if valid1==1 && valid2==1 % Everything is OK, don't panic.
-        options.(pname)=pval;
-    elseif valid2==2 % Parameter must be converted to function handle
-        options.(pname)=str2func(pval);
-    elseif valid2==0
-        % Parameter is not one of a set of acceptable defaults
-        error(sprintf('ga_opt_set:%s:invalidParamVal',mfilename),errmsg2);
-    else
+    if valid1==0
         % Parameter is not of the right type
         error(sprintf('ga_opt_set:%s:invalidParamVal',mfilename),errmsg1);
+    else
+        %=== Check if parameter is one of a set of acceptable values
+        [valid2,errmsg2]=validateParamIsSubset(pname,pval);
+    end
+        
+    if valid2==0 
+        error(sprintf('ga_opt_set:%s:invalidParamVal',mfilename),errmsg2);
+    else % Everything is OK, don't panic.
+        options.(pname)=pval;
     end
 end
 
@@ -285,11 +286,36 @@ valid=1;
 errmsg='';
 
 %=== Get pname
-if regexp(pname,'Fcn') > 1
+if regexp(pname,'CostFcn')
+    %=== Cost function is a special case - uses embedded stats functions
+    okfcns = arrayfun(@(x) x.name,dir('./stats/private/*.m'),'UniformOutput',false);
+    
+    %=== If pval is a function handle, convert to char
+    if ~ischar(pval)
+        pval = func2str(pval);
+    end
+    
+    %=== Update pval in caller as needed
+    %   This will either convert function handle->char, replace "cost_"
+    %   with "stats_", or both.
+    pval = regexprep(pval,'cost_','stats_','once');
+    pvalName = [pval '.m'];
+    assignin('caller','pval',pval);
+    
+    %=== Check if pname exists in file names
+    fcnIdx = strcmp(okfcns,pvalName);
+    if any(fcnIdx)
+        valid=1;
+        return;
+    else
+        valid=0;
+        errmsg='Function name provided does not match any found in local directory';
+    end
+elseif regexp(pname,'Fcn') > 1
     %=== Parse function
     % Define allowable function types
-    okfcns={'FitnessFcn', 'CrossoverFcn','MutationFcn','CrossValidationFcn','PlotFcn','CostFcn'};
-    okfcns_abbr={'fit_*.m','crsov_*.m','mut_*.m','xval_*.m','plot_*.m','cost_*.m'};
+    okfcns={'FitnessFcn', 'CrossoverFcn','MutationFcn','CrossValidationFcn','PlotFcn'};
+    okfcns_abbr={'fit_*.m','crsov_*.m','mut_*.m','xval_*.m','plot_*.m'};
     
     % Determine which function type is used
     fcn = strcmp(okfcns,pname); % temporary index
@@ -313,17 +339,17 @@ if regexp(pname,'Fcn') > 1
     if ischar(pval)
         pvalName = [pval '.m'];
     else
-        pvalName = [func2str(pval) '.m'];
+        pval = func2str(pval);
+        pvalName = [pval '.m'];
+        % Convert function handle->char
+        assignin('caller','pval',pval);
     end
     
     %=== Check if pname exists in file names
     idxPval = strcmp(okpnames,pvalName);
     if any(idxPval)
-        if ischar(pval)
-            valid=2; % Informs caller to convert char->function handle
-        else
-            valid=1;
-        end
+        valid=1;
+        return;
     else
         valid=0;
         errmsg='Function name provided does not match any found in local directory';
@@ -332,7 +358,6 @@ else
     % No membership set, return normally
 end
 
-%TODO: Check xvalFcn and xvalParam are internally consistent
 end
 
 function [options] = validateConsistency(options)
@@ -348,7 +373,7 @@ for k=1:length(paramsChecked)
     switch param
         case 'CrossValidationParam'
             %=== Ensure cross validation parameters match function
-            xvalFcn = func2str(options.CrossValidationFcn);
+            xvalFcn = options.CrossValidationFcn;
             switch xvalFcn
                 case {'xval_Bootstrapping','xval_JackKnifing'}
                     if isempty(options.(param)) % Default values
