@@ -49,11 +49,13 @@ function [ options ] = ga_opt_set( varargin )
 %   ErrorGradient       - The minimum improvement required to prevent error termination
 %                       [ positive scalar | {0.01} ]
 %   ErrorIterations      - The number of iterations over which the error change must be higher than the defined error gradient
-%                       [ positive scalar | {10} ]
+%                       [ positive integer | {10} ]
 %   FileName            - The file name used for output
 %                       [ string | {'AlgoGen.csv'} ]
 %   Parallelize         - Whether genome fitness operations should be parallelized.
 %                       [ logical | 0 | {1} ]
+%   NumFeatures         - Number of features present in data set
+%                       [ positive integer | {0} ]
 %   PopulationEvolutionAxe      - Axe handle to plot the population
 %   evolution over generations. Will be created if null.
 %                               [ axe handle | 0 | {0} ]
@@ -80,6 +82,7 @@ else
         'PopulationSize', 50, ...
         'MaxFeatures', 0, ...
         'MinFeatures', 0, ...
+        'NumFeatures', 0, ...
         'ConfoundingFactors', [], ...
         'Repetitions', 100, ...
         'OptDir', 0, ...
@@ -237,7 +240,7 @@ switch param
         end
         % Positive definite doubles
     case {'MaxFeatures','MinFeatures','MaxIterations','PopulationSize',...
-            'Repetitions','InitialFeatureNum'}
+            'Repetitions','InitialFeatureNum', 'NumFeatures'}
         if ~isnumeric(val) || val<0
             valid = 0;
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive numeric',param);

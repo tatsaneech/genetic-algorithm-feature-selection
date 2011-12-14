@@ -454,7 +454,8 @@ options = ga_opt_set('Display','plot',...
     'ErrorGradient',0.00001,... % If zero, then ignore
     'MinimizeFeatures',false,...
     'FileName','SimulationOutput.csv',...
-    'InitialFeatureNum',0 ...
+    'InitialFeatureNum',0, ...
+    'NumFeatures',0 ... % Default to 0 - will be updated later
     );
 
 if isfield(handles,'ExportFile')
@@ -503,16 +504,16 @@ for f=1:length(handles.data)
     % Rename variables
     DATA= handles.data{f} ;
     
+    %=== Reset options field
+    options = ga_opt_set(options,'NumFeatures',size(DATA,2));
     %% Initialisation
     verbose=true; % Set true to view time evaluations
     
-    
-    [Nbre_obs,Nbre_var]=size(DATA);
     [DATA, outcome] = errChkInput(DATA, handles.outcome{f} , options);
     options.InitialFeatureNum = round(sum(outcome)/20);
     
     % Initialise visualization/output variable
-    im = zeros(options.MaxIterations,Nbre_var,options.Repetitions);
+    im = zeros(options.MaxIterations,options.NumFeatures,options.Repetitions);
     % Initialize outputs
     out = initialize_output(options) ;
     
@@ -522,7 +523,7 @@ for f=1:length(handles.data)
         tries = tries + 1;
         
         %% Initialise GA
-        parent = initialise_pop(Nbre_var,options);
+        parent = initialise_pop(options);
         % Check if early-stop criterion is met
         % if not: continue
         ite = 0 ; early_stop = false ;
