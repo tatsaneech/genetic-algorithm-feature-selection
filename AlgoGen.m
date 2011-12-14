@@ -128,34 +128,11 @@ for tries = 1:options.Repetitions
         %%-------------------------+
         im(ite,:,tries)=FS;
         if strcmpi(options.Display,'plot')
-            [~,~,out.EvolutionGenomeStats{ite,tries}] = evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
-            %  saveas(h,['AG-current_' int2str(patient_type) '.jpg'])
-            if ~GUIflag
-                figure(h);
-            end
-            set(gcf,'CurrentAxes',options.PopulationEvolutionAxe) ;
-            imagesc(~im(1:ite,:,tries)'); % Plot features selected
-            colormap('gray');
-            title([int2str(sum(FS)) ' selected variables'],'FontSize',16);
-            ylabel('Variables','FontSize',16);
             
-            set(gcf,'CurrentAxes',options.FitFunctionEvolutionAxe);
-            plot(1:ite, out.EvolutionBestCostTest(1:ite,tries), 'b--', 1:ite, out.EvolutionMedianCost(1:ite,tries), 'g-');
-            xlabel('Generations','FontSize',16); ylabel('Mean cost','FontSize',16);
-            legend('Best','Median','Location','NorthWest'); %'RMSE train','AUC' ,
+            [~,~,out.EvolutionGenomeStats{ite,tries}] = ...
+                evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
+            [ out ] = plot_All( out, im, options, h );
             
-            % TODO Get the plot function handle and plot : options.PlotFcn
-            set(gcf,'CurrentAxes',options.CurrentScoreAxe);
-            plot(out.EvolutionGenomeStats{ite,tries}.roc.x,out.EvolutionGenomeStats{ite,tries}.roc.y,'b--');
-            
-            xlabel('Sensitivity'); ylabel('1-Specificity');
-            
-            set(gcf,'CurrentAxes',options.CurrentPopulationAxe);
-            imagesc(~parent);
-            xlabel('Variables','FontSize',16);
-            ylabel('Genomes','FontSize',16);
-            title('Current Population','FontSize',16);
-            pause(0.5);
         end
         
         iteTime=iteTime+toc;
