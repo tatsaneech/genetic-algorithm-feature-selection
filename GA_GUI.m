@@ -114,6 +114,7 @@ function pushbutton1_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+handles.DataFile=[];
 [handles.DataFile , handles.DataFilePath] = uigetfile({'*.mat','Matlab file';'*.xls','Excel File';'*.csv','CSV file'}, 'Please select your pre-formated database(s)','MultiSelect','on');
 
 
@@ -621,19 +622,19 @@ for f=1:length(handles.data)
 
     end
     
-    FileName = [handles.DataFile{f}(1:(end-4)) '_GA_results.csv'];
+    FileName = [handles.DataFile{f}(1:(end-4)) '_GA_results_'  datestr(now, 'mmddyy-HHMM') '.csv'];
     if get(handles.pushbutton4,'UserData') % then this was stopped on user's demand
         display('Algorithm STOPPED!');
         set(handles.pushbutton4,'UserData',false); % reset
-        FileName = [ handles.DataFilePath  'earlystopped_' FileName ];
+        FileName = [ handles.DataFilePath  '.earlystopped_' FileName ];
         out.BestGenome((tries+1):end) = [];
     else % The algorithm ended normally
         FileName = [ handles.DataFilePath FileName];
     end
 
     % Save results
-    if ~isempty(options.FileName) % If a file has been selected for saving
-        export_results( options.FileName , out , handles.labels{f} , options );   
+    if ~isempty(FileName) % If a file has been selected for saving
+        export_results( FileName , out , handles.labels{f} , options );   
     end
 
 end
