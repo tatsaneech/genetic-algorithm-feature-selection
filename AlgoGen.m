@@ -102,10 +102,13 @@ for tries = 1:options.Repetitions
     % activated by default
     
     parent = initialise_pop(Nbre_var,options);
-    % Check if early-stop criterion is met
-    % if not: continue
-    ite = 0 ; early_stop = false ;
-    iteTime=0;
+    
+    % Reset repetition counters/sentinel flags
+    ite = 0; early_stop = false; iteTime=0;
+    
+    % Calculate indices for training repetitions for each genome
+    [ train, test, KI ] = feval(options.CrossValidationFcn,outcome,options);
+    
     while ite < options.MaxIterations && ~early_stop
         tic;
         ite = ite + 1;
@@ -181,7 +184,7 @@ for tries = 1:options.Repetitions
     [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
     out.BestGenome{1,tries} = parent(1,:)==1;
     out.IterationTime(1,tries)=iteTime/options.MaxIterations;
-    out.RepetitionTime(1,tries)=iteTime;
+    out.RepetitionTime(1,tries)=repTime/tries;
   
     % Save results
     if ~isempty(options.FileName) % If a file has been selected for saving

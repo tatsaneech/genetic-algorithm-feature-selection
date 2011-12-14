@@ -616,7 +616,7 @@ for f=1:length(handles.data)
         [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
         out.BestGenome{tries} = parent(1,:)==1;
         out.IterationTime(1,tries)=iteTime/options.MaxIterations;
-        out.RepetitionTime(1,tries)=iteTime;
+    out.RepetitionTime(1,tries)=repTime/tries;
 
 
     end
