@@ -1,6 +1,7 @@
 function [ cost ] = callStatFcn(costFcn,...
                 pred, target)
 %CALLSTATFCN	Calls the given statistic as the cost function for the GA
+%   Private functions can only be called from the parent folder
 %	[ cost ] = callStatFcn(costFcn, pred, target) 
 %	
 %	Inputs:
@@ -8,7 +9,6 @@ function [ cost ] = callStatFcn(costFcn,...
 %       pred    - Prediction vector
 %       target  - Target vector
 %		
-%
 %	Outputs:
 %		cost    - Value of cost for given pred/target pair
 %
@@ -21,9 +21,6 @@ function [ cost ] = callStatFcn(costFcn,...
 
 %	Originally written on GLNXA64 by Alistair Johnson, 14-Dec-2011 15:28:26
 %	Contact: alistairewj@gmail.com
-
-%=== Convert cost_ to stat_
-costFcn = regexprep(costFcn,'cost_','stat_','once');
 
 %=== Calculate cost
 cost=feval(costFcn,pred,target);
