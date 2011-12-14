@@ -7,7 +7,8 @@ function [out,options] = AlgoGen(DATA, outcome, options)
 addpath('./stats'); % ensure stats is in the path
 
 %% Initialisation
-if nargin <3
+%=== Initialize options
+if nargin < 3
     options=ga_opt_set;
 else
     options=ga_opt_set(options);
@@ -15,22 +16,10 @@ end
 
 verbose=true; % Set true to view time evaluations
 
-% Define main parameters
-% [options] = ...
-%     parse_inputs(options);
-% COMMENT Louis 1st July 2011 : Why not parsing parameters and
-% functions handles when initializing/defining the options?
-
-% COMMENT Alistair 14 Sep 2011 : ga_opt_set checks the parameters are
-% valid and defaults undefined to []. parse_inputs makes sure they are
-% internally consistent: i.e., ConfFact < Nbre_tot_var, etc
-%
 % To add an option field, follow these steps:
 %   Add to options in ga_opt_set (also add comment)
-%   Add to check_args subfunction in ga_opt_set
-%   Add to def_opt in parse_options (in AlgoGen.m)
-%   If it is a new type of sub-function, you will also need to
-%       add it to parse_functions (in AlgoGen.m)
+%   Add to subfunction ga_opt_set:validateParamType
+%   If needed, add to subfunction ga_opt_set:validateParamIsSubset
 % TODO: Also document changes needed in GUI
 
 
@@ -74,10 +63,8 @@ end
 
 % min or maximize cost
 if options.OptDir==1
-    min_or_max=@max;
     sort_str='descend';
 else
-    min_or_max=@min;
     sort_str='ascend';
 end
 
@@ -133,9 +120,9 @@ for tries = 1:options.Repetitions
         FS = parent(1,:)==1;
         [aT,aTR] = evaluate(DATA,outcome,FS,options); % 1 individual - do not need to parallelize
         
-        out.EvolutionBestCost(ite,tries) = feval(min_or_max,aTR) ;
-        out.EvolutionBestCostTest(ite,tries) = feval(min_or_max,aT) ;
-        out.EvolutionMedianCost(ite,tries) = nanmedian(aT);
+        out.EvolutionBestCost(ite,tries) = aTR;
+        out.EvolutionBestCostTest(ite,tries) = aT ;
+        out.EvolutionMedianCost(ite,tries) = nanmedian(PerfA);
         
         %% Save and display results
         %%-------------------------+

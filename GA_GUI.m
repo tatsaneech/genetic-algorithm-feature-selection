@@ -480,15 +480,12 @@ tic;
 display('RUNNING!!!')
     
 % Define main parameters
-%[options] = parse_inputs(options);
 GUIflag=options.GUIFlag;
 
 % min or maximize cost
 if options.OptDir==1
-    min_or_max=@max;
     sort_str='descend';
 else
-    min_or_max=@min;
     sort_str='ascend';
 end
 
