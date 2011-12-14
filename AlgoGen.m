@@ -118,7 +118,7 @@ for tries = 1:options.Repetitions
         % If tracking best genome statistics is desirable during run-time,
         % this section will have to recalculate the genome fitness, etc.
         FS = parent(1,:)==1;
-        [aT,aTR] = evaluate(DATA,outcome,FS,options); % 1 individual - do not need to parallelize
+        [aT,aTR] = evaluate(DATA,outcome,FS,options,train,test,KI); % 1 individual - do not need to parallelize
         
         out.EvolutionBestCost(ite,tries) = aTR;
         out.EvolutionBestCostTest(ite,tries) = aT ;
