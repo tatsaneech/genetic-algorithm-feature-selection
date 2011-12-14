@@ -70,12 +70,11 @@ function [ options ] = ga_opt_set( varargin )
 %   used to update this axe. Will be created if null.
 %                               [ axe handle | 0 | {0} ]
 
-if nargin==0 && nargout==0
-    % TODO: display all field names with descriptions
-    
+%=== create defaults
+if nargout==0
+    displayGAOptions; % Call subfunction to display options
     return;
 else
-    %=== create defaults
     options=struct( ...
         'Display', 'Plot', ...
         'MaxIterations', 100, ...
@@ -108,14 +107,13 @@ else
         'InitialFeatureNum', 0 ...
         );
 end
+if nargin==0
+    return;
+end
 
 %=== allowed parameters
 okargs=fieldnames(options);
 numargs=length(varargin);
-
-if nargin==0
-    return;
-end
 
 %=== Loop through input arguments
 k=1; % Varargin index
@@ -462,5 +460,68 @@ for k=1:length(paramsChecked)
             % Recite Acadian Poetry ... or do nothing, your choice!
     end
 end
+end
+
+function [] = displayGAOptions
+
+fprintf('GA_OPT_SET PARAMETERS\n');
+fprintf('\n');
+fprintf('   PopulationSize      - The number of genomes in the population\n');
+fprintf('                       [ positive integer | {100} ]\n');
+fprintf('   Display             - What to display during execution\n');
+fprintf('                       [ ''Plot'' | ''Text'' | {''none''} ]\n');
+fprintf('   MaxFeatures         - The maximum allowable features in each genome\n');
+fprintf('                       [ positive scalar | {0} (no limit) ]\n');
+fprintf('   MinFeatures         - The minimum allowable features in each genome\n');
+fprintf('                       [ positive scalar | {0} (no limit) ]\n');
+fprintf('   MaxIterations       - Maximum number of generations/epochs\n');
+fprintf('                       [ positive scalar | {100} ]\n');
+fprintf('   ConfoundingFactors  - Features forced to be selected in all genomes\n');
+fprintf('                       [ positive scalar index | {0} (none) ]\n');
+fprintf('   Repetitions         - Number of distinct populations to optimize\n');
+fprintf('                       [ positive scalar | {10} ]\n');
+fprintf('   FitnessFcn          - The fitness function used to evaluate genomes\n');
+fprintf('                       [ function name string | function handle | {[]} ]\n');
+fprintf('   MutationFcn          - The function used to mutate genomes\n');
+fprintf('                       [ function name string | function handle | {[]} ]\n');
+fprintf('   CrossoverFcn        - The type of genomic crossover used\n');
+fprintf('                       [ function name string | function handle | {[]} ]\n');
+fprintf('   CrossValidationFcn  - The type of cross-validation technique used\n');
+fprintf('                       [ function name string | function handle | {[]} ]\n');
+fprintf('   CrossValidationParam - Parameters of the cross-validation function\n');
+fprintf('                       [Double vector | {[]} ]\n');
+fprintf('   Elitism             - What percentage of parents should be passed down\n');
+fprintf('   \t\t\tunchanged to the next generation.\n');
+fprintf('                       [ positive scalar between 0-100 | {10} ]\n');
+fprintf('   MutationRate       - Rate of ramndom mutations applied to children\n');
+fprintf('                       [ positive scalar between 0-1 | {.06} ]\n');
+fprintf('   OptDir             - The optimization direction, 0 - min, 1 - maximize\n');
+fprintf('                       [ 1 | {0} ]\n');
+fprintf('   PlotFcn             - The plotting function used for display\n');
+fprintf('                       [ function name string | function handle | {[]} ]\n');
+fprintf('   ErrorGradient       - The minimum improvement required to prevent error termination\n');
+fprintf('                       [ positive scalar | {0.01} ]\n');
+fprintf('   ErrorIterations      - The number of iterations over which the error change must be higher than the defined error gradient\n');
+fprintf('                       [ positive integer | {10} ]\n');
+fprintf('   FileName            - The file name used for output\n');
+fprintf('                       [ string | {''AlgoGen.csv''} ]\n');
+fprintf('   Parallelize         - Whether genome fitness operations should be parallelized.\n');
+fprintf('                       [ logical | 0 | {1} ]\n');
+fprintf('   NumFeatures         - Number of features present in data set\n');
+fprintf('                       [ positive integer | {0} ]\n');
+fprintf('   PopulationEvolutionAxe      - Axe handle to plot the population\n');
+fprintf('   \t\t\tevolution over generations. Will be created if null.\n');
+fprintf('                               [ axe handle | 0 | {0} ]\n');
+fprintf('   FitFunctionEvolutionAxe      - Axe handle to plot the evolution\n');
+fprintf('   \t\t\tof fit function value over generations. Will be created if null.\n');
+fprintf('                               [ axe handle | 0 | {0} ]\n');
+fprintf('   CurrentPopulationAxe         - Axe handle to plot the current\n');
+fprintf('   \t\t\tpopulation. Will be created if null.\n');
+fprintf('                               [ axe handle | 0 | {0} ]\n');
+fprintf('   CurrentScoreAxe             - Axe handle to plot the performence of\n');
+fprintf('   \t\t\tthe best genome from the current generation. PlotFcn is the function\n');
+fprintf('   \t\t\tused to update this axe. Will be created if null.\n');
+fprintf('                               [ axe handle | 0 | {0} ]\n');
+
 end
 
