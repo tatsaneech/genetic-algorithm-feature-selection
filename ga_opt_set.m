@@ -290,15 +290,17 @@ if regexp(pname,'CostFcn')
     %=== Cost function is a special case - uses embedded stats functions
     okfcns = arrayfun(@(x) x.name,dir('./stats/private/*.m'),'UniformOutput',false);
     
-    %=== If pval is a function handle, get the field name
-    if ischar(pval)
-        pvalName = [pval '.m'];
-    else
+    %=== If pval is a function handle, convert to char
+    if ~ischar(pval)
         pval = func2str(pval);
-        pvalName = [pval '.m'];
-        % Convert function handle->char
-        assignin('caller','pval',pval);
     end
+    
+    %=== Update pval in caller as needed
+    %   This will either convert function handle->char, replace "cost_"
+    %   with "stats_", or both.
+    pval = regexprep(pval,'cost_','stats_','once');
+    pvalName = [pval '.m'];
+    assignin('caller','pval',pval);
     
     %=== Check if pname exists in file names
     fcnIdx = strcmp(okfcns,pvalName);
@@ -371,7 +373,7 @@ for k=1:length(paramsChecked)
     switch param
         case 'CrossValidationParam'
             %=== Ensure cross validation parameters match function
-            xvalFcn = func2str(options.CrossValidationFcn);
+            xvalFcn = options.CrossValidationFcn;
             switch xvalFcn
                 case {'xval_Bootstrapping','xval_JackKnifing'}
                     if isempty(options.(param)) % Default values
