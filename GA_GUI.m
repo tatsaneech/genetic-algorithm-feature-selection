@@ -601,11 +601,15 @@ for f=1:length(handles.data)
     
     % Save results
     if ~isempty(FileName) % If a file has been selected for saving
+<<<<<<< HEAD
 <<<<<<< .merge_file_r6ZQxu
         export_results( FileName , out , handles.labels{f} , options );   
 =======
         export_results( FileName , out , handles.labels{f} , options );
 >>>>>>> .merge_file_LPB7Qr
+=======
+        export_results( FileName , out , handles.labels{f} , options );
+>>>>>>> 06b643375f020b0248bc85294f53f71e4be529a6
     end
     
 end
