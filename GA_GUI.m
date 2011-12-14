@@ -479,9 +479,6 @@ tic;
 %%% START ALGO GEN
 display('RUNNING!!!')
 
-% Define main parameters
-GUIflag=options.GUIFlag;
-
 % min or maximize cost
 if options.OptDir==1
     sort_str='descend';
@@ -570,33 +567,7 @@ for f=1:length(handles.data)
             im(ite,:,tries)=FS;
             if strcmpi(options.Display,'plot')
                 [~,~,out.EvolutionGenomeStats{ite,tries}] = evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
-                %  saveas(h,['AG-current_' int2str(patient_type) '.jpg'])
-                if ~GUIflag
-                    figure(h);
-                end
-                set(gcf,'CurrentAxes',options.PopulationEvolutionAxe) ;
-                imagesc(~im(1:ite,:,tries)'); % Plot features selected
-                colormap('gray');
-                title([int2str(sum(FS)) ' selected variables'],'FontSize',16);
-                ylabel('Variables','FontSize',16);
-                
-                set(gcf,'CurrentAxes',options.FitFunctionEvolutionAxe);
-                plot(1:ite, out.EvolutionBestCostTest(1:ite,tries), 'b--', 1:ite, out.EvolutionMedianCost(1:ite,tries), 'g-');
-                xlabel('Generations','FontSize',16); ylabel('Mean cost','FontSize',16);
-                legend('Best','Median','Location','NorthWest'); %'RMSE train','AUC' ,
-                
-                % TODO Get the plot function handle and plot : options.PlotFcn
-                set(gcf,'CurrentAxes',options.CurrentScoreAxe);
-                plot(out.EvolutionGenomeStats{ite,tries}.roc.x,out.EvolutionGenomeStats{ite,tries}.roc.y,'b--');
-                
-                xlabel('Sensitivity'); ylabel('1-Specificity');
-                
-                set(gcf,'CurrentAxes',options.CurrentPopulationAxe);
-                imagesc(~parent);
-                xlabel('Variables','FontSize',16);
-                ylabel('Genomes','FontSize',16);
-                title('Current Population','FontSize',16);
-                pause(0.5);
+                [ out ] = plot_All( out, im, parent, [], options );
             end
             
             iteTime=iteTime+toc;
@@ -615,6 +586,7 @@ for f=1:length(handles.data)
         out.IterationTime(1,tries)=iteTime/options.MaxIterations;
         out.RepetitionTime(1,tries)=repTime/tries;
         
+        out.CurrentIteration=out.CurrentIteration+1;
         
     end
     
@@ -633,6 +605,7 @@ for f=1:length(handles.data)
         export_results( options.FileName , out , handles.labels{f} , options );
     end
     
+    out.CurrentRepetition=out.CurrentRepetition+1;
 end
 
 guidata(hObject, handles);
