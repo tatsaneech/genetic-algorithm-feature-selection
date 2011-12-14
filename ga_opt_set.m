@@ -458,6 +458,7 @@ for k=1:length(paramsChecked)
             
         otherwise
             % Recite Acadian Poetry ... or do nothing, your choice!
+            % there is beauttiful Acadian Poem at http://www.gov.ns.ca/legislature/library/digitalcollection/bookpart1.stm
     end
 end
 end
