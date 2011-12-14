@@ -11,25 +11,26 @@ SCORE_train=zeros(P,1);
 % Calculate indices from crossvalidation
 % Determine cross validation indices
 
+%=== Default cost values to very sub-optimal
+%=== If the algorithm does not assign a cost value (due to missing
+%values, or unselected features), the genome will be heavily
+%penalized
+
+%TODO: Figure out a better limits than 9999 and -9999
+if optDir % Maximizing cost -> low default value
+    tr_cost=ones(KI,1)*-9999;
+    t_cost=ones(KI,1)*-9999;
+else % Minimizing cost -> high default value
+    tr_cost=ones(KI,1)*9999;
+    t_cost=ones(KI,1)*9999;
+end
+
 if size(parents,1)>1 % There is more than one individual to evaluate (return fitness function)
     % For each individual
     parfor individual=1:P
         % If you want to remove multiples warnings
         warning off all   
         
-        %=== Default cost values to very sub-optimal
-        %=== If the algorithm does not assign a cost value (due to missing
-        %values, or unselected features), the genome will be heavily
-        %penalized
-        
-        %TODO: Figure out a better limits than 9999 and -9999
-        if optDir % Maximizing cost -> low default value
-            tr_cost=ones(KI,1)*-9999;
-            t_cost=ones(KI,1)*-9999;
-        else % Minimizing cost -> high default value
-            tr_cost=ones(KI,1)*9999;
-            t_cost=ones(KI,1)*9999;
-        end
 
         % Convert Gene into selected variables
         FS = parents(individual,:)==1;
@@ -53,9 +54,9 @@ if size(parents,1)>1 % There is more than one individual to evaluate (return fit
                 end
 
                 % TODO: do the next line only if nvargout>1
-                [ tr_cost(ki) ] = feval(costFcn,...
+                [ tr_cost(ki) ] = callStatFcn(costFcn,...
                                 train_pred, train_target);
-                [ t_cost(ki) ] = feval(costFcn,...
+                [ t_cost(ki) ] = callStatFcn(costFcn,...
                                 test_pred, test_target);
             end
 
@@ -70,6 +71,8 @@ if size(parents,1)>1 % There is more than one individual to evaluate (return fit
         SCORE_train(individual) =  nanmedian(tr_cost );
     end
 else % There is only one individual to estimate then, this is final validation
+    %TODO: Is this necessary? evaluate_par should never be called with 1
+    %individual. - Alistair 14 Dec 2011
     FS = parents ==1;
     for ki=1:KI
         DATA = OriginalData(:,FS);
@@ -83,9 +86,9 @@ else % There is only one individual to estimate then, this is final validation
             train_data,train_target,test_data,test_target);
 
         % TODO: do the next line only if nvargout>1
-        [ tr_cost(ki) ] = feval(costFcn,...
+        [ tr_cost(ki) ] = callStatFcn(costFcn,...
                         train_pred, train_target);
-        [ t_cost(ki) ] = feval(costFcn,...
+        [ t_cost(ki) ] = callStatFcn(costFcn,...
                         test_pred(ki), test_target);
     end
     

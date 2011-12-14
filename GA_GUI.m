@@ -80,8 +80,8 @@ for f=1:length(files) %=== Loop through various functions
     end
 end
 for f=1:length(statFiles) %=== Loop through stat functions
-    if regexp(files(f).name,'stat_.*\.m$') % there is a Cost function
-        Fcost = [Fcost ; files(f).name(1:(end-2)) ];
+    if regexp(statFiles(f).name,'stats_.*\.m$') % there is a Cost function
+        Fcost = [Fcost ; statFiles(f).name(1:(end-2)) ];
     end
 end
 set(handles.popupmenu1,'String' , Fmating)
