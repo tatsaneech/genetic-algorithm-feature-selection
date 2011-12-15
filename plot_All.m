@@ -9,7 +9,7 @@ function [ out ] = plot_All( out, parent, h, options )
 
 %  saveas(h,['AG-current_' int2str(patient_type) '.jpg'])
 if ~options.GUIFlag
-    figure(h);
+    set(0, 'CurrentFigure', h);
 end
 ite = out.CurrentIteration;
 tries = out.CurrentRepetition;
