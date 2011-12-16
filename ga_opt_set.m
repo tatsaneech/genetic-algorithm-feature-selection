@@ -56,6 +56,8 @@ function [ options ] = ga_opt_set( varargin )
 %                       [ string | {'AlgoGen.csv'} ]
 %   Parallelize         - Whether genome fitness operations should be parallelized.
 %                       [ logical | 0 | {1} ]
+%   NormalizeData       - Whether data should be normalized during training
+%                       [ logical | 0 | {1} ]
 %   NumFeatures         - Number of features present in data set
 %                       [ positive integer | {0} ]
 %   PopulationEvolutionAxe      - Axe handle to plot the population
@@ -99,6 +101,7 @@ else
         'ErrorIterations', 10, ...
         'FileName',[], ...
         'Parallelize', 0, ...
+        'NormalizeData', 1, ...
         'Elitism',10 , ...
         'MinimizeFeatures',false, ...
         'PopulationEvolutionAxe', [],...
@@ -247,7 +250,7 @@ switch param
             errmsg = sprintf('Invalid value for OPTIONS parameter %s',param);
         end
         % Booleans/Doubles
-    case {'GUIFlag','Parallelize','OptDir','MinimizeFeatures'}
+    case {'GUIFlag','Parallelize','OptDir','MinimizeFeatures','NormalizeData'}
         if ~islogical(val) && ~(isnumeric(val) && (val==1 || val==0))
             valid = 0;
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a logical value, 0 or 1',param);
@@ -572,6 +575,8 @@ fprintf('   FileName            - The file name used for output\n');
 fprintf('                       [ string | {''AlgoGen.csv''} ]\n');
 fprintf('   Parallelize         - Whether genome fitness operations should be parallelized.\n');
 fprintf('                       [ logical | 0 | {1} ]\n');
+fprintf('   NormalizeData       - Whether data should be normalized during training\n');
+fprintf('                       [ logical | 0 | {1} ]');
 fprintf('   NumFeatures         - Number of features present in data set\n');
 fprintf('                       [ positive integer | {0} ]\n');
 fprintf('   PopulationEvolutionAxe      - Axe handle to plot the population\n');
