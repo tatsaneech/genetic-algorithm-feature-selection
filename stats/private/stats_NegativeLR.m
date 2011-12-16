@@ -27,17 +27,22 @@ function [ stat ] = stats_Specificity(pred,target)
 %	References:
 %	
 %	
-%	$Author: Alistair Johnson$
-%	$Revision: 1.0.0.0$
-%	$Date: 30-Sep-2011 16:17:46$
+%	$LastChangedBy$
+%	$LastChangedDate$
+%	$Revision$
 %	Contact: alistairewj@gmail.com
-%	Originally written on: GLNXA64
+%	Originally written on: GLNXA64, 16-Dec-2011 14:20:09
 
 %	Copyright 2011 Alistair Johnson
 
+
+TP=sum(pred(target==1) >= 0.5);
+FN=sum(pred(target==1) < 0.5);
+sens=TP/(TP+FN);
+
 FP=sum(pred(target==0) >= 0.5);
 TN=sum(pred(target==0) < 0.5);
+spec=TN/(TN+FP);
 
-stat=TN/(TN+FP);
-
+stat=sens/(1-spec);
 end

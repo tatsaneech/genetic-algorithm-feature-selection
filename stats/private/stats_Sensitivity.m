@@ -36,9 +36,7 @@ function [ stat ] = stats_Sensitivity(pred,target)
 %	Copyright 2011 Alistair Johnson
 
 TP=sum(pred(target==1) >= 0.5);
-FP=sum(pred(target==0) >= 0.5);
 FN=sum(pred(target==1) < 0.5);
-TN=sum(pred(target==0) < 0.5);
 
 stat=TP/(TP+FN);
 
