@@ -538,6 +538,7 @@ for f=1:length(handles.data)
         while ite < options.MaxIterations && ~early_stop && ~get(handles.pushbutton4,'UserData')
             tic;
             ite = ite + 1;
+            out.CurrentIteration=ite;
             if ite>(options.ErrorIterations+1) % Enough iterations have passed to estimate early stop
                 win = out.EvolutionBestCostTest((ite-(options.ErrorIterations+1)):(ite-1));
                 if abs(max(win) - min(win)) < options.ErrorGradient && options.ErrorGradient ~=0
@@ -565,7 +566,7 @@ for f=1:length(handles.data)
             
             %% Save and display results
             %%-------------------------+
-            out.BestGenomePlot{1,tries}(ite,:)=FS;
+            out.BestGenomePlot{tries}(ite,:)=FS;
             if strcmpi(options.Display,'plot')
                 [~,~,out.EvolutionGenomeStats{ite,tries}] = evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
                 [ out ] = plot_All( out, parent, [], options );
@@ -579,7 +580,6 @@ for f=1:length(handles.data)
                     (((iteTime/ite * (options.MaxIterations) * (options.Repetitions)))-repTime)/3600,...
                     out.EvolutionGenomeStats{ite,tries}.AUROC);
             end
-            out.CurrentIteration=out.CurrentIteration+1;
         end
         % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
         [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
@@ -593,16 +593,16 @@ for f=1:length(handles.data)
     if get(handles.pushbutton4,'UserData') % then this was stopped on user's demand
         display('Algorithm STOPPED!');
         set(handles.pushbutton4,'UserData',false); % reset
-        FileName = [ handles.DataFilePath  '.earlystopped_' FileName ];
+        FileName = [   '.earlystopped_' FileName ];
         out.BestGenome((tries+1):end) = [];
     else % The algorithm ended normally
-        FileName = [ handles.DataFilePath FileName];
+        % then we keep the same file format
     end
+    set(handles.text2,'String',FileName);    
+    FileName = [ handles.DataFilePath FileName];
     
     % Save results
-    if ~isempty(FileName) % If a file has been selected for saving
-        export_results( FileName , out , handles.labels{f} , options );
-    end
+    export_results( FileName , out , handles.labels{f} , options );    
     
 end
 

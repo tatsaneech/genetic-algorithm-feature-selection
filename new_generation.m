@@ -36,7 +36,7 @@ repro = parent( BestPerfAIdx(1:POP_xover) , : ) ;
 
 %% Make sure that confounding factors are still included + Max/Min vars
 
-if ~isempty(ConfFact) && (length(ConfFact)>1 || ConfFact~=0)
+if ~isnan(ConfFact) && ~isempty(ConfFact) && (length(ConfFact)>1 || ConfFact~=0)
     % Force confounding factors
     children(:,ConfFact)=true(size(children,1),length(ConfFact));
 end

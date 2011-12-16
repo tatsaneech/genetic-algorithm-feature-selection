@@ -9,14 +9,14 @@ function [ out ] = plot_All( out, parent, h, options )
 
 %  saveas(h,['AG-current_' int2str(patient_type) '.jpg'])
 if ~options.GUIFlag
-    figure(h);
+    set(0, 'CurrentFigure', h);
 end
 ite = out.CurrentIteration;
 tries = out.CurrentRepetition;
 set(gcf,'CurrentAxes',options.PopulationEvolutionAxe) ;
-imagesc(~out.BestGenomePlot{1,tries}(1:ite,:)'); % Plot features selected
+imagesc(~out.BestGenomePlot{tries}'); % Plot features selected
 colormap('gray');
-title([int2str(sum(out.BestGenomePlot{1,tries}(ite,:))) ' selected variables'],'FontSize',16);
+title([int2str(sum(out.BestGenomePlot{tries}(ite,:))) ' selected variables'],'FontSize',16);
 ylabel('Variables','FontSize',16);
 
 set(gcf,'CurrentAxes',options.FitFunctionEvolutionAxe);
