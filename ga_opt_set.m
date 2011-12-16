@@ -30,6 +30,8 @@ function [ options ] = ga_opt_set( varargin )
 %                       [ positive scalar | {10} ]
 %   FitnessFcn          - The fitness function used to evaluate genomes
 %                       [ function name string | function handle | {[]} ]
+%   CostFcn             - The cost function used to evaluate fitness predictions
+%                       [ function name string | function handle | {[]} ]
 %   MutationFcn          - The function used to mutate genomes
 %                       [ function name string | function handle | {[]} ]
 %   CrossoverFcn        - The type of genomic crossover used
@@ -365,7 +367,8 @@ function [options] = validateConsistency(options)
 paramsChecked = {'CrossValidationParam',...
     'MinFeatures',...
     'MaxFeatures',...
-    'ConfoundingFactors'};
+    'ConfoundingFactors',...
+    'CostFcn'};
 
 for k=1:length(paramsChecked)
     param = paramsChecked{k};
@@ -481,6 +484,40 @@ for k=1:length(paramsChecked)
                 % ConfoundingFactors yet..
             end
             
+        case 'CostFcn'
+            %TODO: Default the optimization direction based on the cost
+            %function?
+            % Ensure optimization direction and cost function are consistent
+            defCost = {'stats_AUROC',1;   'stats_Accuracy',1;...
+                'stats_BER',0;            'stats_Brier',0;...
+                'stats_Cox',-1;           'stats_FN',0;...
+                'stats_FP',0;             'stats_HL',0;...
+                'stats_NPV',1;            'stats_Operating',-1;...
+                'stats_PPV',1;            'stats_RMSE',0;...
+                'stats_SMR',-1;           'stats_Sensitivity',1;...
+                'stats_ShapiroR',0;       'stats_Specificity',1;...
+                'stats_TN',1;             'stats_TP',1;...
+                'stats_XEntropy',0;};
+            
+            idxCost = find(strcmp(defCost(:,1),options.CostFcn)==1,1);
+            if isempty(idxCost)
+                %=== did not find cost function in defaults, assume OptDir
+                %is correct
+            else
+                if defCost{idxCost,2}==options.OptDir
+                    %=== Optimization direction is correct
+                elseif defCost{idxCost,2}==-1
+                    %=== This function should not be used for optimization
+                    warning(sprintf('ga_opt_set:%s:InvalidCostFunction', mfilename), ...
+                    'The function %s should not be used for cost optimization.',options.CostFcn);
+                else
+                    %=== OptDir incorrectly set
+                    options.OptDir = defCost{idxCost,2};
+                    warning(sprintf('ga_opt_set:%s:InvalidOptDir', mfilename), ...
+                    'OptDir has been set to %2.0f, rather than %2.0f, as the function %s requires this.',...
+                    defCost{idxCost,2},options.OptDir,options.CostFcn);
+                end
+            end
         otherwise
             % Recite Acadian Poetry ... or do nothing, your choice!
     end
@@ -506,6 +543,8 @@ fprintf('                       [ positive scalar index | {0} (none) ]\n');
 fprintf('   Repetitions         - Number of distinct populations to optimize\n');
 fprintf('                       [ positive scalar | {10} ]\n');
 fprintf('   FitnessFcn          - The fitness function used to evaluate genomes\n');
+fprintf('                       [ function name string | function handle | {[]} ]\n');
+fprintf('   CostFcn             - The cost function used to evaluate fitness predictions\n');
 fprintf('                       [ function name string | function handle | {[]} ]\n');
 fprintf('   MutationFcn          - The function used to mutate genomes\n');
 fprintf('                       [ function name string | function handle | {[]} ]\n');
