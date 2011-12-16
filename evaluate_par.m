@@ -3,6 +3,7 @@ function [ SCORE_test SCORE_train stats ] = evaluate( OriginalData , data_target
 fitFcn=options.FitnessFcn; 
 costFcn=options.CostFcn;
 optDir = options.OptDir;
+normalizeDataFlag = options.NormalizeData;
 % Pre-allocate
 P=size(parents,1);
 SCORE_test=zeros(P,1);
@@ -39,10 +40,16 @@ if size(parents,1)>1 % There is more than one individual to evaluate (return fit
             DATA = OriginalData(:,FS);
             % Cross-validation repeat for each data partition
             for ki=1:KI
-                train_data = DATA(train(:,ki),:);
                 train_target = data_target(train(:,ki));
-                test_data = DATA(test(:,ki),:);
                 test_target = data_target(test(:,ki));
+                
+                if normalizeDataFlag
+                    [train_data, test_data] = ...
+                        normalizeData(DATA(train(:,ki),:),DATA(test(:,ki),:));
+                else
+                    train_data = DATA(train(:,ki),:);
+                    test_data = DATA(test(:,ki),:);
+                end
 
                 % Use fitness function to calculate costs
                 [ train_pred, test_pred ]  = feval(fitFcn,...
