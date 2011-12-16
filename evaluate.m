@@ -79,14 +79,20 @@ if size(parents,1)>1 % There is more than one individual to evaluate (return fit
         SCORE_train(individual) =  nanmedian(tr_cost );
     end
 else  % There is only one individual to estimate   then, this is final validation
-    FS = parents == 1;
-    
+    FS = parents(1,:) == 1;
+    L1O_test_pred = zeros(KI,1); % Preallocate
     if sum(FS)>0
+        DATA = OriginalData(:,FS);
         for ki=1:KI
-            DATA = OriginalData(:,FS);
-            train_data = DATA(train(:,ki),:);
+            if normalizeDataFlag
+                [train_data, test_data] = ...
+                    normalizeData(DATA(train(:,ki),:),DATA(test(:,ki),:));
+            else
+                train_data = DATA(train(:,ki),:);
+                test_data = DATA(test(:,ki),:);
+            end
+                
             train_target = data_target(train(:,ki));
-            test_data = DATA(test(:,ki),:);
             test_target = data_target(test(:,ki));
             
             % Use fitness function to calculate costs
@@ -109,10 +115,16 @@ else  % There is only one individual to estimate   then, this is final validatio
             
         else % All other cross validation techniques
             [~,idx]=min(abs(t_cost-nanmedian(t_cost))); % find split that provides median value
-            FS=parents(1,:)==1; % Best features
-            train_data = OriginalData(train(:,idx),FS);
+            
+            if normalizeDataFlag
+                [train_data, test_data] = ...
+                    normalizeData(DATA(train(:,idx),:),DATA(test(:,idx),:));
+            else
+                train_data = DATA(train(:,idx),:);
+                test_data = DATA(test(:,idx),:);
+            end
+            
             train_target = data_target(train(:,idx));
-            test_data = OriginalData(test(:,idx),FS);
             test_target = data_target(test(:,idx));
             
             [ train_pred, test_pred ]  = feval(fitFcn,...
