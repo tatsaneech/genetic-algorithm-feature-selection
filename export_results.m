@@ -17,7 +17,7 @@ end
     Genomes =  reshape(cell2mat(out.BestGenome),Nlabels,Ntries)' ;
 
 % Define Spread sheet and header
-sheet = cell( length(labels)+3 , size(Genomes)+2 );
+sheet = cell( length(labels)+3 , length(Genomes)+2 );
 
 sheet{3,1} = 'Variable Name';
 
