@@ -1,7 +1,7 @@
-function [ stat ] = stats_Specificity(pred,target)
-%STATS_SPECIFICITY	Specificity. Calculated as: TN/(TN+FP)
-%	[ stat ] = stats_Specificity(pred,target) 
-%	
+function [ stat ] = stats_PositiveLR(pred,target)
+%STATS_POSITIVELR	Positive likelihood ratio. 
+%   Calculated as: (1-sensitivity)/specificity;
+%	[ stat ] = stats_PositiveLR(pred,target) 
 %
 %	Inputs:
 %		pred - Nx1 vector of predicted classes
@@ -20,9 +20,9 @@ function [ stat ] = stats_Specificity(pred,target)
 %
 %		pred=double(stats.yhat>0.5); % Extract predictions
 %       
-%		[ stat ] = stats_Specificity(pred,target) 
+%		[ stat ] = stats_PositiveLR(pred,target) 
 %	
-%	See also GA_STATS
+%	See also GA_STATS STATS_SENSITIVITY STATS_SPECIFICITY
 
 %	References:
 %	
