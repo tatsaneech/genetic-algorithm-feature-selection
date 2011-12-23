@@ -35,6 +35,5 @@ function [ stat ] = stats_Accuracy(pred,target)
 
 %	Copyright 2011 Alistair Johnson
 
-stat=1-(sum(abs(round(target-pred)),1)/length(target));
-
+stat=sum(target==round(pred))/length(target);
 end
