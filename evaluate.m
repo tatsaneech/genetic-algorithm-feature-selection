@@ -76,11 +76,16 @@ if size(parents,1)>1 % There is more than one individual to evaluate (return fit
         SCORE_test(individual) =  nanmedian(t_cost);
         SCORE_train(individual) =  nanmedian(tr_cost);
     end
-else  % There is only one individual to estimate   then, this is final validation
+else  % There is only one individual to estimate then, this is final validation
+    %=== Create default cost values
     tr_cost=ones(KI,1)*defaultCost;
     t_cost=ones(KI,1)*defaultCost;
+    
+    %=== Extract features
     FS = parents(1,:) == 1;
-    L1O_test_pred = zeros(KI,1); % Preallocate
+    
+    %=== Preallocate
+    L1O_test_pred = zeros(KI,1); 
     if sum(FS)>0
         DATA = OriginalData(:,FS);
         for ki=1:KI

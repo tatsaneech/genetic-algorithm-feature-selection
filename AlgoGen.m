@@ -67,7 +67,6 @@ for tries = 1:options.Repetitions
     % Calculate indices for training repetitions for each genome
     [ train, test, KI ] = feval(options.CrossValidationFcn,outcome,options);
     
-    fprintf('Parents start: %d \n', sum(parent(1,:)));
     while ite < options.MaxIterations && ~early_stop
         tic;
         ite = ite + 1;
@@ -99,11 +98,10 @@ for tries = 1:options.Repetitions
         %% Save and display results
         %%-------------------------+
         out.BestGenomePlot{1,tries}(ite,:)=FS;
-            [~,~,out.EvolutionGenomeStats{ite,tries}] = ...
-                evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
+        [~,~,out.EvolutionGenomeStats{ite,tries}] = ...
+            evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
         if strcmpi(options.Display,'plot')
             [ out ] = plot_All( out, parent, h, options );
-            
         end
         
         iteTime=iteTime+toc;
@@ -113,7 +111,6 @@ for tries = 1:options.Repetitions
                 ite,options.MaxIterations, toc, iteTime,...
                 (((iteTime/ite * (options.MaxIterations) * (options.Repetitions)))-repTime)/3600);
         end
-        fprintf('Parents: %d \n', sum(parent(1,:)));
         out.CurrentIteration=out.CurrentIteration+1;
     end
     % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
