@@ -99,9 +99,9 @@ for tries = 1:options.Repetitions
         %% Save and display results
         %%-------------------------+
         out.BestGenomePlot{1,tries}(ite,:)=FS;
-        if strcmpi(options.Display,'plot')
             [~,~,out.EvolutionGenomeStats{ite,tries}] = ...
                 evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
+        if strcmpi(options.Display,'plot')
             [ out ] = plot_All( out, parent, h, options );
             
         end
