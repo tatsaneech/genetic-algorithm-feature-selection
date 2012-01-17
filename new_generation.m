@@ -99,7 +99,7 @@ end
 [r,c] = find(diff==0);
 twins = unique([r ; c]);
  
-if length(twins)>0
+if ~isempty(twins)
     options.PopulationSize=length(twins); % Temporary change.
     children(twins,:) = initialise_pop(options,VAR_NUM);
 end % Some twins might still be present after generation of random aliens BUT we don't care that much 
