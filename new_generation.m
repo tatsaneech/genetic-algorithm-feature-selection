@@ -59,19 +59,18 @@ if MaxVar>0 % Ensure number of features < MaxVar
         % Do not flip confounding factors
         maxRandPerm=setdiff(maxRandPerm,ConfFact);
         
-        
-        if nFlip>=length(maxRandPerm) % Still have enough factors to flip
+        if nFlip<=length(maxRandPerm) % Still have enough factors to flip
             children(maxVarIdx(k),kthChild(maxRandPerm(1:nFlip)))=0;
         else
             % Oh well, flip what we can and complain
             children(maxVarIdx(k),kthChild(maxRandPerm(1:end)))=0;
-            warning('GA:AlgoGen:new_generation:Confounded', ...
+            warning('GA:AlgoGen:new_generation:CounfingFactorsConflict', ...
                 ['More confounding factors entered than maximally\n' ...
                 'allowed features. The MaxFeatures parameter should\n' ...
                 'be lowered.']);
         end
     end
-    %         [trueBitsI,trueBitsJ]=ind2sub(size(children(maxVarIdx,:)),find(children(maxVarIdx,:)==1)); % Linear index
+    %  [trueBitsI,trueBitsJ]=ind2sub(size(children(maxVarIdx,:)),find(children(maxVarIdx,:)==1)); % Linear index
 end
 
 if MinVar>0 % Ensure number of features > MinVar
@@ -100,7 +99,7 @@ end
 [r,c] = find(diff==0);
 twins = unique([r ; c]);
  
-if length(twins)>0
+if ~isempty(twins)
     options.PopulationSize=length(twins); % Temporary change.
     children(twins,:) = initialise_pop(options,VAR_NUM);
 end % Some twins might still be present after generation of random aliens BUT we don't care that much 

@@ -567,8 +567,9 @@ for f=1:length(handles.data)
             %% Save and display results
             %%-------------------------+
             out.BestGenomePlot{tries}(ite,:)=FS;
+            [~,~,out.EvolutionGenomeStats{ite,tries}] = ...
+                evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
             if strcmpi(options.Display,'plot')
-                [~,~,out.EvolutionGenomeStats{ite,tries}] = evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
                 [ out ] = plot_All( out, parent, [], options );
             end
             
