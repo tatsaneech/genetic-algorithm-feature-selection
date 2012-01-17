@@ -79,9 +79,14 @@ if size(parents,1)>1 % There is more than one individual to evaluate (return fit
 else % There is only one individual to estimate then, this is final validation
     %TODO: Is this necessary? evaluate_par should never be called with 1
     %individual. - Alistair 14 Dec 2011
+    
+    %=== Create default cost values
     tr_cost=ones(KI,1)*defaultCost;
     t_cost=ones(KI,1)*defaultCost;
-    FS = parents ==1;
+    
+    %=== Extract features
+    FS = parents(1,:) == 1;
+    
     for ki=1:KI
         DATA = OriginalData(:,FS);
         train_data = DATA(train(:,ki),:);
