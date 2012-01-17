@@ -19,11 +19,9 @@ SCORE_train=zeros(P,1);
 
 %TODO: Figure out a better limits than 9999 and -9999
 if optDir % Maximizing cost -> low default value
-    tr_cost=ones(KI,1)*-9999;
-    t_cost=ones(KI,1)*-9999;
+    defaultCost=-9999;
 else % Minimizing cost -> high default value
-    tr_cost=ones(KI,1)*9999;
-    t_cost=ones(KI,1)*9999;
+    defaultCost=9999;
 end
 
 if size(parents,1)>1 % There is more than one individual to evaluate (return fitness function)
@@ -31,7 +29,8 @@ if size(parents,1)>1 % There is more than one individual to evaluate (return fit
     parfor individual=1:P
         % If you want to remove multiples warnings
         warning off all   
-        
+        tr_cost=ones(KI,1)*defaultCost;
+        t_cost=ones(KI,1)*defaultCost;
 
         % Convert Gene into selected variables
         FS = parents(individual,:)==1;
