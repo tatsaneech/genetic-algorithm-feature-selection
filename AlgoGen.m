@@ -90,7 +90,7 @@ for tries = 1:options.Repetitions
             end
         end
         
-        %% Evaluate parents are create new generation
+        %% Evaluate parents and create new generation
         [testCost, trainCost] = feval(evalFcn,DATA,outcome,parent,options , train, test, KI);
         % TODO:
         %   Change eval function to return:
@@ -117,19 +117,19 @@ for tries = 1:options.Repetitions
         
         if ocDetailedFlag
             %=== Detailed output            
-            out.EvolutionGenomeStats{ite,tries} = miscOutputContent.stats;
+            out.EvolutionGenomeStats{ite,tries} = miscOutputContent.TestStats;
             
         elseif ocDebugFlag
             %=== Debug output
-            out.EvolutionGenomeStats{ite,tries} = miscOutputContent.stats;
+            out.EvolutionGenomeStats{ite,tries} = miscOutputContent.TestStats;
             
             out.Genome{1,tries}(:,:,ite) = parent; % Save current genome
         
             %out.Training.EvolutionCost = zeros(maxIter,rep,popSize);
-            out.Training.EvolutionBestStats{ite,tries} = miscOutputContent.stats; % TODO: Fix this to training stats
+            out.Training.EvolutionBestStats{ite,tries} = miscOutputContent.TrainStats; % TODO: Fix this to training stats
         
             %out.Test.EvolutionCost = zeros(maxIter,rep,popSize);
-            out.Test.EvolutionBestStats = miscOutputContent.stats; % TODO: Fix this to test stats
+            out.Test.EvolutionBestStats = miscOutputContent.TestStats; % TODO: Fix this to test stats
             
         else
             %=== Normal output

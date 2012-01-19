@@ -96,33 +96,33 @@ for ki=1:KI % Repeat fitness function KI times to get good estimate of cost
     L1O_test_pred(ki) = mean(test_pred);
 end
 
+[~,idx]=min(abs(t_cost-nanmedian(t_cost))); % find split that provides median value
+    
+%=== Get data for stats calculations
+if normalizeDataFlag
+    [train_data, test_data] = ...
+        normalizeData(DATA(train(:,idx),:),DATA(test(:,idx),:));
+else
+    train_data = DATA(train(:,idx),:);
+    test_data = DATA(test(:,idx),:);
+end
+train_target = data_target(train(:,idx));
+test_target = data_target(test(:,idx));
+
+[ train_pred, test_pred ]  = feval(fitFcn,...
+    train_data,train_target,test_data,test_target);
+
+[other.TrainStats,other.TrainStats.roc]=ga_stats(train_pred,train_target,'all');
+    
 % Is it LeaveOne Out? ( there is only one observation in test per data split)
 if sum(sum(test,1))==size(test,2)
     % Remove observed from RMSE to get predicted
-    [stats,stats.roc]=ga_stats( L1O_test_pred', data_target, 'all');
-    
+    [other.TestStats,other.TestStats.roc]=ga_stats( L1O_test_pred', data_target, 'all');
 else % All other cross validation techniques
-    [~,idx]=min(abs(t_cost-nanmedian(t_cost))); % find split that provides median value
-    
-    if normalizeDataFlag
-        [train_data, test_data] = ...
-            normalizeData(DATA(train(:,idx),:),DATA(test(:,idx),:));
-    else
-        train_data = DATA(train(:,idx),:);
-        test_data = DATA(test(:,idx),:);
-    end
-    
-    train_target = data_target(train(:,idx));
-    test_target = data_target(test(:,idx));
-    
-    [ train_pred, test_pred ]  = feval(fitFcn,...
-        train_data,train_target,test_data,test_target);
-    
-    [stats,stats.roc]=ga_stats(test_pred,test_target,'all');
+    [other.TestStats,other.TestStats.roc]=ga_stats(test_pred,test_target,'all');
 end
 
 %=== Output model, statistics
-other.stats = stats;
 other.trainPred = train_pred;
 other.testPred = test_pred;
 
