@@ -17,7 +17,8 @@ POP_elite = floor( (options.Elitism/100)*POP_SIZE ) ;
 mutation_prop = .2 ; % TODO: Make this a parameter in options
 
 %% Selection
-
+%TODO: Check if this sort calculation is still needed, as a sort is
+%performed in the main function (AlgoGen or GA_GUI)
 % sort parent generation by increasing or decreasing performance
 [BestPerfA  BestPerfAIdx] = sort(PerfA,sort_str);
 % Pass down the X% best performers to the next generation
