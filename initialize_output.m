@@ -7,24 +7,26 @@ numFeat = options.NumFeatures; % Number of features available
 popSize = options.PopulationSize;
 
 %=== Initialize options which are always output
-out.EvolutionGenomeStats= cell(maxIter,rep); %TODO: Should be in 'detailed'
-out.EvolutionBestCost= zeros(maxIter,rep);
-out.EvolutionBestCostTest= zeros(maxIter,rep) ;
-out.EvolutionMedianCost= zeros(maxIter,rep);
-out.BestGenomeStats= cell(1,rep);
-out.BestGenome= cell(1,rep) ;
-out.BestGenomePlot= cellfun(@(x) zeros(maxIter,numFeat),cell(1,rep),'UniformOutput',false);
-out.IterationTime= zeros(1,rep);
+out.Test.EvolutionBestCost = zeros(maxIter,rep); % out.EvolutionBestCostTest
+out.Test.EvolutionMedianCost = zeros(maxIter,rep); % out.EvolutionMedianCost
+out.EvolutionBestCost = zeros(maxIter,rep); % ???
+
+out.Training.EvolutionBestCost = zeros(maxIter,rep);
+out.Training.EvolutionMedianCost = zeros(maxIter,rep);
+        
+out.BestGenomeStats = cell(1,rep);
+out.BestGenome = cell(1,rep) ;
+out.BestGenomePlot = cellfun(@(x) zeros(maxIter,numFeat),cell(1,rep),'UniformOutput',false);
+out.IterationTime = zeros(1,rep);
 out.CurrentIteration = 1;
 out.CurrentRepetition = 1;
 
 switch options.OutputContent
     case 'detailed'
         %=== Initialize additional out fields
-        out.Training.EvolutionBestCost = zeros(maxIter,rep);
-        out.Training.EvolutionMedianCost = zeros(maxIter,rep);
         out.Training.BestGenomeStats = cell(1,rep);
         
+        out.EvolutionGenomeStats = cell(maxIter,rep);
     case 'debug'
         %=== Initialize many additional out fields for debug purposes
         out.Genome = cellfun(@(x) false(popSize,numFeat,maxIter),...
