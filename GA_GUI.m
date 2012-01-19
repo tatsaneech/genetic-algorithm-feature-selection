@@ -552,8 +552,11 @@ for f=1:length(handles.data)
             %   Change eval function to return:
             %       model, outputs with predictions+indices, statistics
             
-            parent = new_generation(parent,testCost,sort_str,options);
-            
+            %=== Sort genome
+            [testCost  idxTestSort] = sort(testCost,sort_str);
+            trainCost = trainCost(idxTestSort,:);
+            parent = parent(idxTestSort,:);
+        
             %% FINAL VALIDATION
             % If tracking best genome statistics is desirable during run-time,
             % this section will have to recalculate the genome fitness, etc.
@@ -601,6 +604,9 @@ for f=1:length(handles.data)
                 [ out ] = plot_All( out, parent, h, options );
             end
             
+            %=== Calculate new genome
+            parent = new_generation(parent,testCost,sort_str,options);
+        
             iteTime=iteTime+toc;
             repTime=repTime+toc;
             if verbose % Time elapsed reports
