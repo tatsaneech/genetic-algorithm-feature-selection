@@ -20,8 +20,8 @@ title([int2str(sum(out.BestGenomePlot{tries}(ite,:))) ' selected variables'],'Fo
 ylabel('Variables','FontSize',16);
 
 set(gcf,'CurrentAxes',options.FitFunctionEvolutionAxe);
-plot(1:ite, out.EvolutionBestCostTest(1:ite,tries), 'b--',...
-    1:ite, out.EvolutionMedianCost(1:ite,tries), 'g-');
+plot(1:ite, out.Test.EvolutionBestCost(1:ite,tries), 'b--',...
+    1:ite, out.Test.EvolutionMedianCost(1:ite,tries), 'g-');
 xlabel('Generations','FontSize',16); ylabel('Mean cost','FontSize',16);
 legend('Best','Median','Location','NorthWest'); %'RMSE train','AUC' ,
 

@@ -115,17 +115,14 @@ for tries = 1:options.Repetitions
         %%-------------------------+
         out.BestGenomePlot{1,tries}(ite,:)=FS;
         
-        if strcmpi(options.Display,'plot')
-            [ out ] = plot_All( out, parent, h, options );
-        end
-        
         if ocDetailedFlag
             %=== Detailed output            
-            [~,~,out.EvolutionGenomeStats{ite,tries}] = ...
-                evaluate_final(DATA, outcome, parent(1,:), options, train, test, KI);
+            out.EvolutionGenomeStats{ite,tries} = miscOutputContent.stats;
             
         elseif ocDebugFlag
             %=== Debug output
+            out.EvolutionGenomeStats{ite,tries} = miscOutputContent.stats;
+            
             out.Genome{1,tries}(:,:,ite) = parent; % Save current genome
         
             %out.Training.EvolutionCost = zeros(maxIter,rep,popSize);
@@ -135,9 +132,14 @@ for tries = 1:options.Repetitions
             out.Test.EvolutionBestStats = miscOutputContent.stats; % TODO: Fix this to test stats
             
         else
-            %=== Normal output so perform no additional calculations
+            %=== Normal output
         end
             
+        %=== Plot results
+        if strcmpi(options.Display,'plot')
+            out.EvolutionGenomeStats{ite,tries} = miscOutputContent.stats;
+            [ out ] = plot_All( out, parent, h, options );
+        end
         
         %=== Update timing calculations + print info to command prompt
         iteTime=iteTime+toc;
