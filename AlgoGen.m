@@ -131,10 +131,6 @@ for tries = 1:options.Repetitions
             %out.Test.EvolutionCost = zeros(maxIter,rep,popSize);
             out.Test.EvolutionBestStats = miscOutputContent.TestStats;
             
-        elseif strcmpi(options.Display,'plot')
-            %=== Plot was used - might as well store some info from it
-            out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
-            
         else
             %=== Normal output
         end
@@ -171,6 +167,10 @@ for tries = 1:options.Repetitions
     elseif ocDebugFlag
         %=== Debug output
         
+        
+    elseif strcmpi(options.Display,'plot')
+        %=== Plot was used - might as well store some info from it
+        out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
     else
         %=== Normal output so perform no additional calculations
     end
