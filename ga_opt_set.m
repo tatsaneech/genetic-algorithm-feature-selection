@@ -17,7 +17,7 @@ function [ options ] = ga_opt_set( varargin )
 %   PopulationSize      - The number of genomes in the population
 %                       [ positive integer | {100} ]
 %   Display             - What to display during execution
-%                       [ 'Plot' | 'Text' | {'none'} ]
+%                       [ 'plot' | 'text' | {'none'} ]
 %   MaxFeatures         - The maximum allowable features in each genome
 %                       [ positive scalar | {0} (no limit) ]
 %   MinFeatures         - The minimum allowable features in each genome
@@ -83,7 +83,7 @@ if nargout==0
     return;
 else
     options=struct( ...
-        'Display', 'Plot', ...
+        'Display', 'plot', ...
         'MaxIterations', 100, ...
         'PopulationSize', 50, ...
         'MaxFeatures', 0, ...
@@ -526,7 +526,23 @@ for k=1:length(paramsChecked)
                     defCost{idxCost,2},options.OptDir,options.CostFcn);
                 end
             end
+        case 'Display'
+            pval = lower(pval); % Remove upper case if present
+            options.(param) = pval;
+            
+            switch pval
+                case {'plot','text','none'}
+                    %=== Correct input - nothing needed
+                otherwise
+                    %=== Incorrect - default to normal
+                    warning(sprintf('ga_opt_set:%s:InvalidOutputContent', mfilename), ...
+                    'Display was set to %s, an invalid value. Defaulted to ''none''.',...
+                    pval);
+                    options.(param) = 'none';
+            end
         case 'OutputContent'
+            pval = lower(pval); % Remove upper case if present
+            options.(param) = pval;
             switch pval
                 case {'normal','detailed','debug'}
                     %=== Correct input - nothing needed
@@ -552,7 +568,7 @@ fprintf('\n');
 fprintf('   PopulationSize      - The number of genomes in the population\n');
 fprintf('                       [ positive integer | {100} ]\n');
 fprintf('   Display             - What to display during execution\n');
-fprintf('                       [ ''Plot'' | ''Text'' | {''none''} ]\n');
+fprintf('                       [ ''plot'' | ''text'' | {''none''} ]\n');
 fprintf('   MaxFeatures         - The maximum allowable features in each genome\n');
 fprintf('                       [ positive scalar | {0} (no limit) ]\n');
 fprintf('   MinFeatures         - The minimum allowable features in each genome\n');
