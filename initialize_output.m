@@ -9,7 +9,6 @@ popSize = options.PopulationSize;
 %=== Initialize options which are always output
 out.Test.EvolutionBestCost = zeros(maxIter,rep); % out.EvolutionBestCostTest
 out.Test.EvolutionMedianCost = zeros(maxIter,rep); % out.EvolutionMedianCost
-out.EvolutionBestCost = zeros(maxIter,rep); % ???
 
 out.Training.EvolutionBestCost = zeros(maxIter,rep);
 out.Training.EvolutionMedianCost = zeros(maxIter,rep);
@@ -20,6 +19,11 @@ out.BestGenomePlot = cellfun(@(x) zeros(maxIter,numFeat),cell(1,rep),'UniformOut
 out.IterationTime = zeros(1,rep);
 out.CurrentIteration = 1;
 out.CurrentRepetition = 1;
+
+%=== Plotting requires certain fields to be present
+if strcmpi(options.Display,'plot')
+    out.EvolutionGenomeStats = cell(maxIter,rep);
+end
 
 switch options.OutputContent
     case 'detailed'
