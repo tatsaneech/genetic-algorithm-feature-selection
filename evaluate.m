@@ -1,4 +1,4 @@
-function [ SCORE_test, SCORE_train, stats ] = ...
+function [ SCORE_test, SCORE_train, other ] = ...
     evaluate(OriginalData, data_target, parents, options, train, test, KI )
 
 fitFcn=options.FitnessFcn;
@@ -68,14 +68,19 @@ if size(parents,1)>1 % There is more than one individual to evaluate (return fit
             
             % Check/perform minimal feature selection is desired
             [ tr_cost, t_cost ] = fs_opt( tr_cost, t_cost, FS, options );
+            
         else
             % Do nothing - leave costs as they were preallocated
         end
+        
         
         % ...get median results on TEST and TRAIN set
         SCORE_test(individual) =  nanmedian(t_cost);
         SCORE_train(individual) =  nanmedian(tr_cost);
     end
+    other.stats = [];
+    other.trainPred = [];
+    other.testPred = [];
 else  % There is only one individual to estimate then, this is final validation
     %=== Create default cost values
     tr_cost=ones(KI,1)*defaultCost;
@@ -137,9 +142,16 @@ else  % There is only one individual to estimate then, this is final validation
             
             [stats,stats.roc]=ga_stats(test_pred,test_target,'all');
         end
+        
+        %=== Output model, statistics
+        other.stats = stats;
+        other.trainPred = train_pred;
+        other.testPred = test_pred;
     else
         % No features are selected, default costs used..
-        stats = [];
+        other.stats = [];
+        other.trainPred = [];
+        other.testPred = [];
     end
     
     % ...get median results on TEST and TRAIN set
