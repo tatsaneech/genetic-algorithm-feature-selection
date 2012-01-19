@@ -96,7 +96,10 @@ for tries = 1:options.Repetitions
         %   Change eval function to return:
         %       model, outputs with predictions+indices, statistics
         
-        parent = new_generation(parent,testCost,sort_str,options);
+        %=== Sort genome
+        [testCost  idxTestSort] = sort(testCost,sort_str);
+        trainCost = trainCost(idxTestSort,:);
+        parent = parent(idxTestSort,:);
         
         %% FINAL VALIDATION
         % If tracking best genome statistics is desirable during run-time,
@@ -125,10 +128,10 @@ for tries = 1:options.Repetitions
             
             out.Genome{1,tries}(:,:,ite) = parent; % Save current genome
         
-            %out.Training.EvolutionCost = zeros(maxIter,rep,popSize);
+            out.Training.EvolutionCost(ite,tries,:) = trainCost;
             out.Training.EvolutionBestStats{ite,tries} = miscOutputContent.TrainStats;
         
-            %out.Test.EvolutionCost = zeros(maxIter,rep,popSize);
+            out.Test.EvolutionCost(ite,tries,:) = testCost;
             out.Test.EvolutionBestStats = miscOutputContent.TestStats;
             
         else
@@ -140,6 +143,9 @@ for tries = 1:options.Repetitions
             out.EvolutionGenomeStats{ite,tries} = miscOutputContent.TestStats;
             [ out ] = plot_All( out, parent, h, options );
         end
+        
+        %=== Calculate new genome
+        parent = new_generation(parent,testCost,sort_str,options);
         
         %=== Update timing calculations + print info to command prompt
         iteTime=iteTime+toc;
