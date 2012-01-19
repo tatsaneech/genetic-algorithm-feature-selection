@@ -547,30 +547,53 @@ for f=1:length(handles.data)
             end
             
             %% Evaluate parents are create new generation
-            [PerfA,Perf_train] = feval(evalFcn,DATA,outcome,parent,options, train, test, KI);
+            [testCost,trainCost] = feval(evalFcn,DATA,outcome,parent,options, train, test, KI);
             % TODO:
             %   Change eval function to return:
             %       model, outputs with predictions+indices, statistics
             
-            parent = new_generation(parent,PerfA,sort_str,options);
+            parent = new_generation(parent,testCost,sort_str,options);
             
             %% FINAL VALIDATION
             % If tracking best genome statistics is desirable during run-time,
             % this section will have to recalculate the genome fitness, etc.
-            FS = parent(1,:)==1;
-            [aT,aTR] = evaluate(DATA,outcome,FS,options,train, test, KI ); % 1 individual - do not need to parallelize
             
-            out.EvolutionBestCost(ite,tries) = aTR ;
-            out.EvolutionBestCostTest(ite,tries) = aT ;
-            out.EvolutionMedianCost(ite,tries) = nanmedian(PerfA);
+            % Since FS is one individual, no need to parallelize (i.e. use
+            % evaluate function)
+            FS = parent(1,:)==1;
+            [out.Test.EvolutionBestCost(ite,tries),...
+                out.Training.EvolutionBestCost(ite,tries)] ...
+                = evaluate(DATA,outcome,FS,options,train, test, KI );
+            % Note: FS is 1 individual - do not need to parallelize
+            
+            out.Training.EvolutionMedianCost(ite,tries) = nanmedian(trainCost);
+            out.Test.EvolutionMedianCost(ite,tries) = nanmedian(testCost);
             
             %% Save and display results
             %%-------------------------+
-            out.BestGenomePlot{tries}(ite,:)=FS;
-            [~,~,out.EvolutionGenomeStats{ite,tries}] = ...
-                evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
+            out.BestGenomePlot{1,tries}(ite,:)=FS;
+            
             if strcmpi(options.Display,'plot')
-                [ out ] = plot_All( out, parent, [], options );
+                [ out ] = plot_All( out, parent, h, options );
+            end
+            
+            if ocDetailedFlag
+                %=== Detailed output
+                [~,~,out.EvolutionGenomeStats{ite,tries}] = ...
+                    evaluate(DATA, outcome, parent(1,:), options, train, test, KI);
+                
+            elseif ocDebugFlag
+                %=== Debug output
+                out.Genome{1,tries}(:,:,ite) = parent; % Save current genome
+                
+                %out.Training.EvolutionCost = zeros(maxIter,rep,popSize);
+                out.Training.EvolutionBestStats{ite,tries} = miscOutputContent.stats; % TODO: Fix this to training stats
+                
+                %out.Test.EvolutionCost = zeros(maxIter,rep,popSize);
+                out.Test.EvolutionBestStats = miscOutputContent.stats; % TODO: Fix this to test stats
+                
+            else
+                %=== Normal output so perform no additional calculations
             end
             
             iteTime=iteTime+toc;
@@ -587,6 +610,20 @@ for f=1:length(handles.data)
         out.BestGenome{tries} = parent(1,:)==1;
         out.IterationTime(1,tries)=iteTime/options.MaxIterations;
         out.RepetitionTime(1,tries)=repTime/tries;
+        
+        
+        %=== Save results
+        if ocDetailedFlag
+            %=== Detailed output
+            out.Training.BestGenomeStats{1,tries} = miscOutputContent.stats;
+            
+        elseif ocDebugFlag
+            %=== Debug output
+            
+        else
+            %=== Normal output so perform no additional calculations
+        end
+        
         out.CurrentRepetition=out.CurrentRepetition+1;
     end
     
@@ -599,11 +636,11 @@ for f=1:length(handles.data)
     else % The algorithm ended normally
         % then we keep the same file format
     end
-    set(handles.text2,'String',FileName);    
+    set(handles.text2,'String',FileName);
     FileName = [ handles.DataFilePath FileName];
     
     % Save results
-    export_results( FileName , out , handles.labels{f} , options );    
+    export_results( FileName , out , handles.labels{f} , options );
     
 end
 
