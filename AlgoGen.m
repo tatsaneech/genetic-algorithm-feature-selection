@@ -152,7 +152,6 @@ for tries = 1:options.Repetitions
         out.CurrentIteration=out.CurrentIteration+1;
     end
     % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
-    [~,~,out.BestGenomeStats{1,tries}] = evaluate_final(DATA, outcome, parent(1,:), options , train, test, KI);
     out.BestGenome{1,tries} = parent(1,:)==1;
     out.IterationTime(1,tries)=iteTime/options.MaxIterations;
     out.RepetitionTime(1,tries)=repTime/tries;
@@ -160,7 +159,10 @@ for tries = 1:options.Repetitions
     %=== Save results
     if ocDetailedFlag
         %=== Detailed output
-        out.Training.BestGenomeStats{1,tries} = miscOutputContent.stats;
+        %TODO: Check if this calculation is redundant and info is already
+        %contained in miscOutputContent
+        [~,~,miscOutputContent] = evaluate_final(DATA, outcome, parent(1,:), options , train, test, KI);
+        out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
         
     elseif ocDebugFlag
         %=== Debug output
