@@ -7,23 +7,33 @@
 load simulated_binary.mat
 
 %=== Open parallel processing if using
-matlabpool;
+parallelizeFlag = 1;
+if (exist('matlabpool','file')==2) && parallelizeFlag
+    if matlabpool('size')<=0
+        matlabpool 8;
+    end
+else
+    parallelizeFlag=0; % No MATLAB toolbox
+end
 
 %=== Next, instantiate the GA options
 % A full list of options is available in the help file
 opts=ga_opt_set('Parallelize',1,'CostFcn',@cost_AUROC,'OptDir',1,...
     'ErrorIterations',20,'ErrorGradient',0.005,...
-    'MinimizeFeatures',false,'PlotFcn','plot_All',...
-    'PopulationSize', 48,'FitnessFcn','fit_LR',...
-    'Repetitions', 4,'MaxIterations',50,'Display','none');
+    'MinimizeFeatures',false,'OutputContent','debug',...
+    'PopulationSize', 16,'FitnessFcn','fit_LR',...
+    'PlotFcn','plot_All','Display','plot',...
+    'Repetitions', 1,'MaxIterations',10);
 
 % Run the GA
 fprintf('Here we go! \n');
-[ga_out, ga_options] =  AlgoGen(data,outcome,opts);
+[ga_out, ga_options] =  AlgoGen(X,y,opts);
 
 %=== Save the output
-save('GA_output_1.mat','ga_out','ga_options');
+save('GA_DemoOutput_1.mat','ga_out','ga_options');
 
 
 %=== Close the parallel toolbox
-matlabpool close;
+if matlabpool('size')>0
+    matlabpool close;
+end
