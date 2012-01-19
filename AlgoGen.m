@@ -90,7 +90,7 @@ for tries = 1:options.Repetitions
             end
         end
         
-        %% Evaluate parents are create new generation
+        %% Evaluate parents and create new generation
         [testCost, trainCost] = feval(evalFcn,DATA,outcome,parent,options , train, test, KI);
         % TODO:
         %   Change eval function to return:
@@ -117,19 +117,19 @@ for tries = 1:options.Repetitions
         
         if ocDetailedFlag
             %=== Detailed output            
-            out.EvolutionGenomeStats{ite,tries} = miscOutputContent.stats;
+            out.EvolutionGenomeStats{ite,tries} = miscOutputContent.TestStats;
             
         elseif ocDebugFlag
             %=== Debug output
-            out.EvolutionGenomeStats{ite,tries} = miscOutputContent.stats;
+            out.EvolutionGenomeStats{ite,tries} = miscOutputContent.TestStats;
             
             out.Genome{1,tries}(:,:,ite) = parent; % Save current genome
         
             %out.Training.EvolutionCost = zeros(maxIter,rep,popSize);
-            out.Training.EvolutionBestStats{ite,tries} = miscOutputContent.stats; % TODO: Fix this to training stats
+            out.Training.EvolutionBestStats{ite,tries} = miscOutputContent.TrainStats;
         
             %out.Test.EvolutionCost = zeros(maxIter,rep,popSize);
-            out.Test.EvolutionBestStats = miscOutputContent.stats; % TODO: Fix this to test stats
+            out.Test.EvolutionBestStats = miscOutputContent.TestStats;
             
         else
             %=== Normal output
@@ -137,7 +137,7 @@ for tries = 1:options.Repetitions
             
         %=== Plot results
         if strcmpi(options.Display,'plot')
-            out.EvolutionGenomeStats{ite,tries} = miscOutputContent.stats;
+            out.EvolutionGenomeStats{ite,tries} = miscOutputContent.TestStats;
             [ out ] = plot_All( out, parent, h, options );
         end
         
@@ -152,7 +152,6 @@ for tries = 1:options.Repetitions
         out.CurrentIteration=out.CurrentIteration+1;
     end
     % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
-    [~,~,out.BestGenomeStats{1,tries}] = evaluate_final(DATA, outcome, parent(1,:), options , train, test, KI);
     out.BestGenome{1,tries} = parent(1,:)==1;
     out.IterationTime(1,tries)=iteTime/options.MaxIterations;
     out.RepetitionTime(1,tries)=repTime/tries;
@@ -160,11 +159,18 @@ for tries = 1:options.Repetitions
     %=== Save results
     if ocDetailedFlag
         %=== Detailed output
-        out.Training.BestGenomeStats{1,tries} = miscOutputContent.stats;
+        %TODO: Check if this calculation is redundant and info is already
+        %contained in miscOutputContent
+        [~,~,miscOutputContent] = evaluate_final(DATA, outcome, parent(1,:), options , train, test, KI);
+        out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
         
     elseif ocDebugFlag
         %=== Debug output
         
+        
+    elseif strcmpi(options.Display,'plot')
+        %=== Plot was used - might as well store some info from it
+        out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
     else
         %=== Normal output so perform no additional calculations
     end
