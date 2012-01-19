@@ -1,4 +1,5 @@
-function [ SCORE_test SCORE_train stats ] = evaluate( OriginalData , data_target , parents, options,train, test, KI )
+function [ SCORE_test, SCORE_train, stats ] = ...
+    evaluate(OriginalData, data_target, parents, options, train, test, KI )
 
 fitFcn=options.FitnessFcn;
 costFcn=options.CostFcn;
@@ -12,9 +13,8 @@ SCORE_train=zeros(P,1);
 
 
 %=== Default cost values to very sub-optimal
-%=== If the algorithm does not assign a cost value (due to missing
-%values, or unselected features), the genome will be heavily
-%penalized
+% If the algorithm does not assign a cost value (due to missing values or 
+% unselected features), the genome will be heavily penalized
 
 %TODO: Figure out a better limits than 9999 and -9999
 if optDir % Maximizing cost -> low default value
