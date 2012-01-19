@@ -563,7 +563,7 @@ for f=1:length(handles.data)
             FS = parent(1,:)==1;
             [out.Test.EvolutionBestCost(ite,tries),...
                 out.Training.EvolutionBestCost(ite,tries)] ...
-                = evaluate(DATA,outcome,FS,options,train, test, KI );
+                = evaluate_final(DATA,outcome,FS,options,train, test, KI );
             % Note: FS is 1 individual - do not need to parallelize
             
             out.Training.EvolutionMedianCost(ite,tries) = nanmedian(trainCost);
@@ -580,7 +580,7 @@ for f=1:length(handles.data)
             if ocDetailedFlag
                 %=== Detailed output
                 [~,~,out.EvolutionGenomeStats{ite,tries}] = ...
-                    evaluate(DATA, outcome, parent(1,:), options, train, test, KI);
+                    evaluate_final(DATA, outcome, parent(1,:), options, train, test, KI);
                 
             elseif ocDebugFlag
                 %=== Debug output
@@ -606,7 +606,7 @@ for f=1:length(handles.data)
             end
         end
         % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
-        [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
+        [~,~,out.BestGenomeStats{1,tries}] = evaluate_final(DATA, outcome, parent(1,:), options , train, test, KI);
         out.BestGenome{tries} = parent(1,:)==1;
         out.IterationTime(1,tries)=iteTime/options.MaxIterations;
         out.RepetitionTime(1,tries)=repTime/tries;

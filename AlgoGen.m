@@ -102,13 +102,11 @@ for tries = 1:options.Repetitions
         % If tracking best genome statistics is desirable during run-time,
         % this section will have to recalculate the genome fitness, etc.
         
-        % Since FS is one individual, no need to parallelize (i.e. use
-        % evaluate function)
         FS = parent(1,:)==1;
         [out.Test.EvolutionBestCost(ite,tries),...
             out.Training.EvolutionBestCost(ite,tries),...
             miscOutputContent] ...
-            = evaluate(DATA,outcome,FS,options,train,test,KI);
+            = evaluate_final(DATA,outcome,FS,options,train,test,KI);
         
         out.Training.EvolutionMedianCost(ite,tries) = nanmedian(trainCost);
         out.Test.EvolutionMedianCost(ite,tries) = nanmedian(testCost);
@@ -124,7 +122,7 @@ for tries = 1:options.Repetitions
         if ocDetailedFlag
             %=== Detailed output            
             [~,~,out.EvolutionGenomeStats{ite,tries}] = ...
-                evaluate(DATA, outcome, parent(1,:), options, train, test, KI);
+                evaluate_final(DATA, outcome, parent(1,:), options, train, test, KI);
             
         elseif ocDebugFlag
             %=== Debug output
@@ -152,7 +150,7 @@ for tries = 1:options.Repetitions
         out.CurrentIteration=out.CurrentIteration+1;
     end
     % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
-    [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options , train, test, KI);
+    [~,~,out.BestGenomeStats{1,tries}] = evaluate_final(DATA, outcome, parent(1,:), options , train, test, KI);
     out.BestGenome{1,tries} = parent(1,:)==1;
     out.IterationTime(1,tries)=iteTime/options.MaxIterations;
     out.RepetitionTime(1,tries)=repTime/tries;
