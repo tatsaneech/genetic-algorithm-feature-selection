@@ -574,9 +574,6 @@ for f=1:length(handles.data)
             %%-------------------------+
             out.BestGenomePlot{1,tries}(ite,:)=FS;
             
-            if strcmpi(options.Display,'plot')
-                [ out ] = plot_All( out, parent, h, options );
-            end
             
             if ocDetailedFlag
                 %=== Detailed output            
@@ -589,13 +586,19 @@ for f=1:length(handles.data)
                 out.Genome{1,tries}(:,:,ite) = parent; % Save current genome
 
                 %out.Training.EvolutionCost = zeros(maxIter,rep,popSize);
-                out.Training.EvolutionBestStats{ite,tries} = miscOutputContent.TrainStats; % TODO: Fix this to training stats
+                out.Training.EvolutionBestStats{ite,tries} = miscOutputContent.TrainStats;
 
                 %out.Test.EvolutionCost = zeros(maxIter,rep,popSize);
-                out.Test.EvolutionBestStats = miscOutputContent.TestStats; % TODO: Fix this to test stats
+                out.Test.EvolutionBestStats = miscOutputContent.TestStats;
 
             else
                 %=== Normal output
+            end
+            
+            %=== Plot results
+            if strcmpi(options.Display,'plot')
+                out.EvolutionGenomeStats{ite,tries} = miscOutputContent.TestStats;
+                [ out ] = plot_All( out, parent, h, options );
             end
             
             iteTime=iteTime+toc;
@@ -621,6 +624,10 @@ for f=1:length(handles.data)
             
         elseif ocDebugFlag
             %=== Debug output
+            
+        elseif strcmpi(options.Display,'plot')
+            %=== Plot was used - might as well store some info from it
+            out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
             
         else
             %=== Normal output so perform no additional calculations

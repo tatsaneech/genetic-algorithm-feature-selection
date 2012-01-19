@@ -126,10 +126,14 @@ for tries = 1:options.Repetitions
             out.Genome{1,tries}(:,:,ite) = parent; % Save current genome
         
             %out.Training.EvolutionCost = zeros(maxIter,rep,popSize);
-            out.Training.EvolutionBestStats{ite,tries} = miscOutputContent.TrainStats; % TODO: Fix this to training stats
+            out.Training.EvolutionBestStats{ite,tries} = miscOutputContent.TrainStats;
         
             %out.Test.EvolutionCost = zeros(maxIter,rep,popSize);
-            out.Test.EvolutionBestStats = miscOutputContent.TestStats; % TODO: Fix this to test stats
+            out.Test.EvolutionBestStats = miscOutputContent.TestStats;
+            
+        elseif strcmpi(options.Display,'plot')
+            %=== Plot was used - might as well store some info from it
+            out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
             
         else
             %=== Normal output
@@ -137,7 +141,7 @@ for tries = 1:options.Repetitions
             
         %=== Plot results
         if strcmpi(options.Display,'plot')
-            out.EvolutionGenomeStats{ite,tries} = miscOutputContent.stats;
+            out.EvolutionGenomeStats{ite,tries} = miscOutputContent.TestStats;
             [ out ] = plot_All( out, parent, h, options );
         end
         
