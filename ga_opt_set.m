@@ -17,7 +17,7 @@ function [ options ] = ga_opt_set( varargin )
 %   PopulationSize      - The number of genomes in the population
 %                       [ positive integer | {100} ]
 %   Display             - What to display during execution
-%                       [ 'Plot' | 'Text' | {'none'} ]
+%                       [ 'plot' | 'text' | {'none'} ]
 %   MaxFeatures         - The maximum allowable features in each genome
 %                       [ positive scalar | {0} (no limit) ]
 %   MinFeatures         - The minimum allowable features in each genome
@@ -46,6 +46,9 @@ function [ options ] = ga_opt_set( varargin )
 %                       [ positive scalar between 0-1 | {.06} ]
 %   OptDir             - The optimization direction, 0 - min, 1 - maximize
 %                       [ 1 | {0} ]
+%   OutputContent      - Specify the data stored in the output structure
+%                       Note: may increase computationally intensity
+%                       [ {'normal'} | 'detailed' | 'debug' ]
 %   PlotFcn             - The plotting function used for display
 %                       [ function name string | function handle | {[]} ]
 %   ErrorGradient       - The minimum improvement required to prevent error termination
@@ -80,7 +83,7 @@ if nargout==0
     return;
 else
     options=struct( ...
-        'Display', 'Plot', ...
+        'Display', 'plot', ...
         'MaxIterations', 100, ...
         'PopulationSize', 50, ...
         'MaxFeatures', 0, ...
@@ -89,6 +92,7 @@ else
         'ConfoundingFactors', [], ...
         'Repetitions', 100, ...
         'OptDir', 0, ...
+        'OutputContent', 'normal',...
         'FitnessFcn', 'fit_LR', ...% This should have the exact same name as the .m function
         'CostFcn', 'cost_RMSE', ... % This should have the exact same name as the .m function
         'CrossoverFcn', 'crsov_SP', ... % This should have the exact same name as the .m function
@@ -199,10 +203,10 @@ end
 
 switch param
     % Strings
-    case 'Display'
+    case {'Display','OutputContent'}
         if ~ischar(val)
             valid = 0;
-            errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a string with a valid three char extension.',param);
+            errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a string.',param);
             return
         end
         % Louis July 6th 11 : Commented the whole thing because it crashed (very wise thing to do isn't it?)
@@ -247,7 +251,8 @@ switch param
     case {'FitnessFcn','CrossoverFcn','PlotFcn','CostFcn','CrossValidationFcn','MutationFcn'}
         if ~ischar(val) && ~iscell(val) &&  ~isa(val,'function_handle')
             valid = 0;
-            errmsg = sprintf('Invalid value for OPTIONS parameter %s',param);
+            errmsg = sprintf(['Invalid value for OPTIONS parameter %s: must be a string or \n'...
+                'function handle with valid three character prefix'],param);
         end
         % Booleans/Doubles
     case {'GUIFlag','Parallelize','OptDir','MinimizeFeatures','NormalizeData'}
@@ -521,6 +526,34 @@ for k=1:length(paramsChecked)
                     defCost{idxCost,2},options.OptDir,options.CostFcn);
                 end
             end
+        case 'Display'
+            pval = lower(pval); % Remove upper case if present
+            options.(param) = pval;
+            
+            switch pval
+                case {'plot','text','none'}
+                    %=== Correct input - nothing needed
+                otherwise
+                    %=== Incorrect - default to normal
+                    warning(sprintf('ga_opt_set:%s:InvalidOutputContent', mfilename), ...
+                    'Display was set to %s, an invalid value. Defaulted to ''none''.',...
+                    pval);
+                    options.(param) = 'none';
+            end
+        case 'OutputContent'
+            pval = lower(pval); % Remove upper case if present
+            options.(param) = pval;
+            switch pval
+                case {'normal','detailed','debug'}
+                    %=== Correct input - nothing needed
+                otherwise
+                    %=== Incorrect - default to normal
+                    warning(sprintf('ga_opt_set:%s:InvalidOutputContent', mfilename), ...
+                    'OutputContent was set to %s, an invalid value. Defaulted to ''normal''.',...
+                    pval);
+                    options.(param) = 'normal';
+                    
+            end
         otherwise
             % Recite Acadian Poetry ... or do nothing, your choice!
             % there is beauttiful Acadian Poem at http://www.gov.ns.ca/legislature/library/digitalcollection/bookpart1.stm
@@ -535,7 +568,7 @@ fprintf('\n');
 fprintf('   PopulationSize      - The number of genomes in the population\n');
 fprintf('                       [ positive integer | {100} ]\n');
 fprintf('   Display             - What to display during execution\n');
-fprintf('                       [ ''Plot'' | ''Text'' | {''none''} ]\n');
+fprintf('                       [ ''plot'' | ''text'' | {''none''} ]\n');
 fprintf('   MaxFeatures         - The maximum allowable features in each genome\n');
 fprintf('                       [ positive scalar | {0} (no limit) ]\n');
 fprintf('   MinFeatures         - The minimum allowable features in each genome\n');
@@ -565,6 +598,9 @@ fprintf('   MutationRate       - Rate of ramndom mutations applied to children\n
 fprintf('                       [ positive scalar between 0-1 | {.06} ]\n');
 fprintf('   OptDir             - The optimization direction, 0 - min, 1 - maximize\n');
 fprintf('                       [ 1 | {0} ]\n');
+fprintf('   OutputContent      - Specify the data stored in the output structure\n');
+fprintf('                       Note: may increase computationally intensity\n');
+fprintf('                       [ {''normal''} | ''detailed'' | ''debug'' ]\n');
 fprintf('   PlotFcn             - The plotting function used for display\n');
 fprintf('                       [ function name string | function handle | {[]} ]\n');
 fprintf('   ErrorGradient       - The minimum improvement required to prevent error termination\n');
