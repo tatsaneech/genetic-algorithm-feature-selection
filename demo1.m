@@ -4,6 +4,7 @@
 
 
 %== First, load the data
+addpath('./data/');
 load simulated_binary.mat
 
 %=== Open parallel processing if using
