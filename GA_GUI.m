@@ -540,7 +540,7 @@ for f=1:length(handles.data)
             ite = ite + 1;
             out.CurrentIteration=ite;
             if ite>(options.ErrorIterations+1) % Enough iterations have passed to estimate early stop
-                win = out.EvolutionBestCostTest((ite-(options.ErrorIterations+1)):(ite-1));
+                win = out.Test.EvolutionBestCost((ite-(options.ErrorIterations+1)):(ite-1));
                 if abs(max(win) - min(win)) < options.ErrorGradient && options.ErrorGradient ~=0
                     early_stop = true ;
                 end
