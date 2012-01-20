@@ -84,7 +84,7 @@ for tries = 1:options.Repetitions
         tic;
         ite = ite + 1;
         if ite>(options.ErrorIterations+1) % Enough iterations have passed
-            win = out.EvolutionBestCostTest((ite-(options.ErrorIterations+1)):(ite-1));
+            win = out.Test.EvolutionBestCost((ite-(options.ErrorIterations+1)):(ite-1));
             if abs(max(win) - min(win)) < options.ErrorGradient
                 early_stop = true ;
             end
