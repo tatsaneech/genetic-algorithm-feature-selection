@@ -1,4 +1,4 @@
-function parents = initialise_pop(Nbre_tot_var,options)
+function parents = initialise_pop(options,Nbre_tot_var)
 % Note (Louis Mayaud July-1st-11: Nbre_tot_var could be negative integer indicating
 % that the model should include Nbre_tot_var variables and exactly it, whereas a positive value
 % would set Nbre_tot_var as the max number of variables to be included in the model. 
@@ -16,14 +16,20 @@ function parents = initialise_pop(Nbre_tot_var,options)
 %       numFeatures - Number of true values in each genome
 %       options.ConfoundingFactors - Numeric indices of flags in genomes which must be true
 %           (forcably included features)
+if nargin<2
+    Nbre_tot_var=options.NumFeatures;
+end
 
 if options.MaxFeatures == options.MinFeatures && options.MaxFeatures~=0 
     % forced number of features
     numFeatures=options.MaxFeatures;
 else
     % default true values to square root of total dimension
-    numFeatures = round(sqrt(Nbre_tot_var));
-    
+    if options.InitialFeatureNum ~= 0
+        numFeatures = options.InitialFeatureNum;
+    else
+        numFeatures = round(sqrt(Nbre_tot_var)); % certainly too arbitrary
+    end
     % Check to ensure this is does not violate min/max
     if numFeatures>options.MaxFeatures && options.MaxFeatures~=0 
         numFeatures=options.MaxFeatures;

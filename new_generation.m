@@ -17,7 +17,8 @@ POP_elite = floor( (options.Elitism/100)*POP_SIZE ) ;
 mutation_prop = .2 ; % TODO: Make this a parameter in options
 
 %% Selection
-
+%TODO: Check if this sort calculation is still needed, as a sort is
+%performed in the main function (AlgoGen or GA_GUI)
 % sort parent generation by increasing or decreasing performance
 [BestPerfA  BestPerfAIdx] = sort(PerfA,sort_str);
 % Pass down the X% best performers to the next generation
@@ -36,7 +37,7 @@ repro = parent( BestPerfAIdx(1:POP_xover) , : ) ;
 
 %% Make sure that confounding factors are still included + Max/Min vars
 
-if ~isempty(ConfFact) && (length(ConfFact)>1 || ConfFact~=0)
+if ~isempty(ConfFact) && ~isnan(ConfFact) && (length(ConfFact)>1 || ConfFact~=0)
     % Force confounding factors
     children(:,ConfFact)=true(size(children,1),length(ConfFact));
 end
@@ -59,19 +60,18 @@ if MaxVar>0 % Ensure number of features < MaxVar
         % Do not flip confounding factors
         maxRandPerm=setdiff(maxRandPerm,ConfFact);
         
-        
-        if nFlip>=length(maxRandPerm) % Still have enough factors to flip
+        if nFlip<=length(maxRandPerm) % Still have enough factors to flip
             children(maxVarIdx(k),kthChild(maxRandPerm(1:nFlip)))=0;
         else
             % Oh well, flip what we can and complain
             children(maxVarIdx(k),kthChild(maxRandPerm(1:end)))=0;
-            warning('GA:AlgoGen:new_generation:Confounded', ...
+            warning('GA:AlgoGen:new_generation:CounfingFactorsConflict', ...
                 ['More confounding factors entered than maximally\n' ...
                 'allowed features. The MaxFeatures parameter should\n' ...
                 'be lowered.']);
         end
     end
-    %         [trueBitsI,trueBitsJ]=ind2sub(size(children(maxVarIdx,:)),find(children(maxVarIdx,:)==1)); % Linear index
+    %  [trueBitsI,trueBitsJ]=ind2sub(size(children(maxVarIdx,:)),find(children(maxVarIdx,:)==1)); % Linear index
 end
 
 if MinVar>0 % Ensure number of features > MinVar
@@ -100,9 +100,9 @@ end
 [r,c] = find(diff==0);
 twins = unique([r ; c]);
  
-if length(twins)>0
+if ~isempty(twins)
     options.PopulationSize=length(twins); % Temporary change.
-    children(twins,:) = initialise_pop(VAR_NUM,options);
+    children(twins,:) = initialise_pop(options,VAR_NUM);
 end % Some twins might still be present after generation of random aliens BUT we don't care that much 
 
 parent = [elderly ; children] ;

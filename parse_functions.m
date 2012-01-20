@@ -1,4 +1,3 @@
-
 % --------------------------------------------------- %
 % --------------------------------------------------- %
 % Parses functions, including translating strings into function handles

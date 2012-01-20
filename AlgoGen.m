@@ -7,75 +7,35 @@ function [out,options] = AlgoGen(DATA, outcome, options)
 addpath('./stats'); % ensure stats is in the path
 
 %% Initialisation
-if nargin <3
-    options=ga_opt_set;
+%=== Initialize options
+if nargin < 3
+    options=ga_opt_set('GUIFlag',false,'NumFeatures',size(DATA,2));
+else
+    options=ga_opt_set(options,'GUIFlag',false,'NumFeatures',size(DATA,2));
 end
 
 verbose=true; % Set true to view time evaluations
 
-% Define main parameters
-[options] = ...
-    parse_inputs(options);
-% COMMENT Louis 1st July 2011 : Why not parsing parameters and
-% functions handles when initializing/defining the options?
-
-% COMMENT Alistair 14 Sep 2011 : ga_opt_set checks the parameters are
-% valid and defaults undefined to []. parse_inputs makes sure they are
-% internally consistent: i.e., ConfFact < Nbre_tot_var, etc
-%
 % To add an option field, follow these steps:
 %   Add to options in ga_opt_set (also add comment)
-%   Add to check_args subfunction in ga_opt_set
-%   Add to def_opt in parse_options (in AlgoGen.m)
-%   If it is a new type of sub-function, you will also need to
-%       add it to parse_functions (in AlgoGen.m)
+%   Add to subfunction ga_opt_set:validateParamType
+%   If needed, add to subfunction ga_opt_set:validateParamIsSubset
 % TODO: Also document changes needed in GUI
 
-
-[Nbre_obs,Nbre_var]=size(DATA);
-
-origOutcome = outcome;
 [DATA, outcome] = errChkInput(DATA, outcome, options);
 
-GUIflag=options.GUIFlag;
-% Initialise visualization variable
-im = zeros(options.MaxIterations,Nbre_var,options.Repetitions);
+%TODO: Create initialize_plot function which sets up GUI figures depending
+%on which plot_* is used (this will allow the algorithm to only plot, for
+%example, a ROC curve when that is all that is desired)
 
 if strcmpi(options.Display,'plot')
-    if isempty(options.PopulationEvolutionAxe)
-        % If axes are empty, then the GUI is not used, must set up figure
-        h=figure;
-        GUIflag=false;
-        subplot(3, 2 , [1 2]);
-        colormap('gray');
-        title(['Selected variables'],'FontSize',16);
-        ylabel('Variables','FontSize',16);
-        options.PopulationEvolutionAxe = gca;
-        
-        subplot(3, 2 , [3 4] );
-        xlabel('Generations','FontSize',16);
-        ylabel('Mean AUC','FontSize',16);
-        options.FitFunctionEvolutionAxe = gca;
-        
-        
-        subplot(3, 2 , 5); % ROC
-        xlabel('Sensitivity'); ylabel('1-Specificity');
-        options.CurrentScoreAxe = gca;
-        
-        subplot(3, 2 , 6);
-        xlabel('Variables','FontSize',16);
-        ylabel('Genomes','FontSize',16);
-        title('Current Population','FontSize',16);
-        options.CurrentPopulationAxe = gca;
-    end
+    [h,options]=initialize_figure(options);
 end
 
 % min or maximize cost
 if options.OptDir==1
-    min_or_max=@max;
     sort_str='descend';
 else
-    min_or_max=@min;
     sort_str='ascend';
 end
 
@@ -84,6 +44,19 @@ if options.Parallelize==1
     evalFcn=@evaluate_par;
 else
     evalFcn=@evaluate;
+end
+
+% Set up flags for output content
+switch options.OutputContent
+    case 'normal'
+        ocDetailedFlag = false;
+        ocDebugFlag = false;
+    case 'detailed'
+        ocDetailedFlag = true;
+        ocDebugFlag = false;
+    case 'debug'
+        ocDetailedFlag = false;
+        ocDebugFlag = true;
 end
 
 % Initialize outputs
@@ -99,73 +72,82 @@ for tries = 1:options.Repetitions
     % - options.ConfoundingFactors genes (variables) having these indexes being
     % activated by default
     
-    parent = initialise_pop(Nbre_var,options);
-    % Check if early-stop criterion is met
-    % if not: continue
-    ite = 0 ; early_stop = false ;
-    iteTime=0;
+    parent = initialise_pop(options);
+    
+    % Reset repetition counters/sentinel flags
+    ite = 0; early_stop = false; iteTime=0;
+    
+    % Calculate indices for training repetitions for each genome
+    [ train, test, KI ] = feval(options.CrossValidationFcn,outcome,options);
+    
     while ite < options.MaxIterations && ~early_stop
         tic;
         ite = ite + 1;
         if ite>(options.ErrorIterations+1) % Enough iterations have passed
-            win = out.EvolutionBestCostTest((ite-(options.ErrorIterations+1)):(ite-1));
+            win = out.Test.EvolutionBestCost((ite-(options.ErrorIterations+1)):(ite-1));
             if abs(max(win) - min(win)) < options.ErrorGradient
                 early_stop = true ;
             end
         end
         
-        %% Evaluate parents are create new generation
-        [PerfA] = feval(evalFcn,DATA,outcome,parent,options);
+        %% Evaluate parents and create new generation
+        [testCost, trainCost] = feval(evalFcn,DATA,outcome,parent,options , train, test, KI);
         % TODO:
         %   Change eval function to return:
         %       model, outputs with predictions+indices, statistics
         
-        parent = new_generation(parent,PerfA,sort_str,options);
+        %=== Sort genome
+        [testCost  idxTestSort] = sort(testCost,sort_str);
+        trainCost = trainCost(idxTestSort,:);
+        parent = parent(idxTestSort,:);
         
         %% FINAL VALIDATION
         % If tracking best genome statistics is desirable during run-time,
         % this section will have to recalculate the genome fitness, etc.
-        FS = parent(1,:)==1;
-        [aT,aTR] = evaluate(DATA,outcome,FS,options); % 1 individual - do not need to parallelize
         
-        out.EvolutionBestCost(ite,tries) = feval(min_or_max,aTR) ;
-        out.EvolutionBestCostTest(ite,tries) = feval(min_or_max,aT) ;
-        out.EvolutionMedianCost(ite,tries) = nanmedian(aT);
+        FS = parent(1,:)==1;
+        [out.Test.EvolutionBestCost(ite,tries),...
+            out.Training.EvolutionBestCost(ite,tries),...
+            miscOutputContent] ...
+            = evaluate_final(DATA,outcome,FS,options,train,test,KI);
+        
+        out.Training.EvolutionMedianCost(ite,tries) = nanmedian(trainCost);
+        out.Test.EvolutionMedianCost(ite,tries) = nanmedian(testCost);
         
         %% Save and display results
         %%-------------------------+
-        im(ite,:,tries)=FS;
+        out.BestGenomePlot{1,tries}(ite,:)=FS;
+        
+        if ocDetailedFlag
+            %=== Detailed output            
+            out.EvolutionGenomeStats{ite,tries} = miscOutputContent.TestStats;
+            
+        elseif ocDebugFlag
+            %=== Debug output
+            out.EvolutionGenomeStats{ite,tries} = miscOutputContent.TestStats;
+            
+            out.Genome{1,tries}(:,:,ite) = parent; % Save current genome
+        
+            out.Training.EvolutionCost(ite,tries,:) = trainCost;
+            out.Training.EvolutionBestStats{ite,tries} = miscOutputContent.TrainStats;
+        
+            out.Test.EvolutionCost(ite,tries,:) = testCost;
+            out.Test.EvolutionBestStats = miscOutputContent.TestStats;
+            
+        else
+            %=== Normal output
+        end
+            
+        %=== Plot results
         if strcmpi(options.Display,'plot')
-            [~,~,out.EvolutionGenomeStats{ite,tries}] = evaluate(DATA, outcome, parent(1,:), options);
-            %  saveas(h,['AG-current_' int2str(patient_type) '.jpg'])
-            if ~GUIflag
-                figure(h);
-            end
-            set(gcf,'CurrentAxes',options.PopulationEvolutionAxe) ;
-            imagesc(~im(1:ite,:,tries)'); % Plot features selected
-            colormap('gray');
-            title([int2str(sum(FS)) ' selected variables'],'FontSize',16);
-            ylabel('Variables','FontSize',16);
-
-            set(gcf,'CurrentAxes',options.FitFunctionEvolutionAxe);
-            plot(1:ite, out.EvolutionBestCostTest(1:ite,tries), 'b--', 1:ite, out.EvolutionMedianCost(1:ite,tries), 'g-');
-            xlabel('Generations','FontSize',16); ylabel('Mean cost','FontSize',16);
-            legend('Best','Median','Location','NorthWest'); %'RMSE train','AUC' ,
-            
-            % TODO Get the plot function handle and plot : options.PlotFcn
-            set(gcf,'CurrentAxes',options.CurrentScoreAxe);
-            plot(out.EvolutionGenomeStats{ite,tries}.roc.x,out.EvolutionGenomeStats{ite,tries}.roc.y,'b--');
-            
-            xlabel('Sensitivity'); ylabel('1-Specificity');
-            
-            set(gcf,'CurrentAxes',options.CurrentPopulationAxe);
-            imagesc(~parent);
-            xlabel('Variables','FontSize',16);
-            ylabel('Genomes','FontSize',16);
-            title('Current Population','FontSize',16);
-            pause(0.5);
+            out.EvolutionGenomeStats{ite,tries} = miscOutputContent.TestStats;
+            [ out ] = plot_All( out, parent, h, options );
         end
         
+        %=== Calculate new genome
+        parent = new_generation(parent,testCost,sort_str,options);
+        
+        %=== Update timing calculations + print info to command prompt
         iteTime=iteTime+toc;
         repTime=repTime+toc;
         if verbose % Time elapsed reports
@@ -173,98 +155,38 @@ for tries = 1:options.Repetitions
                 ite,options.MaxIterations, toc, iteTime,...
                 (((iteTime/ite * (options.MaxIterations) * (options.Repetitions)))-repTime)/3600);
         end
+        out.CurrentIteration=out.CurrentIteration+1;
     end
-    out.GenomePlot{1,tries}=im(:,:,tries);
     % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
-    [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options);
     out.BestGenome{1,tries} = parent(1,:)==1;
     out.IterationTime(1,tries)=iteTime/options.MaxIterations;
-    out.RepetitionTime(1,tries)=iteTime;
-  
-    % Save results
-    if ~isempty(options.FileName) % If a file has been selected for saving
-        export_results( options.FileName , out , handles.labels , options );   
+    out.RepetitionTime(1,tries)=repTime/tries;
+    
+    %=== Save results
+    if ocDetailedFlag
+        %=== Detailed output
+        %TODO: Check if this calculation is redundant and info is already
+        %contained in miscOutputContent
+        [~,~,miscOutputContent] = evaluate_final(DATA, outcome, parent(1,:), options , train, test, KI);
+        out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
+        
+    elseif ocDebugFlag
+        %=== Debug output
+        
+        
+    elseif strcmpi(options.Display,'plot')
+        %=== Plot was used - might as well store some info from it
+        out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
+    else
+        %=== Normal output so perform no additional calculations
     end
+        
+    if ~isempty(options.FileName) % If a file has been selected for saving
+        export_results( options.FileName , out , handles.labels , options );
+    end
+    out.CurrentRepetition=out.CurrentRepetition+1;
     
 end
 
-
-end
-
-% --------------------------------------------------- %
-% --------------------------------------------------- %
-function [data, outcome] = ...
-    errChkInput(data, outcome, options)
-
-[Nbre_obs,Nbre_var]=size(data);
-
-%=== Error check data
-if Nbre_var > Nbre_obs
-    if options.MaxFeatures==0
-    warning('GAFS:AlgoGen:HighDimensionality', ...
-        ['The data input has more features than observations. This may\n' ...
-        'result in selection of more features than observations. \n' ...
-        'You should use caution, and perhaps set the MaxFeatures field.']);
-    elseif options.MaxFeatures > Nbre_var
-        warning('GAFS:AlgoGen:HighMaxFeatures', ...
-            ['The data input has more features than observations, and the\n' ...
-            'MaxFeatures field is set higher than the number of observations.\n' ...
-            'This may result in selection of more features than observations, \n' ...
-            'causing an error. You should set the MaxFeatures field to a lower value.']);
-    end
-end
-
-%=== Error check outcome
-oSz = size(outcome);
-if oSz(1) == 1
-    outcome = outcome'; % column vector preferred
-elseif oSz(2) == 1
-    % Column vector is a good input, do nothing
-else
-    error('GAFS:AlgoGen:TooManyTargetVectors',...
-        ['The target input has more than one vector of targets. \n' ...
-        'Multinomial classification is currently unsupported.']);
-end
-
-uniqOut = unique(outcome);
-
-if size(uniqOut,1) > 2
-    % Not a binary classification problem
-    warning('GAFS:AlgoGen:NotBinaryClassification', ...
-        ['The target vector contains more than 2 possible values.\n' ...
-        'Regression is not fully supported yet, and errors may occur.\n' ...
-        'Buyer beware.']);
-else
-    if iscell(outcome)
-        % Pick a random outcome as the positive outcome
-        warning('GAFS:AlgoGen:UnspecifiedPositiveTarget', ...
-            ['The target input does not have a clear positive target.\n' ...
-            'You should perhaps set the outcome to a double vector of \n' ...
-            'and negative targets (i.e., 0 and 1).']);
-        
-        fprintf('Positive target is assumed to be %s \n',uniqOut{1});
-        
-        outcome = double(strcmp(outcome,uniqOut{1}));
-    elseif ischar(outcome)
-        % Pick a random outcome as the positive outcome
-        warning('GAFS:AlgoGen:UnspecifiedPositiveTarget', ...
-            ['The target input does not have a clear positive target.\n' ...
-            'You should perhaps set the outcome to a double vector of \n' ...
-            'and negative targets (i.e., 0 and 1).']);
-        
-        fprintf('Positive target is assumed to be %s \n',uniqOut(1,:));
-        
-        outcome = double(arrayfun(@(x) strcmp(x,uniqOut(1,:)),outcome));
-    elseif islogical(outcome)
-        outcome = double(outcome);
-        
-    elseif isnumeric(outcome) % isdouble() just crashes here so replaced with isnumeric()
-        % Assume higher outcome is positive class
-        outcome = double(outcome > min(uniqOut));
-    else
-        error('GAFS:AlgoGen:UnknownTargetType', ...
-            'The target input should be of type cell, char, logical, or double.');
-    end
-end
 
 end

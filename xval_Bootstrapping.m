@@ -2,20 +2,14 @@ function [ tr_idx, t_idx, D ] = xval_Bootstrapping( data_target, options )
 %XVAL_BOOTSTRAPPING Bootstrap of data.
 %   xval_Bootstrapping( data_target, options )
 
-
-if isempty(options.CrossValidationParam)
-    D=250;
-    P=0.3;
-else
-    D=options.CrossValidationParam(1);
-    P=options.CrossValidationParam(2);
-end
+D=options.CrossValidationParam(1);
+P=options.CrossValidationParam(2);
 
 N=length(data_target);
-    
+
 %     random indices from 1:N
 [~,temp] = sort(rand(N,D),1);
-  
+
 % Temporary numerical indices
 tr_idx=false(N,D);
 t_idx=false(N,D);

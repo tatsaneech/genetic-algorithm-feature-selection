@@ -27,11 +27,11 @@ function varargout = GA_GUI(varargin)
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
-                   'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @GA_GUI_OpeningFcn, ...
-                   'gui_OutputFcn',  @GA_GUI_OutputFcn, ...
-                   'gui_LayoutFcn',  [] , ...
-                   'gui_Callback',   []);
+    'gui_Singleton',  gui_Singleton, ...
+    'gui_OpeningFcn', @GA_GUI_OpeningFcn, ...
+    'gui_OutputFcn',  @GA_GUI_OutputFcn, ...
+    'gui_LayoutFcn',  [] , ...
+    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
 end
@@ -63,8 +63,9 @@ addpath('./stats'); % ensure stats is in the path
 
 %%Scan files and find specific functions
 files = dir;
+statFiles = dir('./stats/private/');
 Fplot = {}; Ffit = {}; Fxval = {} ; Fmating = {}; Fcost = {};
-for f=1:length(files)
+for f=1:length(files) %=== Loop through various functions
     if regexp(files(f).name,'plot_.*.\S?') % there is a plot function
         Fplot = [Fplot ; files(f).name(1:(end-2)) ];
     end
@@ -74,11 +75,13 @@ for f=1:length(files)
     if regexp(files(f).name,'xval_.*\.m$') % there is a Cross-validation function
         Fxval = [Fxval ; files(f).name(1:(end-2)) ];
     end
-    if regexp(files(f).name,'crsov.*\.m$') % there is a Mating function
+    if regexp(files(f).name,'crsov_.*\.m$') % there is a Mating function
         Fmating = [Fmating ; files(f).name(1:(end-2)) ];
     end
-    if regexp(files(f).name,'cost_.*\.m$') % there is a Mating function
-        Fcost = [Fcost ; files(f).name(1:(end-2)) ];
+end
+for f=1:length(statFiles) %=== Loop through stat functions
+    if regexp(statFiles(f).name,'stats_.*\.m$') % there is a Cost function
+        Fcost = [Fcost ; statFiles(f).name(1:(end-2)) ];
     end
 end
 set(handles.popupmenu1,'String' , Fmating)
@@ -86,7 +89,7 @@ set(handles.popupmenu3,'String' , Fxval)
 set(handles.popupmenu4,'String' , Ffit)
 set(handles.popupmenu5,'String' , Fplot)
 set(handles.popupmenu6,'String' , Fcost)
- 
+
 % Initialize GA parameters
 handles.GA_options = ga_opt_set();
 handles.GA_options.GUIflag = true;
@@ -99,7 +102,7 @@ guidata(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = GA_GUI_OutputFcn(hObject, eventdata, handles) 
+function varargout = GA_GUI_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -114,52 +117,60 @@ function pushbutton1_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-[handles.DataFile , handles.DataFilePath] = uigetfile({'*.mat','Matlab file';'*.xls','Excel File';'*.csv','CSV file'}, 'Please select your pre-formated database');
+handles.DataFile=[];
+[handles.DataFile , handles.DataFilePath] = uigetfile({'*.mat','Matlab file';'*.xls','Excel File';'*.csv','CSV file'}, 'Please select your pre-formated database(s)','MultiSelect','on');
 
-if handles.DataFile~=0
+
+if iscell(handles.DataFile)~=1
+    handles.DataFile = { handles.DataFile} ;
+end
+if handles.DataFile{1}==0
+    handles.DataFile=[];
+end
+
+for f=1:length(handles.DataFile)
     %% Get and process input data
-    if strcmp(handles.DataFile((end-2):end),'mat')
+    if strcmp(handles.DataFile{f}((end-2):end),'mat')
         % this is a MAT file
-        eval(['load ''' handles.DataFilePath  handles.DataFile ''';']);
-
-    elseif strcmp(handles.DataFile((end-2):end),'csv')
+        eval(['load ''' handles.DataFilePath  handles.DataFile{f} ''';']);
+        
+    elseif strcmp(handles.DataFile{f}((end-2):end),'csv')
         % This is a CSV file
         % TODO fill import function
         warndlg('CSV file not supported yet, please use MAT file');
         error('GA_GUI:Start','CSV file not supported yet, please use MAT file');
-    elseif strcmp(handles.DataFile((end-2):end),'xls')
-        % This is a XLS file    
+    elseif strcmp(handles.DataFile{f}((end-2):end),'xls')
+        % This is a XLS file
         % TODO fill import function
         warndlg('XLS file not supported yet, please use MAT file');
         error('GA_GUI:Start','XLS file not supported yet, please use MAT file');
     else
-        errmsg = sprintf('Input file has undefined extension: %s. Should be .mat, .xls or .csv',handles.DataFile((end-3):end));
+        errmsg = sprintf('Input file has undefined extension: %s. Should be .mat, .xls or .csv',handles.DataFile{f}((end-3):end));
         error('GA_GUI:Start',errmsg);
     end
-    set(handles.text1,'String',handles.DataFile);
-
+    
     % TODO look at outcome and check what kind of outcome this is:
     % - linear
     % - binary
     % - multiclass
-    % handles.outcomeType = 
+    % handles.outcomeType =
     
     % TODO: Add parsing to the input data to allow for variable field names
     %   Possible request input from user that data has been scanned
     %   properly
     if exist('data','var') && exist('labels','var') && exist('outcome','var')
-    % Data integrity check
-         [data outcome labels] = data_integrity_check(data,outcome,labels);
+        % Data integrity check
+        [data outcome labels] = data_integrity_check(data,outcome,labels);
     elseif exist('X','var') && exist('labels','var') && exist('y','var')
-         [data outcome labels] = data_integrity_check(X,y,labels);
+        [data outcome labels] = data_integrity_check(X,y,labels);
     end
-
-    % Save data
-        handles.data = data ;
-        handles.outcome = outcome ;
-        handles.labels = labels ;
-end
     
+    % Save data
+    handles.data{f} = data ;
+    handles.outcome{f} = outcome ;
+    handles.labels{f} = labels ;
+end
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -170,7 +181,7 @@ function pushbutton2_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 [handles.ExportFile , handles.ExportFilePath] = uigetfile({'*.xls','Excel File';'*.csv','CSV file'}, 'Please select your export File');
 % TODO check file format integrity
-set(handles.text2,'String',handles.ExportFile);
+set(handles.text2,'String',  handles.ExportFile);
 % Update handles structure
 guidata(hObject, handles);
 
@@ -423,11 +434,11 @@ plotFIdx = get(handles.popupmenu5,'Value')
 costFs = get(handles.popupmenu6,'String')
 costFIdx = get(handles.popupmenu6,'Value')
 
-opts = ga_opt_set('Display','plot',...
+options = ga_opt_set('Display','plot',...
     'MinFeatures', str2double( get(handles.MinFeatures,'String') ), ...
     'MaxFeatures', str2double( get(handles.MaxFeatures,'String') ), ...
     'MaxIterations',str2double( get(handles.edit2,'String') ),...
-    'ConfoundingFactors', get(handles.edit4,'String'), ...
+    'ConfoundingFactors', str2double(regexp(get(handles.edit4,'String'),',','split')), ...
     'Repetitions' , str2double( get(handles.edit1,'String') ), ...
     'FitnessFcn', fitFs{fitFIdx}, ...
     'CrossoverFcn',matingFs{matingFIdx}, ...
@@ -444,14 +455,17 @@ opts = ga_opt_set('Display','plot',...
     'PopulationSize',str2double( get(handles.edit5,'String') ),...
     'GUIFlag',true,...
     'OptDir', get(handles.checkbox3,'Value'),...
-    'ErrorGradient',0,... % If zero, then ignore
-    'MinimizeFeatures',false...
+    'ErrorGradient',0.00001,... % If zero, then ignore
+    'MinimizeFeatures',false,...
+    'FileName','SimulationOutput.csv',...
+    'InitialFeatureNum',0, ...
+    'NumFeatures',0 ... % Default to 0 - will be updated later
     );
 
 if isfield(handles,'ExportFile')
     %TODO: (WARNING) This scenario doesn't seem to actually update the the
-    %opts but to replace them only.
-%   opts = ga_opt_set(opts , 'FileName', [handles.ExportFilePath handles.ExportFile])
+    %options but to replace them only.
+    %   options = ga_opt_set(options , 'FileName', [handles.ExportFilePath handles.ExportFile])
 end
 
 % Check input data
@@ -462,36 +476,18 @@ end
 
 % Load matlabpool
 % If you want to use parallel threats
-if ~isempty(opts.Parallelize) && opts.Parallelize==1 && matlabpool('size')<=0
+if ~isempty(options.Parallelize) && options.Parallelize==1 && matlabpool('size')<=0
     matlabpool 8;
 end
 tic;
 
 %%% START ALGO GEN
 display('RUNNING!!!')
-    
-% Rename variables
-DATA= handles.data ; 
-options=opts;
- 
-%% Initialisation
-verbose=true; % Set true to view time evaluations
-
-% Define main parameters
-[options] = parse_inputs(options);
-[Nbre_obs,Nbre_var]=size(DATA);
-[DATA, outcome] = errChkInput(DATA, handles.outcome , options);
-GUIflag=options.GUIFlag;
-
-% Initialise visualization/output variable
-im = zeros(options.MaxIterations,Nbre_var,options.Repetitions);
 
 % min or maximize cost
 if options.OptDir==1
-    min_or_max=@max;
     sort_str='descend';
 else
-    min_or_max=@min;
     sort_str='ascend';
 end
 
@@ -502,116 +498,166 @@ else
     evalFcn=@evaluate;
 end
 
-% Initialize outputs
-out = initialize_output(options) ;
-
-repTime=0;
-tries = 0;
-while tries <= options.Repetitions && ~get(handles.pushbutton4,'UserData')
-    tries = tries + 1;
+% for each data file
+for f=1:length(handles.data)
+    % display file name
+    set(handles.text1,'String',handles.DataFile{f});
     
-    %% Initialise GA    
-    parent = initialise_pop(Nbre_var,options);
-    % Check if early-stop criterion is met
-    % if not: continue
-    ite = 0 ; early_stop = false ;
-    iteTime=0;
-    while ite < options.MaxIterations && ~early_stop && ~get(handles.pushbutton4,'UserData')
-        tic;
-        ite = ite + 1;
-        if ite>(options.ErrorIterations+1) % Enough iterations have passed to estimate early stop
-            win = out.EvolutionBestCostTest((ite-(options.ErrorIterations+1)):(ite-1));
-            if abs(max(win) - min(win)) < options.ErrorGradient && options.ErrorGradient ~=0
-                early_stop = true ;
+    % Rename variables
+    DATA= handles.data{f} ;
+    
+    %=== Reset options field
+    options = ga_opt_set(options,'NumFeatures',size(DATA,2));
+    %% Initialisation
+    verbose=true; % Set true to view time evaluations
+    
+    [DATA, outcome] = errChkInput(DATA, handles.outcome{f} , options);
+    options.InitialFeatureNum = round(sum(outcome)/20);
+    
+    % Initialize outputs
+    out = initialize_output(options) ;
+    
+    repTime=0;
+    tries = 0;
+    while tries <= options.Repetitions && ~get(handles.pushbutton4,'UserData')
+        tries = tries + 1;
+        
+        %% Initialise GA
+        parent = initialise_pop(options);
+        % Check if early-stop criterion is met
+        % if not: continue
+        ite = 0 ; early_stop = false ;
+        iteTime=0;
+        
+        
+        % Calculate indices from crossvalidation
+        % Determine cross validation indices
+        xvalFcn=options.CrossValidationFcn;
+        [ train, test, KI ] = feval(xvalFcn,outcome,options);
+        
+        while ite < options.MaxIterations && ~early_stop && ~get(handles.pushbutton4,'UserData')
+            tic;
+            ite = ite + 1;
+            out.CurrentIteration=ite;
+            if ite>(options.ErrorIterations+1) % Enough iterations have passed to estimate early stop
+                win = out.Test.EvolutionBestCost((ite-(options.ErrorIterations+1)):(ite-1));
+                if abs(max(win) - min(win)) < options.ErrorGradient && options.ErrorGradient ~=0
+                    early_stop = true ;
+                end
             end
-        end
+            
+            %% Evaluate parents are create new generation
+            [testCost,trainCost] = feval(evalFcn,DATA,outcome,parent,options, train, test, KI);
+            % TODO:
+            %   Change eval function to return:
+            %       model, outputs with predictions+indices, statistics
+            
+            %=== Sort genome
+            [testCost  idxTestSort] = sort(testCost,sort_str);
+            trainCost = trainCost(idxTestSort,:);
+            parent = parent(idxTestSort,:);
         
-        %% Evaluate parents are create new generation
-        [PerfA,Perf_train] = feval(evalFcn,DATA,outcome,parent,options);
-        % TODO:
-        %   Change eval function to return:
-        %       model, outputs with predictions+indices, statistics
-        
-        parent = new_generation(parent,PerfA,sort_str,options);
-        
-        %% FINAL VALIDATION
-        % If tracking best genome statistics is desirable during run-time,
-        % this section will have to recalculate the genome fitness, etc.
-        FS = parent(1,:)==1;
-        [aT,aTR] = evaluate(DATA,outcome,FS,options); % 1 individual - do not need to parallelize
-        
-        out.EvolutionBestCost(ite,tries) = aTR ;
-        out.EvolutionBestCostTest(ite,tries) = aT ;
-        out.EvolutionMedianCost(ite,tries) = nanmedian(PerfA);
-        
-        %% Save and display results
-        %%-------------------------+
-        im(ite,:,tries)=FS;
-        if strcmpi(options.Display,'plot')
-            [~,~,out.EvolutionGenomeStats{ite,tries}] = evaluate(DATA, outcome, parent(1,:), options);
-            %  saveas(h,['AG-current_' int2str(patient_type) '.jpg'])
-            if ~GUIflag
-                figure(h);
-            end
-            set(gcf,'CurrentAxes',options.PopulationEvolutionAxe) ;
-            imagesc(~im(1:ite,:,tries)'); % Plot features selected
-            colormap('gray');
-            title([int2str(sum(FS)) ' selected variables'],'FontSize',16);
-            ylabel('Variables','FontSize',16);
+            %% FINAL VALIDATION
+            % If tracking best genome statistics is desirable during run-time,
+            % this section will have to recalculate the genome fitness, etc.
+            
+            % Since FS is one individual, no need to parallelize (i.e. use
+            % evaluate function)
+            FS = parent(1,:)==1;
+            [out.Test.EvolutionBestCost(ite,tries),...
+                out.Training.EvolutionBestCost(ite,tries),...
+                miscOutputContent ] ...
+                = evaluate_final(DATA,outcome,FS,options,train, test, KI );
+            % Note: FS is 1 individual - do not need to parallelize
+            
+            out.Training.EvolutionMedianCost(ite,tries) = nanmedian(trainCost);
+            out.Test.EvolutionMedianCost(ite,tries) = nanmedian(testCost);
+            
+            %% Save and display results
+            %%-------------------------+
+            out.BestGenomePlot{1,tries}(ite,:)=FS;
+            
+            
+            if ocDetailedFlag
+                %=== Detailed output            
+                out.EvolutionGenomeStats{ite,tries} = miscOutputContent.TestStats;
 
-            set(gcf,'CurrentAxes',options.FitFunctionEvolutionAxe);
-            plot(1:ite, out.EvolutionBestCostTest(1:ite,tries), 'b--', 1:ite, out.EvolutionMedianCost(1:ite,tries), 'g-');
-            xlabel('Generations','FontSize',16); ylabel('Mean cost','FontSize',16);
-            legend('Best','Median','Location','NorthWest'); %'RMSE train','AUC' ,
+            elseif ocDebugFlag
+                %=== Debug output
+                out.EvolutionGenomeStats{ite,tries} = miscOutputContent.TestStats;
+                
+                out.Genome{1,tries}(:,:,ite) = parent; % Save current genome
+                
+                out.Training.EvolutionCost(ite,tries,:) = trainCost;
+                out.Training.EvolutionBestStats{ite,tries} = miscOutputContent.TrainStats;
+                
+                out.Test.EvolutionCost(ite,tries,:) = testCost;
+                out.Test.EvolutionBestStats = miscOutputContent.TestStats;
+
+            else
+                %=== Normal output
+            end
             
-            % TODO Get the plot function handle and plot : options.PlotFcn
-            set(gcf,'CurrentAxes',options.CurrentScoreAxe);
-            plot(out.EvolutionGenomeStats{ite,tries}.roc.x,out.EvolutionGenomeStats{ite,tries}.roc.y,'b--');
+            %=== Plot results
+            if strcmpi(options.Display,'plot')
+                out.EvolutionGenomeStats{ite,tries} = miscOutputContent.TestStats;
+                [ out ] = plot_All( out, parent, h, options );
+            end
             
-            xlabel('Sensitivity'); ylabel('1-Specificity');
+            %=== Calculate new genome
+            parent = new_generation(parent,testCost,sort_str,options);
+        
+            iteTime=iteTime+toc;
+            repTime=repTime+toc;
+            if verbose % Time elapsed reports
+                fprintf('Iteration %d of %d. Time: %2.2fs. Total Time: %2.2fs. Projected: %2.2fh. AUC: %2.3f.  \n',...
+                    ite,options.MaxIterations, toc, iteTime, ...
+                    (((iteTime/ite * (options.MaxIterations) * (options.Repetitions)))-repTime)/3600,...
+                    out.EvolutionGenomeStats{ite,tries}.AUROC);
+            end
+        end
+        % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
+        out.BestGenome{tries} = parent(1,:)==1;
+        out.IterationTime(1,tries)=iteTime/options.MaxIterations;
+        out.RepetitionTime(1,tries)=repTime/tries;
+        
+        
+        %=== Save results
+        if ocDetailedFlag
+            %=== Detailed output
+            [~,~,miscOutputContent] = evaluate_final(DATA, outcome, parent(1,:), options , train, test, KI);
+            out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
             
-            set(gcf,'CurrentAxes',options.CurrentPopulationAxe);
-            imagesc(~parent);
-            xlabel('Variables','FontSize',16);
-            ylabel('Genomes','FontSize',16);
-            title('Current Population','FontSize',16);
-            pause(0.5);
+        elseif ocDebugFlag
+            %=== Debug output
+            
+        elseif strcmpi(options.Display,'plot')
+            %=== Plot was used - might as well store some info from it
+            out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
+            
+        else
+            %=== Normal output so perform no additional calculations
         end
         
-        iteTime=iteTime+toc;
-        repTime=repTime+toc;
-        if verbose % Time elapsed reports
-            fprintf('Iteration %d of %d. Time: %2.2fs. Total Time: %2.2fs. Projected: %2.2fh. AUC: %2.3f.  \n',...
-                ite,options.MaxIterations, toc, iteTime, ...
-                (((iteTime/ite * (options.MaxIterations) * (options.Repetitions)))-repTime)/3600,...
-                out.EvolutionGenomeStats{ite,tries}.AUROC);
-        end
+        out.CurrentRepetition=out.CurrentRepetition+1;
     end
-    out.GenomePlot{1,tries}=im(:,:,tries);
-    % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
-    [~,~,out.BestGenomeStats{1,tries}] = evaluate(DATA, outcome, parent(1,:), options);
-    out.BestGenome{tries} = parent(1,:)==1;
-    out.IterationTime(1,tries)=iteTime/options.MaxIterations;
-    out.RepetitionTime(1,tries)=iteTime;
-  
+    
+    FileName = [handles.DataFile{f}(1:(end-4)) '_GA_results_'  datestr(now, 'mmddyy-HHMM') '.csv'];
+    if get(handles.pushbutton4,'UserData') % then this was stopped on user's demand
+        display('Algorithm STOPPED!');
+        set(handles.pushbutton4,'UserData',false); % reset
+        FileName = [   '.earlystopped_' FileName ];
+        out.BestGenome((tries+1):end) = [];
+    else % The algorithm ended normally
+        % then we keep the same file format
+    end
+    set(handles.text2,'String',FileName);
+    FileName = [ handles.DataFilePath FileName];
+    
+    % Save results
+    export_results( FileName , out , handles.labels{f} , options );
     
 end
-
-if get(handles.pushbutton4,'UserData') % then this was stopped on user's demand
-    display('Algorithm STOPPED!');
-    set(handles.pushbutton4,'UserData',false); % reset
-    FileName = [  'earlystopped_' options.FileName ];
-    out.BestGenome((tries+1):end) = [];
-else % The algorithm ended normally
-    FileName = options.FileName;
-end
-
-% Save results
-if ~isempty(options.FileName) % If a file has been selected for saving
-    export_results( FileName , out , handles.labels , options );   
-end
-
-
 
 guidata(hObject, handles);
 

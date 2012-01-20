@@ -3,13 +3,21 @@ function export_results( FileName , out , labels , options )
 Ntries = length(out.BestGenome);
 Nlabels = length(labels);
 
-
-TrainingCost = mean(out.EvolutionBestCost);
-TestCost = mean(out.EvolutionBestCostTest);
-Genomes =  reshape(cell2mat(out.BestGenome),Nlabels,Ntries)' ;
+for r=1:size(out.EvolutionBestCost,2)
+    lastTrain = max(find(out.EvolutionBestCost(:,r)~=0));
+    if ~isempty(lastTrain)
+        TrainingCost(r) = out.EvolutionBestCost(lastTrain,r);
+    end
+    lastTrain = max(find(out.EvolutionBestCostTest(:,r)~=0));
+    if ~isempty(lastTrain)
+        TestCost(r) = out.EvolutionBestCostTest(lastTrain,r);
+    end
+      
+end
+    Genomes =  reshape(cell2mat(out.BestGenome),Nlabels,Ntries)' ;
 
 % Define Spread sheet and header
-sheet = cell( length(labels)+3 , size(Genomes)+2 );
+sheet = cell( length(labels)+3 , length(Genomes)+2 );
 
 sheet{3,1} = 'Variable Name';
 
