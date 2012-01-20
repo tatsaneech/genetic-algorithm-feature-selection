@@ -6,3 +6,4 @@ AlgoGenOutput.csv
 *.m~
 data/
 results/
+libsvm/
