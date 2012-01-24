@@ -483,12 +483,26 @@ tic;
 
 %%% START ALGO GEN
 display('RUNNING!!!')
+h=gcf;
 
 % min or maximize cost
 if options.OptDir==1
     sort_str='descend';
 else
     sort_str='ascend';
+end
+
+% Set up flags for output content
+switch options.OutputContent
+    case 'normal'
+        ocDetailedFlag = false;
+        ocDebugFlag = false;
+    case 'detailed'
+        ocDetailedFlag = true;
+        ocDebugFlag = false;
+    case 'debug'
+        ocDetailedFlag = false;
+        ocDebugFlag = true;
 end
 
 % parallelize?
