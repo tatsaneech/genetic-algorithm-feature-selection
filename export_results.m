@@ -3,18 +3,19 @@ function export_results( FileName , out , labels , options )
 Ntries = length(out.BestGenome);
 Nlabels = length(labels);
 
-for r=1:size(out.EvolutionBestCost,2)
-    lastTrain = max(find(out.EvolutionBestCost(:,r)~=0));
+for r=1:size(out.Training.EvolutionBestCost,2)
+    lastTrain = find(out.Training.EvolutionBestCost(:,r)~=0, 1, 'last' );
     if ~isempty(lastTrain)
-        TrainingCost(r) = out.EvolutionBestCost(lastTrain,r);
+        TrainingCost(r) = out.Training.EvolutionBestCost(lastTrain,r);
     end
-    lastTrain = max(find(out.EvolutionBestCostTest(:,r)~=0));
+    lastTrain = find(out.Test.EvolutionBestCost(:,r)~=0, 1, 'last' );
     if ~isempty(lastTrain)
-        TestCost(r) = out.EvolutionBestCostTest(lastTrain,r);
+        TestCost(r) = out.Test.EvolutionBestCost(lastTrain,r);
     end
       
 end
-    Genomes =  reshape(cell2mat(out.BestGenome),Nlabels,Ntries)' ;
+
+Genomes =  reshape(cell2mat(out.BestGenome),Nlabels,Ntries)' ;
 
 % Define Spread sheet and header
 sheet = cell( length(labels)+3 , length(Genomes)+2 );
@@ -32,10 +33,10 @@ sheet{3,1} = 'Variable Name';
 sheet{1,2} = 'Test Score';     sheet(1,2+(1:Ntries)) = num2cell(TestCost(IdxTries));  
 sheet{2,2} = 'Training Score'; sheet(2,2+(1:Ntries)) = num2cell(TrainingCost(IdxTries));  
 sheet{3,2} = 'Number of selections'; 
-    ModelDim=sum(Genomes,2);
-    sheet(3,2+(1:Ntries)) = num2cell(ModelDim(IdxTries)');
-    SelectPer = 100*sum(Genomes,1)/size(Genomes,1) ;
-    sheet(3+(1:Nlabels),2) =  num2cell( SelectPer( IdxLabels ) );
+ModelDim=sum(Genomes,2);
+sheet(3,2+(1:Ntries)) = num2cell(ModelDim(IdxTries)');
+SelectPer = 100*sum(Genomes,1)/size(Genomes,1) ;
+sheet(3+(1:Nlabels),2) =  num2cell( SelectPer( IdxLabels ) );
 
 sheet{3,1} = 'Variables Names';     
 sheet(3+(1:Nlabels),1) = labels( IdxLabels );
