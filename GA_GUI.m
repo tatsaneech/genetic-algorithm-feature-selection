@@ -477,7 +477,7 @@ end
 % Load matlabpool
 % If you want to use parallel threats
 if ~isempty(options.Parallelize) && options.Parallelize==1 && matlabpool('size')<=0
-    matlabpool 8;
+    matlabpool 6;
 end
 tic;
 
@@ -635,6 +635,11 @@ for f=1:length(handles.data)
         out.IterationTime(1,tries)=iteTime/options.MaxIterations;
         out.RepetitionTime(1,tries)=repTime/tries;
         
+        % If the final iteration is less than the maximum, then we should
+        % remove the extra pre-allocated genomes
+        if size(out.BestGenomePlot{1,tries},1)>ite
+            out.BestGenomePlot{1,tries}(ite+1:end,:)=[];
+        end
         
         %=== Save results
         if ocDetailedFlag
@@ -644,6 +649,11 @@ for f=1:length(handles.data)
             
         elseif ocDebugFlag
             %=== Debug output
+            % If the final iteration is less than the maximum, then we should
+            % remove the extra pre-allocated genomes
+            if size(out.Genome{1,tries},3)>ite
+                out.Genome{1,tries}(:,:,ite+1:end) = []; % Delete empties
+            end
             
         elseif strcmpi(options.Display,'plot')
             %=== Plot was used - might as well store some info from it

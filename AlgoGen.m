@@ -162,6 +162,12 @@ for tries = 1:options.Repetitions
     out.IterationTime(1,tries)=iteTime/options.MaxIterations;
     out.RepetitionTime(1,tries)=repTime/tries;
     
+    % If the final iteration is less than the maximum, then we should
+    % remove the extra pre-allocated genomes
+    if size(out.BestGenomePlot{1,tries},1)>ite
+        out.BestGenomePlot{1,tries}(ite+1:end,:)=[];
+    end
+        
     %=== Save results
     if ocDetailedFlag
         %=== Detailed output
@@ -173,12 +179,16 @@ for tries = 1:options.Repetitions
     elseif ocDebugFlag
         %=== Debug output
         
-        
+        % If the final iteration is less than the maximum, then we should
+        % remove the extra pre-allocated genomes
+        if size(out.Genome{1,tries},3)>ite
+            out.Genome{1,tries}(:,:,ite+1:end) = []; % Delete empties
+        end
     elseif strcmpi(options.Display,'plot')
         %=== Plot was used - might as well store some info from it
         out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
     else
-        %=== Normal output so perform no additional calculations
+        %=== Normal output
     end
         
     if ~isempty(options.FileName) % If a file has been selected for saving
