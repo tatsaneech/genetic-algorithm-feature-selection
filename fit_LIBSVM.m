@@ -27,14 +27,14 @@ function [ train_pred, test_pred  ] = ...
 % -wi weight: set the parameter C of class i to weight*C, for C-SVC (default 1)  
 
 % train the model - C-SVC with RBF kernel and probability estimates
-model = svmtrain(train_target,train_data,'-s 0 -t 2 -b 0');
+model = svmtrain(train_target,train_data,'-s 0 -t 2 -b 1');
 
 % Apply to your data
-[train_pred, train_acc, train_prob] = svmpredict(train_target, train_data, model, '-b 0');
-[test_pred, test_acc, test_prob] = svmpredict(test_target, test_data, model, '-b 0');
+[train_pred, train_acc, train_prob] = svmpredict(train_target, train_data, model, '-b 1');
+[test_pred, test_acc, test_prob] = svmpredict(test_target, test_data, model, '-b 1');
 
-train_pred=train_prob(:,1);
-test_pred=test_prob(:,1);
+train_pred=train_prob(:,2);
+test_pred=test_prob(:,2);
 
 %=== Ensure correct class predictions are used
 % Sometimes the probabilities are reversed, i.e. 0.1 is a prediction for 1
