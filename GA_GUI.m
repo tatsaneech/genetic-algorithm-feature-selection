@@ -634,6 +634,7 @@ for f=1:length(handles.data)
         out.BestGenome{tries} = parent(1,:)==1;
         out.IterationTime(1,tries)=iteTime/options.MaxIterations;
         out.RepetitionTime(1,tries)=repTime/tries;
+            out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
         
         % If the final iteration is less than the maximum, then we should
         % remove the extra pre-allocated genomes
@@ -644,8 +645,8 @@ for f=1:length(handles.data)
         %=== Save results
         if ocDetailedFlag
             %=== Detailed output
-            [~,~,miscOutputContent] = evaluate_final(DATA, outcome, parent(1,:), options , train, test, KI);
-            out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
+%             [~,~,miscOutputContent] = evaluate_final(DATA, outcome, parent(1,:), options , train, test, KI);
+%             out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
             
         elseif ocDebugFlag
             %=== Debug output
@@ -654,11 +655,6 @@ for f=1:length(handles.data)
             if size(out.Genome{1,tries},3)>ite
                 out.Genome{1,tries}(:,:,ite+1:end) = []; % Delete empties
             end
-            
-        elseif strcmpi(options.Display,'plot')
-            %=== Plot was used - might as well store some info from it
-            out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
-            
         else
             %=== Normal output so perform no additional calculations
         end
