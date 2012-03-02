@@ -606,7 +606,7 @@ for f=1:length(handles.data)
                 out.Training.EvolutionBestStats{ite,tries} = miscOutputContent.TrainStats;
                 
                 out.Test.EvolutionCost(ite,tries,:) = testCost;
-                out.Test.EvolutionBestStats = miscOutputContent.TestStats;
+                out.Test.EvolutionBestStats{ite,tries} = miscOutputContent.TestStats;
 
             else
                 %=== Normal output
