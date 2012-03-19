@@ -1,7 +1,7 @@
 function [ stat ] = stats_AUROC(pred,target)
 %STATS_AUROC	Area under the receiver operator (characteristic) curve
-%	[ stat ] = stats_AUROC(pred,target) 
-%	
+%	[ stat ] = stats_AUROC(pred,target) calculates the AUROC (Wilcoxon
+%	statistic) for each column in pred and target.
 %
 %	Inputs:
 %		pred - Nx1 vector of predicted classes
@@ -35,15 +35,29 @@ function [ stat ] = stats_AUROC(pred,target)
 
 %	Copyright 2011 Alistair Johnson
 
-alive=pred(target==0); dead=pred(target==1);
-n=1; stat=0;
-%compare 0s to 1s
-while n<=length(dead)
-    stat=stat+sum(dead(n)>alive);
-    n=n+1;
-end
 
-count=length(alive)*length(dead);
-stat=stat/count;
+%=== Arrange outcomes
+[pred,idx] = sort(pred,1,'ascend');
+target=target(idx);
+[N,P] = size(pred);
+
+%=== Find location of negative targets
+stat=zeros(1,P); % 1xP where P is # of AUROCs to calculate
+negative=false(N,P);
+
+for n=1:P
+    negative(:,n) = target(:,n)==0;
+    
+    %=== Count the number of negative targets below each element
+    negativeCS = cumsum(negative(:,n),1);
+    
+    %=== Only get positive targets
+    pos = negativeCS(~negative(:,n));
+    
+    stat(n) = sum(pos);
+end
+count=sum(negative,1); %=== count number who are negative
+count = count .* (N-count); %=== multiply by positives
+stat=stat./count;
 
 end
