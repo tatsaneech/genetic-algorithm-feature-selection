@@ -8,12 +8,11 @@ D=options.CrossValidationParam(1);
 
 N=length(data_target);
 
-%     random indices from 1:N
-%[~,temp] = sort(rand(N,1),1);
-temp=1:N; % Shouldn't be random so it is reproducible
+%=== random indices from 1:N
+[~,xval] = sort(rand(N,1),1);
 
 % Calculate cross-validation indices (randomly placed integers 1:D)
-xval=mod(temp,D)+1;
+xval=mod(xval,D)+1;
 
 % Pre-allocate
 tr_idx=false(N,D);
