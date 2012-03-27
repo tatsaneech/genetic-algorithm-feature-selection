@@ -340,7 +340,11 @@ elseif regexp(pname,'Fcn') > 1
     end
     
     % Scan files and find specific functions
-    files = dir(fcn);
+    if exist('./fcns/','dir')==7
+        files = dir(['./fcns/' fcn]);
+    else
+        files=dir(fcn);
+    end
     
     % Get acceptable file names
     okpnames = arrayfun(@(x) x.name,files,'UniformOutput',false);
