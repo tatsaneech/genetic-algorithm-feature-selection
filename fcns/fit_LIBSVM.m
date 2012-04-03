@@ -33,25 +33,14 @@ model = svmtrain(train_target,train_data,'-s 0 -t 2 -b 1');
 [train_pred, train_acc, train_prob] = svmpredict(train_target, train_data, model, '-b 1');
 [test_pred, test_acc, test_prob] = svmpredict(test_target, test_data, model, '-b 1');
 
-train_pred=train_prob(:,2);
-test_pred=test_prob(:,2);
 
 %=== Ensure correct class predictions are used
-% Sometimes the probabilities are reversed, i.e. 0.1 is a prediction for 1
-% if ~isempty(train_prob)
-%     if max(train_prob(:,1))<1 && min(train_prob(:,1)) > 0
-%         % Predictions are between 0 and 1, i.e. probabilities
-%         if min(round(train_prob(:,1))==train_pred)==1
-%             train_pred=train_prob(:,1);
-%             test_pred=test_prob(:,1);
-%         else % Probabilities were flipped
-%             
-%             train_pred=train_prob(:,2);
-%             test_pred=test_prob(:,2);
-%         end
-%     end
-% end
-
-
+if train_target(1) == 1
+train_pred=train_prob(:,1);
+test_pred=test_prob(:,1);
+else
+train_pred=train_prob(:,2);
+test_pred=test_prob(:,2);
+end
 end
   
