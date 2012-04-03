@@ -72,7 +72,7 @@ switch normType
     case 'scale'
         mu = min(training,[],1);
         sigma = max(training,[],1) - mu;
-        
+        sigma(sigma==0)=1; % prevent NaNs
         training(:,idxNormal)=bsxfun(@minus, training(:,idxNormal), mu(:,idxNormal));
         training(:,idxNormal)=bsxfun(@rdivide, training(:,idxNormal), sigma(:,idxNormal));
         test(:,idxNormal)=bsxfun(@minus, test(:,idxNormal), mu(:,idxNormal));
@@ -82,6 +82,7 @@ switch normType
         %=== Extract training data mean and stdev
         mu=mean(training,1);
         sigma=std(training,[],1);
+        sigma(sigma==0)=1; % prevent NaNs
         
         %=== Zero mean unit stdev (default normalization)
         training(:,idxNormal)=bsxfun(@minus, training(:,idxNormal), mu(:,idxNormal));
