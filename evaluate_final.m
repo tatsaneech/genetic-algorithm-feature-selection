@@ -89,7 +89,7 @@ for ki=1:KI % Repeat fitness function KI times to get good estimate of cost
     if ischar(fitFcn) && strcmp(fitFcn,'fit_MYPSO')
         % temporary hack
         [ train_pred, test_pred ]  = feval(fitFcn,...
-            train_data,train_target,test_data,fitOpt,lbl(FS));
+            train_data,train_target,test_data,fitOpt,lbl);
     else
         % Use fitness function to train model/get predictions
         [ train_pred, test_pred ]  = feval(fitFcn,...
@@ -119,7 +119,7 @@ test_target = data_target(test(:,idx));
 if ischar(fitFcn) && strcmp(fitFcn,'fit_MYPSO')
     % temporary hack
     [ train_pred, test_pred ]  = feval(fitFcn,...
-        train_data,train_target,test_data,fitOpt,lbl(FS));
+        train_data,train_target,test_data,fitOpt,lbl);
 else
     % Use fitness function to train model/get predictions
     [ train_pred, test_pred ]  = feval(fitFcn,...
