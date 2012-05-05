@@ -1,16 +1,18 @@
 function [ train_pred, test_pred  ] = ...
-    fit_SVM(train_data,train_target,test_data,test_target)
+    fit_SVM(train_data,train_target,test_data,opt)
 % FIT_SVM uses an SVM as the fitness function (wrapper)
 %   Requires the Bioinformatics toolbox
 
-%=== Create a function handle for the original svmtrain
-org_svmtrain = str2func([matlabroot '/toolbox/bioinfo/biolearning/svmtrain']);
+%TODO: allow more options, this only really works for RBF
+
+%=== Get function handle for the original svmtrain
+org_svmtrain = opt.handle;
 
 % train the model
 model = org_svmtrain(train_data,train_target,...
-    'Kernel_Function', 'rbf',...
-    'RBF_Sigma', 1,...
-    'Method', 'SMO');
+    'Kernel_Function', opt.Kernel_Function,...
+    'RBF_Sigma', opt.RBF_Sigma,...
+    'Method', opt.Method);
 
 % Apply to your data
 [train_pred] = ...

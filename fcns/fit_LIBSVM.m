@@ -1,5 +1,5 @@
 function [ train_pred, test_pred  ] = ...
-    fit_LIBSVM(train_data,train_target,test_data,test_target)
+    fit_LIBSVM(train_data,train_target,test_data,opt)
 % FIT_LIBSVM uses an SVM as the fitness function (wrapper) and the LIBSVM
 % toolbox
 % options:
@@ -24,23 +24,29 @@ function [ train_pred, test_pred  ] = ...
 % -e epsilon : set tolerance of termination criterion (default 0.001)
 % -h shrinking: whether to use the shrinking heuristics, 0 or 1 (default 1)
 % -b probability_estimates: whether to train a SVC or SVR model for probability estimates, 0 or 1 (default 0)
-% -wi weight: set the parameter C of class i to weight*C, for C-SVC (default 1)  
+% -wi weight: set the parameter C of class i to weight*C, for C-SVC (default 1)
 
 % train the model - C-SVC with RBF kernel and probability estimates
-model = svmtrain(train_target,train_data,'-s 0 -t 2 -b 1');
+model = svmtrain(train_target,train_data,opt.libsvm);
 
-% Apply to your data
-[train_pred, train_acc, train_prob] = svmpredict(train_target, train_data, model, '-b 1');
-[test_pred, test_acc, test_prob] = svmpredict(test_target, test_data, model, '-b 1');
 
+% Apply model to data
+[train_pred, train_acc, train_prob] = svmpredict(train_target, train_data, model, ['-b ' num2str(opt.b)]);
+
+%=== Create dummy test targets for prediction
+test_target = zeros(size(test_data,1),1);
+[test_pred, test_acc, test_prob] = svmpredict(test_target, test_data, model, ['-b ' num2str(opt.b)]);
 
 %=== Ensure correct class predictions are used
-if train_target(1) == 1
-train_pred=train_prob(:,1);
-test_pred=test_prob(:,1);
-else
-train_pred=train_prob(:,2);
-test_pred=test_prob(:,2);
+if opt.b
+    if train_target(1)==1
+        train_pred=train_prob(:,1);
+        test_pred=test_prob(:,1);
+    else
+        train_pred=train_prob(:,2);
+        test_pred=test_prob(:,2);
+    end
 end
+
+
 end
-  
