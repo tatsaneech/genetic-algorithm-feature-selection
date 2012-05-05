@@ -3,6 +3,7 @@ function [ SCORE_test, SCORE_train, other ] = ...
 
 fitFcn=options.FitnessFcn;
 fitOpt=options.FitnessParam;
+lbl = fitOpt.lbl;
 costFcn=options.CostFcn;
 optDir = options.OptDir;
 normalizeDataFlag = options.NormalizeData;
@@ -14,7 +15,7 @@ SCORE_train=zeros(P,1);
 
 
 %=== Default cost values to very sub-optimal
-% If the algorithm does not assign a cost value (due to missing values or 
+% If the algorithm does not assign a cost value (due to missing values or
 % unselected features), the genome will be heavily penalized
 
 %TODO: Figure out a better limits than 9999 and -9999
@@ -49,9 +50,15 @@ for individual=1:P
                 test_data = DATA(test(:,ki),:);
             end
             
-            % Use fitness function to train model/get predictions
-            [ train_pred, test_pred ]  = feval(fitFcn,...
-                train_data,train_target,test_data,fitOpt);
+            if ischar(fitFcn) && strcmp(fitFcn,'fit_MYPSO')
+                % temporary hack
+                [ train_pred, test_pred ]  = feval(fitFcn,...
+                    train_data,train_target,test_data,fitOpt,lbl(FS));
+            else
+                % Use fitness function to train model/get predictions
+                [ train_pred, test_pred ]  = feval(fitFcn,...
+                    train_data,train_target,test_data,fitOpt);
+            end
             
             %TODO: Remove this check and ensure that train_pred is
             %always output in proper format (rows = observations)

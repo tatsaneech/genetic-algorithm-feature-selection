@@ -86,9 +86,15 @@ for ki=1:KI % Repeat fitness function KI times to get good estimate of cost
     train_target = data_target(train(:,ki));
     test_target = data_target(test(:,ki));
     
-    % Use fitness function to calculate costs
-    [ train_pred, test_pred ]  = feval(fitFcn,...
-        train_data,train_target,test_data,fitOpt,lbl);
+    if ischar(fitFcn) && strcmp(fitFcn,'fit_MYPSO')
+        % temporary hack
+        [ train_pred, test_pred ]  = feval(fitFcn,...
+            train_data,train_target,test_data,fitOpt,lbl(FS));
+    else
+        % Use fitness function to train model/get predictions
+        [ train_pred, test_pred ]  = feval(fitFcn,...
+            train_data,train_target,test_data,fitOpt);
+    end
     
     [ tr_cost(ki) ] = callStatFcn(costFcn,...
         train_pred, train_target);
@@ -98,7 +104,7 @@ for ki=1:KI % Repeat fitness function KI times to get good estimate of cost
 end
 
 [~,idx]=min(abs(t_cost-nanmedian(t_cost))); % find split that provides median value
-    
+
 %=== Get data for stats calculations
 if normalizeDataFlag
     [train_data, test_data] = ...
@@ -110,11 +116,17 @@ end
 train_target = data_target(train(:,idx));
 test_target = data_target(test(:,idx));
 
-[ train_pred, test_pred ]  = feval(fitFcn,...
-    train_data,train_target,test_data,fitOpt,lbl);
-
+if ischar(fitFcn) && strcmp(fitFcn,'fit_MYPSO')
+    % temporary hack
+    [ train_pred, test_pred ]  = feval(fitFcn,...
+        train_data,train_target,test_data,fitOpt,lbl(FS));
+else
+    % Use fitness function to train model/get predictions
+    [ train_pred, test_pred ]  = feval(fitFcn,...
+        train_data,train_target,test_data,fitOpt);
+end
 [other.TrainStats,other.TrainStats.roc]=ga_stats(train_pred,train_target,'all');
-    
+
 % Is it LeaveOne Out? ( there is only one observation in test per data split)
 if sum(sum(test,1))==size(test,2)
     % Remove observed from RMSE to get predicted
