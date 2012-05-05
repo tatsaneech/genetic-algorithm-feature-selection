@@ -2,6 +2,8 @@ function [ SCORE_test, SCORE_train, other ] = ...
     evaluate_par(OriginalData , data_target, parents, options, train, test, KI)
 
 fitFcn=options.FitnessFcn; 
+fitOpt=options.FitnessParam;
+lbl = fitOpt.lbl;
 costFcn=options.CostFcn;
 optDir = options.OptDir;
 normalizeDataFlag = options.NormalizeData;
@@ -47,9 +49,9 @@ parfor individual=1:P
                 test_data = DATA(test(:,ki),:);
             end
             
-            % Use fitness function to calculate costs
+            % Use fitness function to train model/get predictions
             [ train_pred, test_pred ]  = feval(fitFcn,...
-                train_data,train_target,test_data,test_target);
+                train_data,train_target,test_data,fitOpt,lbl(FS));
             
             if size(train_pred,2)>size(train_pred,1)
                 train_pred = train_pred';

@@ -2,6 +2,7 @@ function [ SCORE_test, SCORE_train, other ] = ...
     evaluate(OriginalData, data_target, parents, options, train, test, KI)
 
 fitFcn=options.FitnessFcn;
+fitOpt=options.FitnessParam;
 costFcn=options.CostFcn;
 optDir = options.OptDir;
 normalizeDataFlag = options.NormalizeData;
@@ -48,9 +49,9 @@ for individual=1:P
                 test_data = DATA(test(:,ki),:);
             end
             
-            % Use fitness function to calculate costs
+            % Use fitness function to train model/get predictions
             [ train_pred, test_pred ]  = feval(fitFcn,...
-                train_data,train_target,test_data,test_target);
+                train_data,train_target,test_data,fitOpt);
             
             %TODO: Remove this check and ensure that train_pred is
             %always output in proper format (rows = observations)

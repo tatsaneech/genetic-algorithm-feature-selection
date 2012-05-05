@@ -48,6 +48,7 @@ elseif sum(parents,2) < 1
 end
 
 fitFcn=options.FitnessFcn;
+fitOpt = options.FitnessParam;
 costFcn=options.CostFcn;
 optDir = options.OptDir;
 normalizeDataFlag = options.NormalizeData;
@@ -69,7 +70,7 @@ t_cost=ones(KI,1)*defaultCost;
 
 %=== Extract features as logicals
 FS = parents(1,:) == 1;
-
+lbl = fitOpt.lbl(FS);
 %=== Preallocate
 L1O_test_pred = zeros(KI,1);
 DATA = OriginalData(:,FS);
@@ -87,7 +88,7 @@ for ki=1:KI % Repeat fitness function KI times to get good estimate of cost
     
     % Use fitness function to calculate costs
     [ train_pred, test_pred ]  = feval(fitFcn,...
-        train_data,train_target,test_data,test_target);
+        train_data,train_target,test_data,fitOpt,lbl);
     
     [ tr_cost(ki) ] = callStatFcn(costFcn,...
         train_pred, train_target);
@@ -110,7 +111,7 @@ train_target = data_target(train(:,idx));
 test_target = data_target(test(:,idx));
 
 [ train_pred, test_pred ]  = feval(fitFcn,...
-    train_data,train_target,test_data,test_target);
+    train_data,train_target,test_data,fitOpt,lbl);
 
 [other.TrainStats,other.TrainStats.roc]=ga_stats(train_pred,train_target,'all');
     

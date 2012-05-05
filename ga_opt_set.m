@@ -30,6 +30,8 @@ function [ options ] = ga_opt_set( varargin )
 %                       [ positive scalar | {10} ]
 %   FitnessFcn          - The fitness function used to evaluate genomes
 %                       [ function name string | function handle | {[]} ]
+%   FitnessParam        - Parameters of the fitness function
+%                       [Options structure | {[]} ]
 %   CostFcn             - The cost function used to evaluate fitness predictions
 %                       [ function name string | function handle | {[]} ]
 %   MutationFcn          - The function used to mutate genomes
@@ -94,6 +96,7 @@ else
         'OptDir', 0, ...
         'OutputContent', 'normal',...
         'FitnessFcn', 'fit_LR', ...% This should have the exact same name as the .m function
+        'FitnessParam',[], ...
         'CostFcn', 'cost_RMSE', ... % This should have the exact same name as the .m function
         'CrossoverFcn', 'crsov_SP', ... % This should have the exact same name as the .m function
         'MutationFcn', 'mut_SP', ...
@@ -159,7 +162,6 @@ end
 
 %=== Validate intraconsistency of options parameters
 [options] = validateConsistency(options);
-
 end
 
 function [options] = updateOptionsField(options, pname, pval, param)
@@ -202,13 +204,14 @@ if isempty(val) % Default used
 end
 
 switch param
-    % Strings
     case {'Display','OutputContent'}
+    % Strings
         if ~ischar(val)
             valid = 0;
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a string.',param);
             return
         end
+        
         % Louis July 6th 11 : Commented the whole thing because it crashed (very wise thing to do isn't it?)
     case 'FileName'
         %         if ~ischar(val) || ...
@@ -222,15 +225,22 @@ switch param
         %             valid = 0;
         %             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be ''never'' or ''always''.',param);
         %        end
+    case {'FitnessParam'}
+        % Structures
+        if ~isempty(val) && ~isstruct(val)
+            valid=0;
+            errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be empty or a structure',param);
+        end
+    case {'CrossValidationParam'} 
         % Doubles
-    case {'CrossValidationParam'}
         if ~isnumeric(val)
             valid=0;
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive numeric',param);
         end
-        % Positive definite doubles
+        
     case {'MaxFeatures','MinFeatures','MaxIterations','PopulationSize',...
             'Repetitions','InitialFeatureNum', 'NumFeatures'}
+        % Positive definite integers 
         if ~isnumeric(val) || val<0
             valid = 0;
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive numeric',param);
@@ -240,28 +250,31 @@ switch param
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive numeric',param);
         end
         
-        % Functions/Strings
+        
         
     case {'ErrorGradient', 'ErrorIterations',...
             'MutationRate','Elitism'}
+        % Positive definite doubles
         if ~isnumeric(val) || val<0
             valid = 0;
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive integer',param);
         end
     case {'FitnessFcn','CrossoverFcn','PlotFcn','CostFcn','CrossValidationFcn','MutationFcn'}
+        % Functions/Strings
         if ~ischar(val) && ~iscell(val) &&  ~isa(val,'function_handle')
             valid = 0;
             errmsg = sprintf(['Invalid value for OPTIONS parameter %s: must be a string or \n'...
                 'function handle with valid three character prefix'],param);
         end
-        % Booleans/Doubles
     case {'GUIFlag','Parallelize','OptDir','MinimizeFeatures','NormalizeData'}
+        % Booleans/Doubles
         if ~islogical(val) && ~(isnumeric(val) && (val==1 || val==0))
             valid = 0;
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a logical value, 0 or 1',param);
         end
+    case {'ConfoundingFactors'} 
         % Lists
-    case {'ConfoundingFactors'}        
+        
         %TODO: Make sure command line input style (linear indices) and
         %GUI input style (label titles) work seemlessly here
         %Additionally, allow for both input types!
@@ -377,6 +390,7 @@ end
 function [options] = validateConsistency(options)
 
 paramsChecked = {'CrossValidationParam',...
+    'FitnessParam',...
     'MinFeatures',...
     'MaxFeatures',...
     'ConfoundingFactors',...
@@ -386,6 +400,17 @@ for k=1:length(paramsChecked)
     param = paramsChecked{k};
     pval = options.(param);
     switch param
+        case 'FitnessParam'
+            %=== Call optfit function to get default options
+            def_opt = feval(['opt' options.FitnessFcn]);
+            
+            if isempty(pval)
+                pval = def_opt;
+            else
+                %=== Update fields of def_opt with fields in pval
+                pval = update_options(def_opt,pval);
+            end
+            options.(param) = pval;
         case 'CrossValidationParam'
             %=== Ensure cross validation parameters match function
             xvalFcn = options.CrossValidationFcn;
@@ -561,6 +586,40 @@ for k=1:length(paramsChecked)
         otherwise
             % Recite Acadian Poetry ... or do nothing, your choice!
             % there is beauttiful Acadian Poem at http://www.gov.ns.ca/legislature/library/digitalcollection/bookpart1.stm
+    end
+end
+end
+
+
+function [opt] = update_options(opt,new_opt)
+
+fn = fieldnames(opt);
+N_fn = numel(fn);
+
+% Replace current options fields in options with old options
+
+for m=1:N_fn
+    pname = fn{m};
+    if isfield(new_opt,pname)
+        pval = new_opt.(pname);
+        pold = opt.(pname);
+        
+        %=== Rudimentary error check...
+        %   Ensure argument is of same class as default
+        
+        if ~isempty(pold)
+            class_new = class(pval);
+            class_old = class(pold);
+            if strcmp(class_new,class_old)
+                opt.(pname) = pval;
+            else
+                error(sprintf('%s:update_options:InvalidParamType',mfilename),...
+                    'New parameter value %s of class %s, expected class %s', pname, class_new, class_old);
+            end
+        else
+            warning(sprintf('%s:update_options:UnsetDefaultValue', mfilename), ...
+                'Default parameter value %s for fitness function options is unset, rudimentary error check not performed.',pname);
+        end
     end
 end
 end

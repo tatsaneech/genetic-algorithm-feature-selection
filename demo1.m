@@ -4,7 +4,9 @@
 
 
 %== First, load the data
-addpath('./data/');
+addpath([pwd '/data/']);
+addpath([pwd '/fcns/']);
+addpath([pwd '/stats/']);
 load simulated_binary.mat
 
 %=== Open parallel processing if using
