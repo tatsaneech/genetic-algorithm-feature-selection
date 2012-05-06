@@ -151,11 +151,21 @@ for tries = 1:options.Repetitions
         iteTime=iteTime+toc;
         repTime=repTime+toc;
         if verbose % Time elapsed reports
-            fprintf('Iteration %d of %d. Time: %2.2fs. Total Time: %2.2fs. Projected: %2.2fh. \n',...
-                ite,options.MaxIterations, toc, iteTime,...
-                (((iteTime/ite * (options.MaxIterations) * (options.Repetitions)))-repTime)/3600);
+            if tries>1
+                expectedTime = mean(out.RepetitionTime(1:tries-1)) / tries;
+            else
+                expectedTime = iteTime * options.MaxIterations / ite;
+            end
+            expectedTime = (expectedTime * options.Repetitions - repTime)/60/60;
+            fprintf('Iteration %d of %d. Iteration Time: %2.2fs. Time Elapsed: %2.2fs. Projected: %2.2fh. \n',...
+                ite,options.MaxIterations, ...
+                toc, ... % Time in iteration
+                iteTime + repTime, ... % Total time spent so far
+                expectedTime);
         end
+        
         out.CurrentIteration=out.CurrentIteration+1;
+        
     end
     % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
     out.BestGenome{1,tries} = parent(1,:)==1;
