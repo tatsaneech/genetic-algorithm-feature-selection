@@ -1,4 +1,4 @@
-function [ train_pred, test_pred ] = ...
+function [ train_pred, test_pred, model ] = ...
     fit_LR(train_data,train_target,test_data,opt)
 
 
@@ -13,6 +13,7 @@ test_pred = test_data*b2 ;
 train_pred = 1./(1+exp(-train_pred*b2));
 test_pred = 1./(1+exp(-test_pred*b2));
 
+model = b2;
 end
   
     

@@ -49,9 +49,16 @@ parfor individual=1:P
                 test_data = DATA(test(:,ki),:);
             end
             
-            % Use fitness function to train model/get predictions
-            [ train_pred, test_pred ]  = feval(fitFcn,...
-                train_data,train_target,test_data,fitOpt,lbl(FS));
+            if ischar(fitFcn) && strcmp(fitFcn,'fit_MYPSO')
+                % temporary hack
+                tmpLbl = lbl(FS);
+                [ train_pred, test_pred ]  = feval(fitFcn,...
+                    train_data,train_target,test_data,fitOpt,tmpLbl);
+            else
+                % Use fitness function to train model/get predictions
+                [ train_pred, test_pred ]  = feval(fitFcn,...
+                    train_data,train_target,test_data,fitOpt);
+            end
             
             if size(train_pred,2)>size(train_pred,1)
                 train_pred = train_pred';

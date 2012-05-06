@@ -29,6 +29,7 @@ switch options.OutputContent
     case 'detailed'
         %=== Initialize additional out fields
         out.Training.BestGenomeStats = cell(1,rep);
+        out.Model = cell(1,rep) ;
         
         out.EvolutionGenomeStats = cell(maxIter,rep);
     case 'debug'
