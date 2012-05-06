@@ -36,6 +36,7 @@ function [ SCORE_test, SCORE_train, other ] = ...
 %	Originally written on GLNXA64 by Alistair Johnson, 19-Jan-2012 13:47:41
 %	Contact: alistairewj@gmail.com
 
+[N,D] = size(OriginalData);
 %=== Error check
 if size(parents,1) > 1
     % Final validation should only have 1 genome
@@ -47,7 +48,6 @@ elseif sum(parents,2) < 1
         'The genome input to %s does not select features - algorithm optimization is failing.',mfilename);
 end
 
-[N,D] = size(DATA);
 fitFcn=options.FitnessFcn;
 fitOpt = options.FitnessParam;
 costFcn=options.CostFcn;
@@ -76,7 +76,7 @@ t_cost=ones(KI,1)*defaultCost;
 %=== Preallocate
 L1O_test_pred = zeros(KI,1);
 pred = zeros(N,KI);
-mdl = cell(1,KI);
+model = cell(1,KI);
 DATA = OriginalData(:,FS);
 for ki=1:KI % Repeat fitness function KI times to get good estimate of cost
     if normalizeDataFlag
@@ -92,11 +92,11 @@ for ki=1:KI % Repeat fitness function KI times to get good estimate of cost
     
     if ischar(fitFcn) && strcmp(fitFcn,'fit_MYPSO')
         % temporary hack
-        [ train_pred, test_pred, mdl{k} ]  = feval(fitFcn,...
+        [ train_pred, test_pred, model{ki} ]  = feval(fitFcn,...
             train_data,train_target,test_data,fitOpt,lbl);
     else
         % Use fitness function to train model/get predictions
-        [ train_pred, test_pred, mdl{k} ]  = feval(fitFcn,...
+        [ train_pred, test_pred, model{ki} ]  = feval(fitFcn,...
             train_data,train_target,test_data,fitOpt);
     end
     
@@ -116,8 +116,8 @@ end
 
 %=== Extract median predictions
 train_pred = pred(train(:,idx),idx);
-test_pred = pred(train(:,idx),idx);
 train_target = data_target(train(:,idx));
+test_pred = pred(test(:,idx),idx);
 test_target = data_target(test(:,idx));
 
 [other.TrainStats,other.TrainStats.roc]=ga_stats(train_pred,train_target,'all');
@@ -131,7 +131,7 @@ else % All other cross validation techniques
 end
 
 %=== Output model and predictions
-other.mdl = mdl{idx};
+other.model = model{idx};
 
 other.TrainIndex = train(:,idx);
 other.TestIndex = test(:,idx);
