@@ -47,6 +47,7 @@ elseif sum(parents,2) < 1
         'The genome input to %s does not select features - algorithm optimization is failing.',mfilename);
 end
 
+[N,D] = size(DATA);
 fitFcn=options.FitnessFcn;
 fitOpt = options.FitnessParam;
 costFcn=options.CostFcn;
@@ -64,15 +65,18 @@ else % Minimizing cost -> high default value
     defaultCost=9999;
 end
 
+%=== Extract features as logicals
+FS = parents(1,:) == 1;
+lbl = fitOpt.lbl(FS);
+
 %=== Create default cost values
 tr_cost=ones(KI,1)*defaultCost;
 t_cost=ones(KI,1)*defaultCost;
 
-%=== Extract features as logicals
-FS = parents(1,:) == 1;
-lbl = fitOpt.lbl(FS);
 %=== Preallocate
 L1O_test_pred = zeros(KI,1);
+pred = zeros(N,KI);
+mdl = cell(1,KI);
 DATA = OriginalData(:,FS);
 for ki=1:KI % Repeat fitness function KI times to get good estimate of cost
     if normalizeDataFlag
@@ -88,11 +92,11 @@ for ki=1:KI % Repeat fitness function KI times to get good estimate of cost
     
     if ischar(fitFcn) && strcmp(fitFcn,'fit_MYPSO')
         % temporary hack
-        [ train_pred, test_pred ]  = feval(fitFcn,...
+        [ train_pred, test_pred, mdl{k} ]  = feval(fitFcn,...
             train_data,train_target,test_data,fitOpt,lbl);
     else
         % Use fitness function to train model/get predictions
-        [ train_pred, test_pred ]  = feval(fitFcn,...
+        [ train_pred, test_pred, mdl{k} ]  = feval(fitFcn,...
             train_data,train_target,test_data,fitOpt);
     end
     
@@ -100,31 +104,22 @@ for ki=1:KI % Repeat fitness function KI times to get good estimate of cost
         train_pred, train_target);
     [ t_cost(ki) ] = callStatFcn(costFcn,...
         test_pred, test_target);
+    
+    pred(train(:,ki),ki) = train_pred;
+    pred(test(:,ki),ki) = test_pred;
+    
     L1O_test_pred(ki) = mean(test_pred);
 end
 
-[~,idx]=min(abs(t_cost-nanmedian(t_cost))); % find split that provides median value
+% find median index
+[~,idx]=min(abs(t_cost-nanmedian(t_cost))); 
 
-%=== Get data for stats calculations
-if normalizeDataFlag
-    [train_data, test_data] = ...
-        normalizeData(DATA(train(:,idx),:),DATA(test(:,idx),:));
-else
-    train_data = DATA(train(:,idx),:);
-    test_data = DATA(test(:,idx),:);
-end
+%=== Extract median predictions
+train_pred = pred(train(:,idx),idx);
+test_pred = pred(train(:,idx),idx);
 train_target = data_target(train(:,idx));
 test_target = data_target(test(:,idx));
 
-if ischar(fitFcn) && strcmp(fitFcn,'fit_MYPSO')
-    % temporary hack
-    [ train_pred, test_pred ]  = feval(fitFcn,...
-        train_data,train_target,test_data,fitOpt,lbl);
-else
-    % Use fitness function to train model/get predictions
-    [ train_pred, test_pred ]  = feval(fitFcn,...
-        train_data,train_target,test_data,fitOpt);
-end
 [other.TrainStats,other.TrainStats.roc]=ga_stats(train_pred,train_target,'all');
 
 % Is it LeaveOne Out? ( there is only one observation in test per data split)
@@ -135,9 +130,11 @@ else % All other cross validation techniques
     [other.TestStats,other.TestStats.roc]=ga_stats(test_pred,test_target,'all');
 end
 
-%=== Output model, statistics
-other.trainPred = train_pred;
-other.testPred = test_pred;
+%=== Output model and predictions
+other.mdl = mdl{idx};
+
+other.TrainIndex = train(:,idx);
+other.TestIndex = test(:,idx);
 
 % ...get median results on TEST and TRAIN set
 SCORE_test =  nanmedian(t_cost );

@@ -647,7 +647,7 @@ for f=1:length(handles.data)
             %=== Detailed output
 %             [~,~,miscOutputContent] = evaluate_final(DATA, outcome, parent(1,:), options , train, test, KI);
 %             out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
-            
+            out.Model{1,tries} = miscOutputContent.model;
         elseif ocDebugFlag
             %=== Debug output
             % If the final iteration is less than the maximum, then we should

@@ -176,7 +176,7 @@ for tries = 1:options.Repetitions
         %contained in miscOutputContent
         %[~,~,miscOutputContent] = evaluate_final(DATA, outcome, parent(1,:), options , train, test, KI);
         %out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
-        
+        out.Model{1,tries} = miscOutputContent.model;
     elseif ocDebugFlag
         %=== Debug output
         
