@@ -5,6 +5,8 @@ fitFcn=options.FitnessFcn;
 fitOpt=options.FitnessParam;
 if isfield(fitOpt,'lbl')
     lbl = fitOpt.lbl;
+else
+    lbl = zeros(1,size(parents,2));
 end
 costFcn=options.CostFcn;
 optDir = options.OptDir;

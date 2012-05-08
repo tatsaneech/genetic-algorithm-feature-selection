@@ -10,10 +10,10 @@ addpath([pwd '/stats/']);
 load simulated_binary.mat
 
 %=== Open parallel processing if using
-parallelizeFlag = 0;
+parallelizeFlag = 1;
 if (exist('matlabpool','file')==2) && parallelizeFlag
     if matlabpool('size')<=0
-        matlabpool 8;
+        matlabpool 4;
     end
 else
     parallelizeFlag=0; % No MATLAB toolbox
@@ -24,7 +24,7 @@ end
 opts=ga_opt_set('Parallelize',parallelizeFlag,'CostFcn',@cost_AUROC,'OptDir',1,...
     'ErrorIterations',20,'ErrorGradient',0.005,...
     'MinimizeFeatures',false,'OutputContent','debug',...
-    'PopulationSize', 16,'FitnessFcn','fit_LIBSVM',...
+    'PopulationSize', 4,'FitnessFcn','fit_LIBSVM',...
     'PlotFcn','plot_All','Display','plot',...
     'Repetitions', 1,'MaxIterations',10);
 
