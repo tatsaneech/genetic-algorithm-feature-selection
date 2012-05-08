@@ -597,7 +597,6 @@ fn = fieldnames(opt);
 N_fn = numel(fn);
 
 % Replace current options fields in options with old options
-
 for m=1:N_fn
     pname = fn{m};
     if isfield(new_opt,pname)
@@ -606,7 +605,6 @@ for m=1:N_fn
         
         %=== Rudimentary error check...
         %   Ensure argument is of same class as default
-        
         if ~isempty(pold)
             class_new = class(pval);
             class_old = class(pold);
@@ -622,6 +620,25 @@ for m=1:N_fn
         end
     end
 end
+
+if any(strcmp(fn,'libsvm'))
+    %=== LIBSVM special case, handle the string -b 1 flag
+    %=== Force b to whatever is set in libsvm string
+    b = regexp(opt.libsvm,'-b ','once');
+    if isempty(b)
+        % Default -b is 1
+        opt.libsvm = [strtrim(opt.libsvm) ' -b 1'];
+    else
+        if strcmp(opt.libsvm(b+3),'1')
+            opt.b=1;
+        elseif strcmp(opt.libsvm(b+3),'0')
+            opt.b=0;
+        else
+            error('libsvm options string b value not properly set.');
+        end
+    end
+end
+
 end
 
 function [] = displayGAOptions

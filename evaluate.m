@@ -3,7 +3,9 @@ function [ SCORE_test, SCORE_train, other ] = ...
 
 fitFcn=options.FitnessFcn;
 fitOpt=options.FitnessParam;
-lbl = fitOpt.lbl;
+if isfield(fitOpt,'lbl')
+    lbl = fitOpt.lbl;
+end
 costFcn=options.CostFcn;
 optDir = options.OptDir;
 normalizeDataFlag = options.NormalizeData;

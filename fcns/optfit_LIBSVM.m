@@ -2,7 +2,6 @@ function [ opt  ] = optfit_LIBSVM
 % Generates a default structure for the fitness function fit_LIBSVM
 %   [ opt  ] = optfit_LIBSVM 
 
-
 % options string:
 % -s svm_type : set type of SVM (default 0)
 % 	0 -- C-SVC
@@ -27,23 +26,7 @@ function [ opt  ] = optfit_LIBSVM
 % -b probability_estimates: whether to train a SVC or SVR model for probability estimates, 0 or 1 (default 0)
 % -wi weight: set the parameter C of class i to weight*C, for C-SVC (default 1)  
 opt=struct('libsvm', '-s 0 -t 2 -b 1');
-
-%=== Force b to whatever is set in libsvm string
-b = regexp(opt.libsvm,'-b ','once');
-if isempty(b)
-    b=0;
-    opt.libsvm = [strtrim(opt.libsvm) ' -b 0'];
-else
-    if strcmp(opt.libsvm(b+3),'1')
-        b=1;
-    elseif strcmp(opt.libsvm(b+3),'0')
-        b=0;
-    else
-        error('libsvm options string b value not properly set.');
-    end
-end
-        
-opt.b = b;
+opt.b = 1;
 
 
 end

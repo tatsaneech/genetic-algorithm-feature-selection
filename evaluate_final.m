@@ -67,7 +67,6 @@ end
 
 %=== Extract features as logicals
 FS = parents(1,:) == 1;
-lbl = fitOpt.lbl(FS);
 
 %=== Create default cost values
 tr_cost=ones(KI,1)*defaultCost;
@@ -93,7 +92,7 @@ for ki=1:KI % Repeat fitness function KI times to get good estimate of cost
     if ischar(fitFcn) && strcmp(fitFcn,'fit_MYPSO')
         % temporary hack
         [ train_pred, test_pred, model{ki} ]  = feval(fitFcn,...
-            train_data,train_target,test_data,fitOpt,lbl);
+            train_data,train_target,test_data,fitOpt,fitOpt.lbl(FS));
     else
         % Use fitness function to train model/get predictions
         [ train_pred, test_pred, model{ki} ]  = feval(fitFcn,...
