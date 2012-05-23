@@ -633,7 +633,7 @@ for f=1:length(handles.data)
                 fprintf('Iteration %d of %d. Iteration Time: %2.2fs. Time Elapsed: %2.2fs. Projected: %2.2fh. \n',...
                     ite,options.MaxIterations, ...
                     toc, ... % Time in iteration
-                    iteTime + repTime, ... % Total time spent so far
+                    repTime, ... % Total time spent so far
                     expectedTime);
             end
             out.CurrentIteration=out.CurrentIteration+1;
