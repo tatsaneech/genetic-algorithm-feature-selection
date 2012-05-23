@@ -123,9 +123,7 @@ for tries = 1:options.Repetitions
             out.EvolutionGenomeStats{ite,tries} = miscOutputContent.TestStats;
             
         elseif ocDebugFlag
-            %=== Debug output
-            out.EvolutionGenomeStats{ite,tries} = miscOutputContent.TestStats;
-            
+            %=== Debug output            
             out.Genome{1,tries}(:,:,ite) = parent; % Save current genome
         
             out.Training.EvolutionCost(ite,tries,:) = trainCost;
@@ -182,13 +180,17 @@ for tries = 1:options.Repetitions
     %=== Save results
     if ocDetailedFlag
         %=== Detailed output
-        %TODO: Check if this calculation is redundant and info is already
-        %contained in miscOutputContent
-        %[~,~,miscOutputContent] = evaluate_final(DATA, outcome, parent(1,:), options , train, test, KI);
-        %out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
         out.Model{1,tries} = miscOutputContent.model;
+        out.Training.Indices{1,tries} = miscOutputContent.TrainIndex;
+        out.Test.Indices{1,tries} = miscOutputContent.TestIndex;
+        out.Training.BestGenomeStats{1,tries} = miscOutputContent.TrainStats;
+        out.Test.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
+        
     elseif ocDebugFlag
         %=== Debug output
+        out.Model{1,tries} = miscOutputContent.model;
+        out.Training.Indices{1,tries} = miscOutputContent.TrainIndex;
+        out.Test.Indices{1,tries} = miscOutputContent.TestIndex;
         
         % If the final iteration is less than the maximum, then we should
         % remove the extra pre-allocated genomes

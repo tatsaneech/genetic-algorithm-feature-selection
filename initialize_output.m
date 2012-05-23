@@ -29,10 +29,12 @@ switch options.OutputContent
     case 'detailed'
         %=== Initialize additional out fields
         out.Training.BestGenomeStats = cell(1,rep);
+        out.Test.BestGenomeStats = cell(1,rep);
         out.Model = cell(1,rep) ;
         
         out.EvolutionGenomeStats = cell(maxIter,rep);
     case 'debug'
+        out.Model = cell(1,rep) ;
         %=== Initialize many additional out fields for debug purposes
         out.Genome = cellfun(@(x) false(popSize,numFeat,maxIter),...
             cell(1,rep),'UniformOutput',false);
