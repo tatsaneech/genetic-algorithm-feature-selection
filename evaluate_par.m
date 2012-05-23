@@ -52,11 +52,6 @@ parfor individual=1:P
             [ train_pred, test_pred ]  = feval(fitFcn,...
                 train_data,train_target,test_data,fitOpt);
             
-            if size(train_pred,2)>size(train_pred,1)
-                train_pred = train_pred';
-                test_pred = test_pred';
-            end
-            
             % TODO: do the next line only if nvargout>1
             [ tr_cost(ki) ] = callStatFcn(costFcn,...
                 train_pred, train_target);
@@ -71,8 +66,8 @@ parfor individual=1:P
     end
     
     % ...get median results on TEST and TRAIN set
-    SCORE_test(individual) =  nanmedian(t_cost );
-    SCORE_train(individual) =  nanmedian(tr_cost );
+    SCORE_test(individual) =  nanmedian( t_cost );
+    SCORE_train(individual) =  nanmedian( tr_cost );
 end
 other.stats = [];
 other.trainPred = [];

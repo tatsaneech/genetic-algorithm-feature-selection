@@ -53,13 +53,6 @@ for individual=1:P
             [ train_pred, test_pred ]  = feval(fitFcn,...
                 train_data,train_target,test_data,fitOpt);
             
-            %TODO: Remove this check and ensure that train_pred is
-            %always output in proper format (rows = observations)
-            if size(train_pred,2)>size(train_pred,1)
-                train_pred = train_pred';
-                test_pred = test_pred';
-            end
-            
             [ tr_cost(ki) ] = callStatFcn(costFcn,...
                 train_pred, train_target);
             [ t_cost(ki) ] = callStatFcn(costFcn,...
