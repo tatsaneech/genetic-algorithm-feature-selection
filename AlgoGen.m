@@ -150,7 +150,7 @@ for tries = 1:options.Repetitions
         repTime=repTime+toc;
         if verbose % Time elapsed reports
             if tries>1
-                expectedTime = mean(out.RepetitionTime(1:tries-1)) / tries;
+                expectedTime = mean(out.RepetitionTime(1:tries-1)) / (tries-1);
             else
                 expectedTime = iteTime * options.MaxIterations / ite;
             end
