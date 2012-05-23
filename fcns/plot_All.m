@@ -11,6 +11,9 @@ function [ out ] = plot_All( out, parent, h, options )
 if ~options.GUIFlag
     set(0, 'CurrentFigure', h);
 end
+
+
+
 ite = out.CurrentIteration;
 tries = out.CurrentRepetition;
 set(gcf,'CurrentAxes',options.PopulationEvolutionAxe) ;
@@ -27,7 +30,11 @@ legend('Best','Median','Location','NorthWest'); %'RMSE train','AUC' ,
 
 % TODO Get the plot function handle and plot : options.PlotFcn
 set(gcf,'CurrentAxes',options.CurrentScoreAxe);
-plot(out.EvolutionGenomeStats{ite,tries}.roc.x,out.EvolutionGenomeStats{ite,tries}.roc.y,'b--');
+if isfield(out,'EvolutionGenomeStats')
+    plot(out.EvolutionGenomeStats{ite,tries}.roc.x,out.EvolutionGenomeStats{ite,tries}.roc.y,'b--');
+elseif isfield(out.Test,'EvolutionBestStats')
+    plot(out.Test.EvolutionBestStats{1,tries}.roc.x,out.EvolutionBestStats{1,tries}.roc.y,'b--');
+end
 
 xlabel('Sensitivity'); ylabel('1-Specificity');
 
