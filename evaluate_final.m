@@ -89,15 +89,9 @@ for ki=1:KI % Repeat fitness function KI times to get good estimate of cost
     train_target = data_target(train(:,ki));
     test_target = data_target(test(:,ki));
     
-    if ischar(fitFcn) && strcmp(fitFcn,'fit_MYPSO')
-        % temporary hack
-        [ train_pred, test_pred, model{ki} ]  = feval(fitFcn,...
-            train_data,train_target,test_data,fitOpt,fitOpt.lbl(FS));
-    else
-        % Use fitness function to train model/get predictions
-        [ train_pred, test_pred, model{ki} ]  = feval(fitFcn,...
-            train_data,train_target,test_data,fitOpt);
-    end
+    % Use fitness function to train model/get predictions
+    [ train_pred, test_pred, model{ki} ]  = feval(fitFcn,...
+        train_data,train_target,test_data,fitOpt);
     
     [ tr_cost(ki) ] = callStatFcn(costFcn,...
         train_pred, train_target);

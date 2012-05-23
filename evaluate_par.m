@@ -1,13 +1,8 @@
 function [ SCORE_test, SCORE_train, other ] = ...
     evaluate_par(OriginalData , data_target, parents, options, train, test, KI)
 
-fitFcn=options.FitnessFcn; 
+fitFcn=options.FitnessFcn;
 fitOpt=options.FitnessParam;
-if isfield(fitOpt,'lbl')
-    lbl = fitOpt.lbl;
-else
-    lbl = zeros(1,size(parents,2));
-end
 costFcn=options.CostFcn;
 optDir = options.OptDir;
 normalizeDataFlag = options.NormalizeData;
@@ -18,7 +13,7 @@ SCORE_test=zeros(P,1);
 SCORE_train=zeros(P,1);
 
 %=== Default cost values to very sub-optimal
-% If the algorithm does not assign a cost value (due to missing values or 
+% If the algorithm does not assign a cost value (due to missing values or
 % unselected features), the genome will be heavily penalized
 
 %TODO: Figure out a better limits than 9999 and -9999
@@ -53,16 +48,9 @@ parfor individual=1:P
                 test_data = DATA(test(:,ki),:);
             end
             
-            if ischar(fitFcn) && strcmp(fitFcn,'fit_MYPSO')
-                % temporary hack
-                tmpLbl = lbl(FS);
-                [ train_pred, test_pred ]  = feval(fitFcn,...
-                    train_data,train_target,test_data,fitOpt,tmpLbl);
-            else
-                % Use fitness function to train model/get predictions
-                [ train_pred, test_pred ]  = feval(fitFcn,...
-                    train_data,train_target,test_data,fitOpt);
-            end
+            % Use fitness function to train model/get predictions
+            [ train_pred, test_pred ]  = feval(fitFcn,...
+                train_data,train_target,test_data,fitOpt);
             
             if size(train_pred,2)>size(train_pred,1)
                 train_pred = train_pred';

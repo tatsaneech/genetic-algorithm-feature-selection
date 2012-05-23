@@ -3,11 +3,6 @@ function [ SCORE_test, SCORE_train, other ] = ...
 
 fitFcn=options.FitnessFcn;
 fitOpt=options.FitnessParam;
-if isfield(fitOpt,'lbl')
-    lbl = fitOpt.lbl;
-else
-    lbl = zeros(1,size(parents,2));
-end
 costFcn=options.CostFcn;
 optDir = options.OptDir;
 normalizeDataFlag = options.NormalizeData;
@@ -54,15 +49,9 @@ for individual=1:P
                 test_data = DATA(test(:,ki),:);
             end
             
-            if ischar(fitFcn) && strcmp(fitFcn,'fit_MYPSO')
-                % temporary hack
-                [ train_pred, test_pred ]  = feval(fitFcn,...
-                    train_data,train_target,test_data,fitOpt,lbl(FS));
-            else
-                % Use fitness function to train model/get predictions
-                [ train_pred, test_pred ]  = feval(fitFcn,...
-                    train_data,train_target,test_data,fitOpt);
-            end
+            % Use fitness function to train model/get predictions
+            [ train_pred, test_pred ]  = feval(fitFcn,...
+                train_data,train_target,test_data,fitOpt);
             
             %TODO: Remove this check and ensure that train_pred is
             %always output in proper format (rows = observations)
