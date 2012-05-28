@@ -537,7 +537,8 @@ for f=1:length(handles.data)
         tries = tries + 1;
         
         %% Initialise GA
-        parent = initialise_pop(options);
+        parent = initialize_pop(options);
+        [data,target] = initialize_pop(DATA,outcome,options);
         % Check if early-stop criterion is met
         % if not: continue
         ite = 0 ; early_stop = false ;
@@ -547,7 +548,7 @@ for f=1:length(handles.data)
         % Calculate indices from crossvalidation
         % Determine cross validation indices
         xvalFcn=options.CrossValidationFcn;
-        [ train, test, KI ] = feval(xvalFcn,outcome,options);
+        [ train, test, KI ] = feval(xvalFcn,target,options);
         
         while ite < options.MaxIterations && ~early_stop && ~get(handles.pushbutton4,'UserData')
             tic;
@@ -561,7 +562,7 @@ for f=1:length(handles.data)
             end
             
             %% Evaluate parents are create new generation
-            [testCost,trainCost] = feval(evalFcn,DATA,outcome,parent,options, train, test, KI);
+            [testCost,trainCost] = feval(evalFcn,data,target,parent,options, train, test, KI);
             % TODO:
             %   Change eval function to return:
             %       model, outputs with predictions+indices, statistics
@@ -581,7 +582,7 @@ for f=1:length(handles.data)
             [out.Test.EvolutionBestCost(ite,tries),...
                 out.Training.EvolutionBestCost(ite,tries),...
                 miscOutputContent ] ...
-                = evaluate_final(DATA,outcome,FS,options,train, test, KI );
+                = evaluate_final(data,target,FS,options,train, test, KI );
             % Note: FS is 1 individual - do not need to parallelize
             
             out.Training.EvolutionMedianCost(ite,tries) = nanmedian(trainCost);
@@ -639,7 +640,7 @@ for f=1:length(handles.data)
             out.CurrentIteration=out.CurrentIteration+1;
             
         end
-        % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
+        % TODO: Add error checks if target = -1,1 instead of target = 0,1
         out.BestGenome{tries} = parent(1,:)==1;
         out.IterationTime(1,tries)=iteTime/options.MaxIterations;
         out.RepetitionTime(1,tries)=repTime/tries;

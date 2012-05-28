@@ -63,6 +63,11 @@ function [ options ] = ga_opt_set( varargin )
 %                       [ logical | 0 | {1} ]
 %   NormalizeData       - Whether data should be normalized during training
 %                       [ logical | 0 | {1} ]
+%   BalanceData         - Whether data classes should be balanced during training
+%                       [ logical | 0 | {1} ]
+%   BalanceRatio        - Ratio of largest class observations to smallest
+%                       class observations (x:1, e.g. 1:1 is balanced)
+%                       [ positive scalar greater than 0 | {1} ]
 %   NumFeatures         - Number of features present in data set
 %                       [ positive integer | {0} ]
 %   PopulationEvolutionAxe      - Axe handle to plot the population
@@ -109,6 +114,8 @@ else
         'FileName',[], ...
         'Parallelize', 0, ...
         'NormalizeData', 1, ...
+        'BalanceData', 1, ...
+        'BalanceRatio', 1, ...
         'Elitism',10 , ...
         'MinimizeFeatures',false, ...
         'PopulationEvolutionAxe', [],...
@@ -237,7 +244,19 @@ switch param
             valid=0;
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive numeric',param);
         end
-        
+    case {'ErrorGradient', 'ErrorIterations',...
+            'Elitism','BalanceRatio'}
+        % Positive definite doubles
+        if ~isnumeric(val) || val<0
+            valid = 0;
+            errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive double',param);
+        end
+    case {'MutationRate'}
+        % Positive definite doubles < 1
+        if ~isnumeric(val) || val<0 || val>1
+            valid = 0;
+            errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive definite double less than 1',param);
+        end
     case {'MaxFeatures','MinFeatures','MaxIterations','PopulationSize',...
             'Repetitions','InitialFeatureNum', 'NumFeatures'}
         % Positive definite integers 
@@ -249,16 +268,6 @@ switch param
             valid = 0;
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive numeric',param);
         end
-        
-        
-        
-    case {'ErrorGradient', 'ErrorIterations',...
-            'MutationRate','Elitism'}
-        % Positive definite doubles
-        if ~isnumeric(val) || val<0
-            valid = 0;
-            errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive integer',param);
-        end
     case {'FitnessFcn','CrossoverFcn','PlotFcn','CostFcn','CrossValidationFcn','MutationFcn'}
         % Functions/Strings
         if ~ischar(val) && ~iscell(val) &&  ~isa(val,'function_handle')
@@ -266,8 +275,8 @@ switch param
             errmsg = sprintf(['Invalid value for OPTIONS parameter %s: must be a string or \n'...
                 'function handle with valid three character prefix'],param);
         end
-    case {'GUIFlag','Parallelize','OptDir','MinimizeFeatures','NormalizeData'}
-        % Booleans/Doubles
+    case {'GUIFlag','Parallelize','OptDir','MinimizeFeatures','NormalizeData','BalanceData'}
+        % Booleans/0 1 flags
         if ~islogical(val) && ~(isnumeric(val) && (val==1 || val==0))
             valid = 0;
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a logical value, 0 or 1',param);

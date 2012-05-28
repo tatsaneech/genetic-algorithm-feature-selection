@@ -73,12 +73,13 @@ for tries = 1:options.Repetitions
     % activated by default
     
     parent = initialise_pop(options);
+    [data,target] = initialize_data(DATA,outcome,options);
     
     % Reset repetition counters/sentinel flags
     ite = 0; early_stop = false; iteTime=0;
     
     % Calculate indices for training repetitions for each genome
-    [ train, test, KI ] = feval(options.CrossValidationFcn,outcome,options);
+    [ train, test, KI ] = feval(options.CrossValidationFcn,target,options);
     
     while ite < options.MaxIterations && ~early_stop
         tic;
@@ -91,7 +92,7 @@ for tries = 1:options.Repetitions
         end
         
         %% Evaluate parents and create new generation
-        [testCost, trainCost] = feval(evalFcn,DATA,outcome,parent,options , train, test, KI);
+        [testCost, trainCost] = feval(evalFcn,data,target,parent,options , train, test, KI);
         % TODO:
         %   Change eval function to return:
         %       model, outputs with predictions+indices, statistics
@@ -109,7 +110,7 @@ for tries = 1:options.Repetitions
         [out.Test.EvolutionBestCost(ite,tries),...
             out.Training.EvolutionBestCost(ite,tries),...
             miscOutputContent] ...
-            = evaluate_final(DATA,outcome,FS,options,train,test,KI);
+            = evaluate_final(data,target,FS,options,train,test,KI);
         
         out.Training.EvolutionMedianCost(ite,tries) = nanmedian(trainCost);
         out.Test.EvolutionMedianCost(ite,tries) = nanmedian(testCost);
@@ -165,7 +166,7 @@ for tries = 1:options.Repetitions
         out.CurrentIteration=out.CurrentIteration+1;
         
     end
-    % TODO: Add error checks if outcome = -1,1 instead of outcome = 0,1
+    % TODO: Add error checks if target = -1,1 instead of target = 0,1
     out.BestGenome{1,tries} = parent(1,:)==1;
     out.IterationTime(1,tries)=iteTime/options.MaxIterations;
     out.RepetitionTime(1,tries)=repTime/tries;

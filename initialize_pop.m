@@ -1,4 +1,4 @@
-function parents = initialise_pop(options,Nbre_tot_var)
+function parents = initialize_pop(options,Nbre_tot_var)
 % Note (Louis Mayaud July-1st-11: Nbre_tot_var could be negative integer indicating
 % that the model should include Nbre_tot_var variables and exactly it, whereas a positive value
 % would set Nbre_tot_var as the max number of variables to be included in the model. 
