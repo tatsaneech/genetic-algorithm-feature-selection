@@ -72,7 +72,7 @@ for tries = 1:options.Repetitions
     % - options.ConfoundingFactors genes (variables) having these indexes being
     % activated by default
     
-    parent = initialise_pop(options);
+    parent = initialize_pop(options);
     [data,target] = initialize_data(DATA,outcome,options);
     
     % Reset repetition counters/sentinel flags
