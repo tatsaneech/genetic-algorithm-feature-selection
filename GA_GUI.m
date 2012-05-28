@@ -538,7 +538,7 @@ for f=1:length(handles.data)
         
         %% Initialise GA
         parent = initialize_pop(options);
-        [data,target] = initialize_pop(DATA,outcome,options);
+        [data,target,idxData] = initialize_pop(DATA,outcome,options);
         % Check if early-stop criterion is met
         % if not: continue
         ite = 0 ; early_stop = false ;
@@ -652,26 +652,36 @@ for f=1:length(handles.data)
             out.BestGenomePlot{1,tries}(ite+1:end,:)=[];
         end
         
-        %=== Save results
-        if ocDetailedFlag
-            %=== Detailed output
-            out.Model{1,tries} = miscOutputContent.model;
-            out.Training.Indices{1,tries} = miscOutputContent.TrainIndex;
-            out.Test.Indices{1,tries} = miscOutputContent.TestIndex;
-        elseif ocDebugFlag
-            %=== Debug output
-            out.Model{1,tries} = miscOutputContent.model;
-            out.Training.Indices{1,tries} = miscOutputContent.TrainIndex;
-            out.Test.Indices{1,tries} = miscOutputContent.TestIndex;
-            
-            % If the final iteration is less than the maximum, then we should
-            % remove the extra pre-allocated genomes
-            if size(out.Genome{1,tries},3)>ite
-                out.Genome{1,tries}(:,:,ite+1:end) = []; % Delete empties
-            end
-        else
-            %=== Normal output so perform no additional calculations
+        
+    %=== Save results
+    if ocDetailedFlag || ocDebugFlag
+        %=== Outputs for both detailed and debug
+        out.Model{1,tries} = miscOutputContent.model;
+        
+        %=== Indices
+        idxTraining = idxData;
+        idxTraining(idxData) = miscOutputContent.TrainIndex;
+        idxTest = idxData;
+        idxTest(idxData) = miscOutputContent.TestIndex;
+        
+        out.Training.Indices{1,tries} = idxTraining;
+        out.Test.Indices{1,tries} = idxTest;
+    end
+    if ocDetailedFlag
+        %=== Detailed output
+        out.Training.BestGenomeStats{1,tries} = miscOutputContent.TrainStats;
+        out.Test.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
+        
+    elseif ocDebugFlag
+        %=== Debug output
+        % If the final iteration is less than the maximum, then we should
+        % remove the extra pre-allocated genomes
+        if size(out.Genome{1,tries},3)>ite
+            out.Genome{1,tries}(:,:,ite+1:end) = []; % Delete empties
         end
+    else
+        %=== Normal output
+    end
         
         out.CurrentRepetition=out.CurrentRepetition+1;
     end

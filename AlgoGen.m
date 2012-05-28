@@ -73,7 +73,7 @@ for tries = 1:options.Repetitions
     % activated by default
     
     parent = initialize_pop(options);
-    [data,target] = initialize_data(DATA,outcome,options);
+    [data,target, idxData] = initialize_data(DATA,outcome,options);
     
     % Reset repetition counters/sentinel flags
     ite = 0; early_stop = false; iteTime=0;
@@ -179,20 +179,26 @@ for tries = 1:options.Repetitions
     end
         
     %=== Save results
+    if ocDetailedFlag || ocDebugFlag
+        %=== Outputs for both detailed and debug
+        out.Model{1,tries} = miscOutputContent.model;
+        
+        %=== Indices
+        idxTraining = idxData;
+        idxTraining(idxData) = miscOutputContent.TrainIndex;
+        idxTest = idxData;
+        idxTest(idxData) = miscOutputContent.TestIndex;
+        
+        out.Training.Indices{1,tries} = idxTraining;
+        out.Test.Indices{1,tries} = idxTest;
+    end
     if ocDetailedFlag
         %=== Detailed output
-        out.Model{1,tries} = miscOutputContent.model;
-        out.Training.Indices{1,tries} = miscOutputContent.TrainIndex;
-        out.Test.Indices{1,tries} = miscOutputContent.TestIndex;
         out.Training.BestGenomeStats{1,tries} = miscOutputContent.TrainStats;
         out.Test.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
         
     elseif ocDebugFlag
         %=== Debug output
-        out.Model{1,tries} = miscOutputContent.model;
-        out.Training.Indices{1,tries} = miscOutputContent.TrainIndex;
-        out.Test.Indices{1,tries} = miscOutputContent.TestIndex;
-        
         % If the final iteration is less than the maximum, then we should
         % remove the extra pre-allocated genomes
         if size(out.Genome{1,tries},3)>ite

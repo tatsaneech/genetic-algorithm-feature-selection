@@ -1,8 +1,11 @@
-function [ data, target ] = initialize_data(data,target,opt)
+function [ data, target, idxResample ] = initialize_data(data,target,opt)
 %INITIALIZE_DATA	Initialize data used in GA - preprocessing etc
 %	[ data, target ] = initialize_data(data,target,opt) initializes the
 %	data for the GA preprocessing. This involves balancing the data if
 %	opt.BalanceData is set to true.
+%
+%	[ data, target, idxResample ] = initialize_data(data,target,opt) also
+%	outputs the logical indices used to sub-sample the original data.
 %
 %
 %	Inputs:
@@ -55,7 +58,8 @@ if opt.BalanceData
         for k=1:(Nt-1)
             %=== Randomly undersample data from other classes
             ti_r = find(ti(:,k)==1); % Find indices of this class
-            idxSampled = randperm( numel(ti_r), ceil(numel(ti_r)*N_undersample*opt.BalanceRatio));
+            [~,idxSampled] = sort(rand(1,numel(ti_r)));
+            idxSampled = idxSampled(1:ceil(numel(ti_r)*N_undersample*opt.BalanceRatio));
             ti_r = ti_r(idxSampled); % Select subset of indices
             idxResample(ti_r,k) = true; % Record as logical indices
         end
