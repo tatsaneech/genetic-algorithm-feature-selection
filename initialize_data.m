@@ -55,7 +55,7 @@ if opt.BalanceData
         for k=1:(Nt-1)
             %=== Randomly undersample data from other classes
             ti_r = find(ti(:,k)==1); % Find indices of this class
-            idxSampled = randperm( numel(ti_r), ceil(numel(ti_r)*N_undersample));
+            idxSampled = randperm( numel(ti_r), ceil(numel(ti_r)*N_undersample*opt.BalanceRatio));
             ti_r = ti_r(idxSampled); % Select subset of indices
             idxResample(ti_r,k) = true; % Record as logical indices
         end
