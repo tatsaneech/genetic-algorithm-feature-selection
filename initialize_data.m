@@ -71,6 +71,8 @@ if opt.BalanceData
         target = target(idxResample);
     end
     
+else
+    idxResample = true(numel(target),1);
 end
 
 end
