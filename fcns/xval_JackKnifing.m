@@ -1,9 +1,8 @@
 function [ tr_idx, t_idx, D ] = xval_JackKnifing( data_target, options )
 %XVAL_JACKKNIFING Jack-knifing of data.
-%   xval_JackKnifing( data_target, options )
-
-%TODO: Is this function jack-knifing? Current implementation is randomly
-%assigning indices.
+%   [ tr_idx, t_idx, D ] = xval_JackKnifing( data_target, options ) samples
+%   without replacement from the original training data set.
+%   Returns logical indices.
 
 D=options.CrossValidationParam(1);
 P=options.CrossValidationParam(2);

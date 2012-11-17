@@ -424,7 +424,22 @@ for k=1:length(paramsChecked)
             %=== Ensure cross validation parameters match function
             xvalFcn = options.CrossValidationFcn;
             switch xvalFcn
-                case {'xval_Bootstrapping','xval_JackKnifing'}
+                case {'xval_Bootstrapping'}
+                    if isempty(options.(param)) % Default values
+                        options.(param) = zeros(1,1);
+                        options.(param)(1)=5; % default 5 repetitions
+                    else % Error check
+                        if mod(options.(param),1)~=0 % not an integer
+                            error(sprintf('validateConsistency:%s:InvalidParamValue',mfilename),...
+                                ['Invalid CrossValidationParam value. \n' xvalFcn ' requires an integer value (number of repetitions).']);
+                            
+                        elseif options.(param)(1)<1 % negative or 0
+                            error(sprintf('validateConsistency:%s:InvalidParamValue',mfilename),...
+                                ['Invalid CrossValidationParam(1) value. \n' xvalFcn ' requires an integer value  > 0 (number of repetitions).']);
+                            
+                        end
+                    end
+                case {'xval_JackKnifing'}
                     if isempty(options.(param)) % Default values
                         options.(param) = zeros(1,2);
                         options.(param)(1)=100;

@@ -1,26 +1,21 @@
 function [ tr_idx, t_idx, D ] = xval_Bootstrapping( data_target, options )
 %XVAL_BOOTSTRAPPING Bootstrap of data.
-%   xval_Bootstrapping( data_target, options )
+%   [ tr_idx, t_idx, D ] = xval_Bootstrapping( data_target, options )
+%   samples with replacement from the data set to generate training and
+%   test data sets.
+%
+%           options     - Should be a numeric value indicating the number
+%           of bootstrap repetitions to be performed.
 
 D=options.CrossValidationParam(1);
-P=options.CrossValidationParam(2);
-
 N=length(data_target);
 
-%     random indices from 1:N
-[~,temp] = sort(rand(N,D),1);
+% generate numeric random indices from 1:N (sampling with replacement)
+tr_idx = ceil(N*rand(N,D));
 
-% Temporary numerical indices
-tr_idx=false(N,D);
-t_idx=false(N,D);
-
-test1 = (temp(1:floor(N*P),:));
-train1=temp(floor(N*P)+1:end,:);
-
-%TODO: make this vectorized
-for k=1:D
-    tr_idx(train1(:,k),k)=true;
-    t_idx(test1(:,k),k)=true;
-end
+% Test indices are logical (values not used)
+idx = sub2ind([N,D],tr_idx,repmat(1:D,N,1));
+t_idx=true(N,D);
+t_idx(idx) = false;
 
 end
