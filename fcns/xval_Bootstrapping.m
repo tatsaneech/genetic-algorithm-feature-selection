@@ -4,8 +4,16 @@ function [ tr_idx, t_idx, D ] = xval_Bootstrapping( data_target, options )
 %   samples with replacement from the data set to generate training and
 %   test data sets.
 %
-%           options     - Should be a numeric value indicating the number
-%           of bootstrap repetitions to be performed.
+%
+%	Inputs:
+%		data_target - Input data targets
+%		options     - options containing CrossValidationParam field
+%				The field should be a numeric value indicating the number
+%				of bootstrap repetitions to be performed.
+%		
+%
+%	Outputs:
+%		
 
 D=options.CrossValidationParam(1);
 N=length(data_target);

@@ -76,13 +76,14 @@ for tries = 1:options.Repetitions
     [data,target, idxData] = initialize_data(DATA,outcome,options);
     
     % Reset repetition counters/sentinel flags
-    ite = 0; early_stop = false; iteTime=0;
+    ite = 0; early_stop = false; 
+    iteTime=0; repTime=0;
     
     % Calculate indices for training repetitions for each genome
     [ train, test, KI ] = feval(options.CrossValidationFcn,target,options);
     
+    tic;
     while ite < options.MaxIterations && ~early_stop
-        tic;
         ite = ite + 1;
         if ite>(options.ErrorIterations+1) % Enough iterations have passed
             win = out.Test.EvolutionBestCost((ite-(options.ErrorIterations+1)):(ite-1));
@@ -147,29 +148,32 @@ for tries = 1:options.Repetitions
         parent = new_generation(parent,testCost,sort_str,options);
         
         %=== Update timing calculations + print info to command prompt
-        iteTime=iteTime+toc;
-        repTime=repTime+toc;
+        iteTime=toc-iteTime;
+        repTime=toc;
+        
         if verbose % Time elapsed reports
             if tries>1
-                expectedTime = mean(out.RepetitionTime(1:tries-1)) / (tries-1);
+                expectedTime = mean(out.RepetitionTime(1:tries-1))/options.MaxIterations * (options.MaxIterations-ite) + ...
+                    mean(out.RepetitionTime(1:tries-1))*(options.Repetitions-1);
             else
-                expectedTime = iteTime * options.MaxIterations / ite;
+                expectedTime = repTime/ite * (options.MaxIterations-ite) + ... % time remaining this repetition
+                    repTime/ite * (options.MaxIterations*(options.Repetitions-1)); % time in future repetitions
             end
             expectedTime = (expectedTime * options.Repetitions - repTime)/60/60;
-            fprintf('Iteration %d of %d. Iteration Time: %2.2fs. Time Elapsed: %2.2fs. Projected: %2.2fh. \n',...
+            fprintf('Repetition %i of %i. Iteration %d of %d. Iter Time: %2.2fs. Time Elapsed: %2.2fs. Projected: %2.2fh.\n',...
+                tries, options.Repetitions,...
                 ite,options.MaxIterations, ...
                 toc, ... % Time in iteration
                 repTime, ... % Total time spent so far
                 expectedTime);
         end
-        
         out.CurrentIteration=out.CurrentIteration+1;
         
     end
     % TODO: Add error checks if target = -1,1 instead of target = 0,1
     out.BestGenome{1,tries} = parent(1,:)==1;
     out.IterationTime(1,tries)=iteTime/options.MaxIterations;
-    out.RepetitionTime(1,tries)=repTime/tries;
+    out.RepetitionTime(1,tries)=repTime;
     out.BestGenomeStats{1,tries} = miscOutputContent.TestStats;
     
     % If the final iteration is less than the maximum, then we should
