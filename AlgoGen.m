@@ -154,7 +154,7 @@ for tries = 1:options.Repetitions
         if verbose % Time elapsed reports
             if tries>1
                 expectedTime = mean(out.RepetitionTime(1:tries-1))/options.MaxIterations * (options.MaxIterations-ite) + ...
-                    mean(out.RepetitionTime(1:tries-1))*(options.Repetitions-1);
+                    mean(out.RepetitionTime(1:tries-1))*(options.Repetitions-tries);
             else
                 expectedTime = repTime/ite * (options.MaxIterations-ite) + ... % time remaining this repetition
                     repTime/ite * (options.MaxIterations*(options.Repetitions-1)); % time in future repetitions
@@ -163,7 +163,7 @@ for tries = 1:options.Repetitions
             fprintf('Repetition %i of %i. Iteration %d of %d. Iter Time: %2.2fs. Time Elapsed: %2.2fs. Projected: %2.2fh.\n',...
                 tries, options.Repetitions,...
                 ite,options.MaxIterations, ...
-                toc, ... % Time in iteration
+                iteTime, ... % Time in iteration
                 repTime, ... % Total time spent so far
                 expectedTime);
         end
