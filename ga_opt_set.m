@@ -316,11 +316,12 @@ function [valid,errmsg] = validateParamIsSubset(pname,pval)
 % in the directory as a function
 valid=1;
 errmsg='';
-
+curr_dir = mfilename('fullpath');
+curr_dir = curr_dir(1:end-(numel('ga_opt_set'))); % remove m-file name
 %=== Get pname
 if regexp(pname,'CostFcn')
     %=== Cost function is a special case - uses embedded stats functions
-    okfcns = arrayfun(@(x) x.name,dir('./stats/private/*.m'),'UniformOutput',false);
+    okfcns = arrayfun(@(x) x.name,dir([curr_dir 'stats/private/*.m']),'UniformOutput',false);
     
     %=== If pval is a function handle, convert to char
     if ~ischar(pval)
@@ -362,10 +363,10 @@ elseif regexp(pname,'Fcn') > 1
     end
     
     % Scan files and find specific functions
-    if exist('./fcns/','dir')==7
-        files = dir(['./fcns/' fcn]);
+    if exist([curr_dir 'fcns/'],'dir')==7
+        files = dir([curr_dir 'fcns/' fcn]);
     else
-        files=dir(fcn);
+        files=dir([curr_dir fcn]);
     end
     
     % Get acceptable file names

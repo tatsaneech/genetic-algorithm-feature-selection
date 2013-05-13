@@ -12,7 +12,6 @@ for r=1:size(out.Training.EvolutionBestCost,2)
     if ~isempty(lastTrain)
         TestCost(r) = out.Test.EvolutionBestCost(lastTrain,r);
     end
-      
 end
 
 Genomes =  reshape(cell2mat(out.BestGenome),Nlabels,Ntries)' ;
