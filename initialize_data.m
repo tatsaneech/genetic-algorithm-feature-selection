@@ -31,13 +31,18 @@ function [ data, target, idxResample ] = initialize_data(data,target,opt)
 %	Contact: alistairewj@gmail.com
 
 %=== Check if balance is one
-if opt.BalanceData
+if opt.BalanceData==1
     %=== Balance data
     [numTar,ti,tj] = unique(target);
     Nt = numel(numTar);
     
     %=== Classification gives Nt==2
     %=== Regression gives Nt>2
+    
+    if Nt>2
+        fprintf('Balance data option of 1 indicates downsampling outcomes, only works for classification. Skipping balancing data.\n');
+    else
+        
     ti = false(numel(target),Nt);
     for k=1:Nt
         ti(:,k) = tj==k; % Loop through classes
@@ -69,6 +74,47 @@ if opt.BalanceData
         idxResample = any(idxResample,2);
         data = data(idxResample,:);
         target = target(idxResample);
+    end
+    end
+elseif opt.BalanceData==2
+    %=== This indicates bootstrapping positive outcomes up, only works in
+    %classification
+    %=== Balance data
+    [numTar,ti,tj] = unique(target);
+    Nt = numel(numTar);
+    
+    if Nt>2
+        fprintf('Balance data option of 2 indicates bootstrap upsampling infrequent outcomes, only works for classification. Skipping balancing data.\n');
+    else
+        
+    %=== Classification gives Nt==2
+    ti = false(numel(target),Nt);
+    for k=1:Nt
+        ti(:,k) = tj==k; % Loop through classes
+    end
+    
+    %=== Sort according to number of observations in each class
+    tisum = sum(ti,1);
+    [tisum,tisort] = sort(tisum,2,'descend');
+    
+    ti = ti(:,tisort);
+    
+    %=== Rebalance classes if ratio is greater than specified in opt
+    if abs(tisum(1)/tisum(end)*opt.BalanceRatio) > 1 % 1% tolerance
+        %=== Calculate number of increased outcomes to generate
+        N_upsample = tisum(1)/tisum(end)*opt.BalanceRatio;
+        
+        %=== Generate them! That easy!
+        ti_r = find(ti(:,end)==1); % Find indices of the less frequent class
+        idxResample = ceil(size(ti_r,1)*rand(tisum(end)*N_upsample,1));
+        idxResample = ti_r(idxResample);
+        idxResample = [setdiff(1:size(ti,1),ti_r)';idxResample];
+        
+        %=== Randomize the order for no apparent reason !
+        [~,idxRandomize] = sort(rand(size(idxResample,1),1));
+        idxResample = idxResample(idxRandomize);
+    end
+    
     end
     
 else

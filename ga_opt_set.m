@@ -258,7 +258,7 @@ switch param
             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a positive definite double less than 1',param);
         end
     case {'MaxFeatures','MinFeatures','MaxIterations','PopulationSize',...
-            'Repetitions','InitialFeatureNum', 'NumFeatures'}
+            'Repetitions','InitialFeatureNum', 'NumFeatures','BalanceData'}
         % Positive definite integers 
         if ~isnumeric(val) || val<0
             valid = 0;
@@ -275,7 +275,7 @@ switch param
             errmsg = sprintf(['Invalid value for OPTIONS parameter %s: must be a string or \n'...
                 'function handle with valid three character prefix'],param);
         end
-    case {'GUIFlag','Parallelize','OptDir','MinimizeFeatures','NormalizeData','BalanceData'}
+    case {'GUIFlag','Parallelize','OptDir','MinimizeFeatures','NormalizeData'}
         % Booleans/0 1 flags
         if ~islogical(val) && ~(isnumeric(val) && (val==1 || val==0))
             valid = 0;
