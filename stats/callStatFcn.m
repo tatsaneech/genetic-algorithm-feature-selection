@@ -1,5 +1,5 @@
 function [ cost ] = callStatFcn(costFcn,...
-                pred, target)
+                pred, target, model)
 %CALLSTATFCN	Calls the given statistic as the cost function for the GA
 %   Private functions can only be called from the parent folder
 %	[ cost ] = callStatFcn(costFcn, pred, target) 
@@ -23,6 +23,9 @@ function [ cost ] = callStatFcn(costFcn,...
 %	Contact: alistairewj@gmail.com
 
 %=== Calculate cost
-cost=feval(costFcn,pred,target);
-
+if ischar(costFcn) && ~isempty(regexp(costFcn,'cost_Evidence', 'once'))
+    cost = feval(costFcn,pred,target,model);
+else
+    cost = feval(costFcn,pred,target);
+end
 end

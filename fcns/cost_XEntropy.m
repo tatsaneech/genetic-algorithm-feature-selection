@@ -1,4 +1,4 @@
-function [ out ] = cost_XEntropy( pred, target )
+function [ out ] = cost_XEntropy( pred, target, model )
 %cost_XEntropy Uses the Cross-Entropy as the cost function for the GA.
 %   [ out ] = cost_XEntropy( pred, target )
 % Louis Mayaud, Oct 4th : Very simple implementation, refers to

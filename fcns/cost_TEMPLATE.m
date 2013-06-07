@@ -1,4 +1,4 @@
-function [ out ] = cost_TEMPLATE( pred, target )
+function [ out ] = cost_TEMPLATE( pred, target, model )
 % cost_TEMPLATE Uses the Cross-Entropy as the cost function for the GA.
 %   [ out ] = cost_TEMPLATE( pred, target )
 % Louis Mayaud, Oct 4th : Template for cost function

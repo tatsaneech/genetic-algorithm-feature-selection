@@ -94,9 +94,9 @@ for ki=1:KI % Repeat fitness function KI times to get good estimate of cost
         train_data,train_target,test_data,fitOpt);
     
     [ tr_cost(ki) ] = callStatFcn(costFcn,...
-        train_pred, train_target);
+        train_pred, train_target, model{ki});
     [ t_cost(ki) ] = callStatFcn(costFcn,...
-        test_pred, test_target);
+        test_pred, test_target, model{ki});
     
     pred(train(:,ki),ki) = train_pred;
     pred(test(:,ki),ki) = test_pred;

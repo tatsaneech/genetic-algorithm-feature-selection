@@ -1,4 +1,4 @@
-function [ out ] = cost_RMSE( pred, target )
+function [ out ] = cost_RMSE( pred, target, model )
 %cost_RMSE Uses the RMSE as the cost function for the GA.
 %   [ out ] = cost_RMSE( pred, target )
 

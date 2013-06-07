@@ -1,4 +1,4 @@
-function [ out ] = cost_BER( pred, target )
+function [ out ] = cost_BER( pred, target, model )
 % cost_BER Uses the Balanced Error Rate as the cost function for the GA.
 %   [ out ] = cost_BER( pred, target )
 % Louis Mayaud, Dec 5th : BER for cost function
