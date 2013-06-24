@@ -7,8 +7,13 @@
 addpath([pwd '/data/']);
 addpath([pwd '/fcns/']);
 addpath([pwd '/stats/']);
-load simulated_binary.mat
-
+if exist('simulated_binary.mat','file')==2
+    load simulated_binary.mat
+else
+    X = rand(100,10); X_round = rand(1,10);
+    X = double(bsxfun(@lt, X, X_round));
+    y = double((X(:,1) & X(:,2)) | X(:,4));
+end
 %=== Open parallel processing if using
 parallelizeFlag = 0;
 if (exist('matlabpool','file')==2) && parallelizeFlag
@@ -24,9 +29,10 @@ end
 opts=ga_opt_set('Parallelize',parallelizeFlag,'CostFcn',@cost_AUROC,'OptDir',1,...
     'ErrorIterations',20,'ErrorGradient',0.005,...
     'MinimizeFeatures',false,'OutputContent','debug',...
-    'PopulationSize', 4,'FitnessFcn','fit_GLM',...
+    'PopulationSize', 4,'FitnessFcn','fit_LIBSVM',...
     'PlotFcn','plot_All','Display','plot',...
-    'Repetitions', 1,'MaxIterations',10);
+    'Repetitions', 1,'MaxIterations',10,...
+    'Hyperparameters',{'gamma',[0.001,512],'cost',[0.25,10]});
 
 % Run the GA
 fprintf('Here we go! \n');

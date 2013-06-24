@@ -26,9 +26,37 @@ function [ train_pred, test_pred, model  ] = ...
 % -b probability_estimates: whether to train a SVC or SVR model for probability estimates, 0 or 1 (default 0)
 % -wi weight: set the parameter C of class i to weight*C, for C-SVC (default 1)
 
-% train the model - C-SVC with RBF kernel and probability estimates
-model = svmtrain(train_target,train_data,opt.libsvm);
+%=== parse options
+% opt = struct('kernel',2,'type',0,'degree',3,...
+%     'gamma',[],'cost',1,'b',1);
 
+libsvm_opt = '';
+fn = fieldnames(opt);
+for k=1:numel(fn)
+    if ~isempty(opt.(fn{k}))
+    switch fn{k}
+        case 'kernel'
+            curr_letter = 't';
+        case 'type'
+            curr_letter = 's';
+        case 'degree'
+            curr_letter = 'd';
+        case 'gamma'
+            curr_letter = 'g';
+        case 'cost'
+            curr_letter = 'c';
+        case 'b'
+            curr_letter = 'b';
+        otherwise 
+            %=== ignore the indices stored in hyperparameters
+    end
+    libsvm_opt = [libsvm_opt '-' curr_letter ' ' num2str(opt.(fn{k})) ' '];
+    end
+end
+libsvm_opt = strtrim(libsvm_opt);
+
+% train the model - C-SVC with RBF kernel and probability estimates
+model = svmtrain(train_target,train_data,libsvm_opt);
 
 % Apply model to data
 [train_pred, train_acc, train_prob] = svmpredict(train_target, train_data, model, ['-b ' num2str(opt.b)]);
@@ -38,7 +66,7 @@ test_target = zeros(size(test_data,1),1);
 [test_pred, test_acc, test_prob] = svmpredict(test_target, test_data, model, ['-b ' num2str(opt.b)]);
 
 %=== Ensure correct class predictions are used
-if opt.b
+if opt.b == 1
     if train_target(1)==1
         train_pred=train_prob(:,1);
         test_pred=test_prob(:,1);

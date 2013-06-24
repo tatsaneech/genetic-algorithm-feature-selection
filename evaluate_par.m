@@ -23,6 +23,13 @@ else % Minimizing cost -> high default value
     defaultCost=9999;
 end
 
+%=== the genomes at the end will be indexing hyperparameters
+if ~isempty(options.Hyperparameters)
+    hyper = parents(:,size(OriginalData,2)+1:end);
+    parents = parents(:,1:size(OriginalData,2));
+end
+
+
 % For each individual
 parfor individual=1:P
     % If you want to remove multiples warnings
@@ -32,8 +39,15 @@ parfor individual=1:P
     
     % Convert Gene into selected variables
     FS = parents(individual,:)==1;
+    
+    if ~isempty(options.Hyperparameters)
+        fitOptCurr = parseHyperparameters(fitOpt,fitFcn,hyper(individual,:),options);
+    else
+        fitOptCurr = fitOpt;
+    end
+    
     % If enough variables selected to regress
-    if sum(FS)>0
+    if any(FS)
         DATA = OriginalData(:,FS);
         % Cross-validation repeat for each data partition
         for ki=1:KI
@@ -50,7 +64,7 @@ parfor individual=1:P
             
             % Use fitness function to train model/get predictions
             [ train_pred, test_pred ]  = feval(fitFcn,...
-                train_data,train_target,test_data,fitOpt);
+                train_data,train_target,test_data,fitOptCurr);
             
             % TODO: do the next line only if nvargout>1
             [ tr_cost(ki) ] = callStatFcn(costFcn,...

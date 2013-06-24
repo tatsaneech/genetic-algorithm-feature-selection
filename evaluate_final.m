@@ -65,9 +65,14 @@ else % Minimizing cost -> high default value
     defaultCost=9999;
 end
 
-%=== Extract features as logicals
-FS = parents(1,:) == 1;
+%=== Update hyperparameters if using hyperparameter optimization
+if ~isempty(options.Hyperparameters)
+    hyper = parents(1,size(OriginalData,2)+1:end);
+    fitOpt = parseHyperparameters(fitOpt,fitFcn,hyper(1,:),options);
+end 
 
+%=== Extract features as logicals
+FS = parents(1,1:size(OriginalData,2)) == 1;
 %=== Create default cost values
 tr_cost=ones(KI,1)*defaultCost;
 t_cost=ones(KI,1)*defaultCost;

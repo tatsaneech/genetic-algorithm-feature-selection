@@ -10,8 +10,8 @@ train_pred = train_data*b2;
 test_pred = test_data*b2 ;
 
 % scale using logit
-train_pred = 1./(1+exp(-train_pred*b2));
-test_pred = 1./(1+exp(-test_pred*b2));
+train_pred = 1./(1+exp(-train_pred));
+test_pred = 1./(1+exp(-test_pred));
 
 model = b2;
 end

@@ -57,3 +57,10 @@ else
     % do nothing    
 end
 
+if ~isempty(options.Hyperparameters) % add in bits to tune hyperparameters
+    N_BITS = structfun(@(x) x.bitsNeeded, options.Hyperparameters);
+    hypGenome = round(rand(options.PopulationSize,sum(N_BITS)));
+    parents = [parents,hypGenome];
+end
+end
+

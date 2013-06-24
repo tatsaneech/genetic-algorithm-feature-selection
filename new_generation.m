@@ -87,22 +87,27 @@ if MinVar>0 % Ensure number of features > MinVar
 end
 
 %% Replace twins by aliens
-twins = 1;
+%=== Old version, slower than unique
+% twins = 1;
+% diff = ones(2*POP_xover,2*POP_xover);
+% % nonTwinIdx=true(2*POP_xover,1);
+% % twinCmpFcn=@(children,i) any(sqrt(sum((children(i,:)-children(1:i-1,:)).^2))==0);
+% for i = 1:2*POP_xover
+%     for j=(i+1):2*POP_xover
+%         diff(i,j) = sum((children(i,:)-children(j,:)).^2);
+%     end
+% end
+% [r,c] = find(diff==0);
+% twins = unique([r ; c]);
 
-diff = ones(2*POP_xover,2*POP_xover);
-% nonTwinIdx=true(2*POP_xover,1);
-% twinCmpFcn=@(children,i) any(sqrt(sum((children(i,:)-children(1:i-1,:)).^2))==0);
-for i = 1:2*POP_xover
-    for j=(i+1):2*POP_xover
-        diff(i,j) = sum((children(i,:)-children(j,:)).^2);
-    end
-end
-[r,c] = find(diff==0);
-twins = unique([r ; c]);
- 
+
+[~,twins] = unique(children,'rows');
+twins = setdiff(1:size(children,1),twins);
+
+
 if ~isempty(twins)
     options.PopulationSize=length(twins); % Temporary change.
-    children(twins,:) = initialize_pop(options,VAR_NUM);
+    children(twins,:) = initialize_pop(options,options.NumFeatures);
 end % Some twins might still be present after generation of random aliens BUT we don't care that much 
 
 parent = [elderly ; children] ;

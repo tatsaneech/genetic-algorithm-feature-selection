@@ -25,8 +25,9 @@ function [ opt  ] = optfit_LIBSVM
 % -h shrinking: whether to use the shrinking heuristics, 0 or 1 (default 1)
 % -b probability_estimates: whether to train a SVC or SVR model for probability estimates, 0 or 1 (default 0)
 % -wi weight: set the parameter C of class i to weight*C, for C-SVC (default 1)  
-opt=struct('libsvm', '-s 0 -t 2 -b 1');
-opt.b = 1;
+
+opt = struct('kernel',2,'type',0,'degree',3,...
+    'gamma',[],'cost',1,'b',1);
 
 
 end

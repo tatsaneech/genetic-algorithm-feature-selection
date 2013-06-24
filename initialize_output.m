@@ -39,6 +39,12 @@ switch options.OutputContent
         out.Genome = cellfun(@(x) false(popSize,numFeat,maxIter),...
             cell(1,rep),'UniformOutput',false);
         
+        if ~isempty(options.Hyperparameters)
+        nHyp = sum(structfun(@(x) x.bitsNeeded, options.Hyperparameters));
+        out.Hyperparameters = cellfun(@(x) false(popSize,nHyp,maxIter),...
+            cell(1,rep),'UniformOutput',false);
+        end
+        
         out.Training.EvolutionCost = zeros(maxIter,rep,popSize);
         out.Training.EvolutionBestStats = cell(maxIter,rep);
         

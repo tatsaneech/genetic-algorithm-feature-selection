@@ -123,7 +123,8 @@ else
         'CurrentPopulationAxe', [],...
         'CurrentScoreAxe', [],...
         'GUIFlag',true,...
-        'InitialFeatureNum', 0 ...
+        'InitialFeatureNum', 0, ...
+        'Hyperparameters',[] ...
         );
 end
 if nargin==0
@@ -232,6 +233,13 @@ switch param
         %             valid = 0;
         %             errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be ''never'' or ''always''.',param);
         %        end
+    case 'Hyperparameters'
+        if ~iscell(val)
+            valid = 0;
+            errmsg = sprintf('Invalid value for OPTIONS parameter %s: must be a cell array.',param);
+            return;
+        end
+        
     case {'FitnessParam'}
         % Structures
         if ~isempty(val) && ~isstruct(val)
@@ -391,6 +399,39 @@ elseif regexp(pname,'Fcn') > 1
         valid=0;
         errmsg='Function name provided does not match any found in local directory';
     end
+elseif strcmpi(pname,'hyperparameters')
+    %=== Ensure each field encodes a range
+    if mod(numel(pval),2)==1
+        valid=0; %=== should be name/value pairs
+        errmsg='Hyperparameters should be in {''parameter'',value,...} format.';
+        return;
+    end
+    
+    for k=1:numel(pval)
+        if mod(k,2)==1
+            if ~ischar(pval{k})
+                valid = 0;
+                errmsg=sprintf('Parameter %d entered is not a string. Hyperparameters should be in {''parameter'',value,...} format.',k);
+                return;
+            end
+        else
+            if ~isnumeric(pval{k})
+                valid = 0;
+                errmsg='Hyperparameter field values should be 2x1 numeric representing search boundaries.';
+                return;
+            elseif numel(pval{k})~=2
+                valid = 0;
+                errmsg='Incorrect number of elements in hyperparameter boundary conditions. Should be 2x1 numeric.';
+                return;
+            end
+            
+        end
+    end
+    
+    %=== Passed all checks
+    valid=1;
+    return;
+    
 else
     % No membership set, return normally
 end
@@ -404,7 +445,8 @@ paramsChecked = {'CrossValidationParam',...
     'MinFeatures',...
     'MaxFeatures',...
     'ConfoundingFactors',...
-    'CostFcn'};
+    'CostFcn',...
+    'Hyperparameters'};
 
 for k=1:length(paramsChecked)
     param = paramsChecked{k};
@@ -608,6 +650,22 @@ for k=1:length(paramsChecked)
                     options.(param) = 'normal';
                     
             end
+            
+        case 'Hyperparameters'
+            
+            %=== Loop through and ensure these hyperparameters are legit
+            fn = fieldnames(options.FitnessParam);
+            idxFound = false(numel(pval)/2,1);
+            for q=1:2:numel(pval)
+                idxFound((q+1)/2) = any(strcmpi(pval{q},fn));
+            end
+            
+            if any(~idxFound)
+                wrong_hyp = pval(1:2:end); wrong_hyp = wrong_hyp(~idxFound);
+                error(sprintf('validateConsistency:%s:InvalidHyperparameterName',mfilename),...
+                    'The following hyperparameters specified are not parameters for the model:\n%s',wrong_hyp);
+            end
+            
         otherwise
             % Recite Acadian Poetry ... or do nothing, your choice!
             % there is beauttiful Acadian Poem at http://www.gov.ns.ca/legislature/library/digitalcollection/bookpart1.stm

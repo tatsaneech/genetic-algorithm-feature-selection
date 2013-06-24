@@ -59,10 +59,12 @@ switch options.OutputContent
         ocDebugFlag = true;
 end
 
+% If hyperparameter optimization is desired, prepare options for this
+[ options ] = prepareHyperparameterTuning(options);
+
 % Initialize outputs
 out = initialize_output(options);
 
-repTime=0;
 for tries = 1:options.Repetitions
     %% Initialise GA
     % Create a random population of genomes with :
@@ -72,6 +74,7 @@ for tries = 1:options.Repetitions
     % - options.ConfoundingFactors genes (variables) having these indexes being
     % activated by default
     
+    
     parent = initialize_pop(options);
     [data,target, idxData] = initialize_data(DATA,outcome,options);
     
@@ -79,11 +82,12 @@ for tries = 1:options.Repetitions
     ite = 0; early_stop = false; 
     iteTime=0; repTime=0;
     
+    
     % Calculate indices for training repetitions for each genome
     [ train, test, KI ] = feval(options.CrossValidationFcn,target,options);
     
-    tic;
     while ite < options.MaxIterations && ~early_stop
+        tic;
         ite = ite + 1;
         if ite>(options.ErrorIterations+1) % Enough iterations have passed
             win = out.Test.EvolutionBestCost((ite-(options.ErrorIterations+1)):(ite-1));
@@ -118,7 +122,7 @@ for tries = 1:options.Repetitions
         
         %% Save and display results
         %%-------------------------+
-        out.BestGenomePlot{1,tries}(ite,:)=FS;
+        out.BestGenomePlot{1,tries}(ite,:)=FS(1:size(data,2));
         
         if ocDetailedFlag
             %=== Detailed output            
@@ -126,8 +130,11 @@ for tries = 1:options.Repetitions
             
         elseif ocDebugFlag
             %=== Debug output            
-            out.Genome{1,tries}(:,:,ite) = parent; % Save current genome
-        
+            out.Genome{1,tries}(:,:,ite) = parent(:,1:size(data,2)); % Save current genome
+            
+            if ~isempty(options.Hyperparameters)
+                out.Hyperparameters = parent(:,size(data,2)+1:end);
+            end
             out.Training.EvolutionCost(ite,tries,:) = trainCost;
             out.Training.EvolutionBestStats{ite,tries} = miscOutputContent.TrainStats;
         
@@ -148,18 +155,19 @@ for tries = 1:options.Repetitions
         parent = new_generation(parent,testCost,sort_str,options);
         
         %=== Update timing calculations + print info to command prompt
-        iteTime=toc-iteTime;
-        repTime=toc;
+        iteTime=toc;
+        repTime=repTime+iteTime;
         
         if verbose % Time elapsed reports
             if tries>1
-                expectedTime = mean(out.RepetitionTime(1:tries-1))/options.MaxIterations * (options.MaxIterations-ite) + ...
-                    mean(out.RepetitionTime(1:tries-1))*(options.Repetitions-tries);
+                expectedTime = mean(out.RepetitionTime(1:tries-1))*(options.Repetitions-tries) + ... % remaining time for repetitions
+                    mean(out.RepetitionTime(1:tries-1))/options.MaxIterations*(options.MaxIterations-ite); % remaining time for iterations
             else
-                expectedTime = repTime/ite * (options.MaxIterations-ite) + ... % time remaining this repetition
-                    repTime/ite * (options.MaxIterations*(options.Repetitions-1)); % time in future repetitions
+                % Number of repetitions * (timePerIt)*(numIt)
+                expectedTime = repTime/ite*options.MaxIterations*options.Repetitions - ...
+                    repTime;
             end
-            expectedTime = (expectedTime * options.Repetitions - repTime)/60/60;
+            expectedTime = expectedTime/60/60; % hours
             fprintf('Repetition %i of %i. Iteration %d of %d. Iter Time: %2.2fs. Time Elapsed: %2.2fs. Projected: %2.2fh.\n',...
                 tries, options.Repetitions,...
                 ite,options.MaxIterations, ...
@@ -188,11 +196,15 @@ for tries = 1:options.Repetitions
         out.Model{1,tries} = miscOutputContent.model;
         
         %=== Indices
-        idxTraining = idxData;
-        idxTraining(idxData) = miscOutputContent.TrainIndex;
-        idxTest = idxData;
-        idxTest(idxData) = miscOutputContent.TestIndex;
-        
+        if islogical(idxData)
+            idxTraining = idxData;
+            idxTraining(idxData) = miscOutputContent.TrainIndex;
+            idxTest = idxData;
+            idxTest(idxData) = miscOutputContent.TestIndex;
+        else
+            idxTraining = idxData(miscOutputContent.TrainIndex);
+            idxTest = idxData(miscOutputContent.TestIndex);
+        end
         out.Training.Indices{1,tries} = idxTraining;
         out.Test.Indices{1,tries} = idxTest;
     end
