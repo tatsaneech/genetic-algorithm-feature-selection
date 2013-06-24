@@ -63,14 +63,18 @@ parfor individual=1:P
             end
             
             % Use fitness function to train model/get predictions
+<<<<<<< HEAD
             [ train_pred, test_pred ]  = feval(fitFcn,...
                 train_data,train_target,test_data,fitOptCurr);
+=======
+            [ train_pred, test_pred, model ]  = feval(fitFcn,...
+                train_data,train_target,test_data,fitOpt);
+>>>>>>> a65f7b39a281dbaf2cfbc766e0a1912a2b0000f1
             
-            % TODO: do the next line only if nvargout>1
             [ tr_cost(ki) ] = callStatFcn(costFcn,...
-                train_pred, train_target);
+                train_pred, train_target, model);
             [ t_cost(ki) ] = callStatFcn(costFcn,...
-                test_pred, test_target);
+                test_pred, test_target, model);
         end
         
         % Check/perform minimal feature selection is desired

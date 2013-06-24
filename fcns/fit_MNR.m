@@ -1,4 +1,4 @@
-function [ train_pred, test_pred  ] = fit_MNR(train_data,train_target,test_data,test_target)
+function [ train_pred, test_pred, b ] = fit_MNR(train_data,train_target,test_data,test_target)
 
 % train the multinomial parallel regression using MNRFIT
 b=mnrfit(train_data,train_target,'model','nominal');

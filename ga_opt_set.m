@@ -327,31 +327,50 @@ errmsg='';
 curr_dir = mfilename('fullpath');
 curr_dir = curr_dir(1:end-(numel('ga_opt_set'))); % remove m-file name
 %=== Get pname
-if regexp(pname,'CostFcn')
-    %=== Cost function is a special case - uses embedded stats functions
-    okfcns = arrayfun(@(x) x.name,dir([curr_dir 'stats/private/*.m']),'UniformOutput',false);
-    
+if regexp(pname,'CostFcn') 
     %=== If pval is a function handle, convert to char
     if ~ischar(pval)
         pval = func2str(pval);
     end
     
-    %=== Update pval in caller as needed
-    %   This will either convert function handle->char, replace "cost_"
-    %   with "stats_", or both.
-    pval = regexprep(pval,'cost_','stats_','once');
-    pvalName = [pval '.m'];
-    assignin('caller','pval',pval);
+    %=== Remove '.m'
+    if regexp(pval,'\.m')==(numel(pval)-1)
+        pval = pval(1:end-2);
+    end
     
-    %=== Check if pname exists in file names
-    fcnIdx = strcmp(okfcns,pvalName);
-    if any(fcnIdx)
+    if regexp(pval,'stats_') == 1
+        pval_cost = regexprep(pval,'stats_','cost_','once');
+        pval_stats = pval;
+    elseif regexp(pval,'cost_') == 1
+        pval_cost = pval;
+        pval_stats = regexprep(pval,'cost_','stats_','once');
+    end
+    
+    %=== Now, check for matching cost functions
+    okfcns1 = arrayfun(@(x) x.name,dir([curr_dir 'fcns/cost_*.m']),'UniformOutput',false);
+    
+    %=== Cost function is a special case - can also use embedded stats functions
+    okfcns2 = arrayfun(@(x) x.name,dir([curr_dir 'stats/private/*.m']),'UniformOutput',false);
+    
+    fcnValid1 = strcmp(okfcns1,[pval_cost '.m']);
+    fcnValid2 = strcmp(okfcns2,[pval_stats '.m']);
+    
+    %=== Update pval in caller as needed and prefer to use 'cost' fcn
+    if any(fcnValid1)
+        pval = pval_cost;
+        assignin('caller','pval',pval);
+        valid=1;
+        return;
+    elseif any(fcnValid2)
+        pval = pval_stats;
+        assignin('caller','pval',pval);
         valid=1;
         return;
     else
         valid=0;
         errmsg='Function name provided does not match any found in local directory';
     end
+    
 elseif regexp(pname,'Fcn') > 1
     %=== Parse function
     % Define allowable function types
@@ -385,7 +404,7 @@ elseif regexp(pname,'Fcn') > 1
         pvalName = [pval '.m'];
     else
         pval = func2str(pval);
-        pvalName = [pval '.m'];
+        pvalName = pval;
         % Convert function handle->char
         assignin('caller','pval',pval);
     end

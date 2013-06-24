@@ -1,4 +1,4 @@
-function [ c ] = cost_AUROC( pred, target )
+function [ c ] = cost_AUROC( pred, target, model )
 %cost_AUROC Uses the AUROC as the cost function of the GA.
 %   [ c ] = cost_AUROC( pred, target )
 %       pred    - vector containing the predicted values, [0-1]
