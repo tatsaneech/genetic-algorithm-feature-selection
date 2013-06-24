@@ -27,6 +27,8 @@ end
 if ~isempty(options.Hyperparameters)
     hyper = parents(:,size(OriginalData,2)+1:end);
     parents = parents(:,1:size(OriginalData,2));
+else
+    hyper = false(size(parents,1),1);
 end
 
 
@@ -63,7 +65,7 @@ parfor individual=1:P
             end
             
             % Use fitness function to train model/get predictions
-            [ train_pred, test_pred ]  = feval(fitFcn,...
+            [ train_pred, test_pred, model ]  = feval(fitFcn,...
                 train_data,train_target,test_data,fitOptCurr);
             
             [ tr_cost(ki) ] = callStatFcn(costFcn,...
