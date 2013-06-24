@@ -384,7 +384,7 @@ elseif regexp(pname,'Fcn') > 1
     
     if isempty(fcn_type)
         %=== This error would only happen if a new fcn has been added to
-        %the default options but not to this subfunction
+        %the default options but not to this subfunction, i.e. coding err
         error(sprintf('validateParamIsSubset:%s:invalidParamVal',mfilename),...
             'Function has been defined in ga_opt_set but not in subfunction validateParamIsSubset');
     end
@@ -401,10 +401,18 @@ elseif regexp(pname,'Fcn') > 1
     
     %=== If pval is a function handle, get the field name
     if ischar(pval)
-        pvalName = [pval '.m'];
+        if strcmp(pval(end-1:end),'.m')
+            pvalName = pval;
+        else
+            pvalName = [pval '.m'];
+        end
     else
         pval = func2str(pval);
-        pvalName = pval;
+        if strcmp(pval(end-1:end),'.m')
+            pvalName = pval;
+        else
+            pvalName = [pval '.m'];
+        end
         % Convert function handle->char
         assignin('caller','pval',pval);
     end
