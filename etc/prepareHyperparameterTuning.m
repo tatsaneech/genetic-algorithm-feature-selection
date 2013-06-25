@@ -23,22 +23,25 @@ function [ options ] = prepareHyperparameterTuning(options)
 %=== Add in hyperparameters if needed
 if ~isempty(options.Hyperparameters)
     oldHyp = options.Hyperparameters;
-    fn = options.Hyperparameters(1:2:end);
+    fn = options.Hyperparameters(1:3:end);
     
     options.Hyperparameters = struct();
     %=== Add in hyperparameter genomes 1 by 1
     for m=1:numel(fn)
-        curr_hyp = oldHyp{2*m};
+        curr_hyp = oldHyp{3*(m-1)+2};
         %=== generate our grid search space
-        isNeg = sign(curr_hyp);
         offset = min(curr_hyp); % offset of the grid
-        if all(isNeg==-1) % both are negative values, abs before diff
-            curr_hyp = abs(curr_hyp);
-        end
-        
+        curr_hyp = sort(curr_hyp-offset);
         bitsNeeded = ceil(log2(abs(diff(curr_hyp))));
         options.Hyperparameters.(fn{m}).bitsNeeded = bitsNeeded;
         options.Hyperparameters.(fn{m}).offset = offset;
+        
+        if ischar(oldHyp{3*m})
+            options.Hyperparameters.(fn{m}).fcn = oldHyp{3*m};
+        else
+            options.Hyperparameters.(fn{m}).fcn = func2str(oldHyp{3*m});
+        end
+        
     end
 end
 

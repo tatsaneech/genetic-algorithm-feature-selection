@@ -428,20 +428,20 @@ elseif regexp(pname,'Fcn') > 1
     end
 elseif strcmpi(pname,'hyperparameters')
     %=== Ensure each field encodes a range
-    if mod(numel(pval),2)==1
-        valid=0; %=== should be name/value pairs
-        errmsg='Hyperparameters should be in {''parameter'',value,...} format.';
+    if mod(numel(pval),3)==1
+        valid=0; %=== should be name/value/fcn pairs
+        errmsg='Hyperparameters should be in {''parameter'', value, fcn,...} format.';
         return;
     end
     
     for k=1:numel(pval)
-        if mod(k,2)==1
-            if ~ischar(pval{k})
+        if mod(k,3)==0 % String/function 3rd argument
+            if ~ischar(pval{k}) && ~isa(pval{k},'function_handle')
                 valid = 0;
-                errmsg=sprintf('Parameter %d entered is not a string. Hyperparameters should be in {''parameter'',value,...} format.',k);
+                errmsg=sprintf('Function for parameter %d entered is not a string/function. Hyperparameters should be in {''parameter'',value,string/function,...} format.',k);
                 return;
             end
-        else
+        elseif mod(k+1,3)==0 % Numeric range 2nd argument 
             if ~isnumeric(pval{k})
                 valid = 0;
                 errmsg='Hyperparameter field values should be 2x1 numeric representing search boundaries.';
@@ -452,6 +452,12 @@ elseif strcmpi(pname,'hyperparameters')
                 return;
             end
             
+        else % Name of the parameter 1st argument
+            if ~ischar(pval{k})
+                valid = 0;
+                errmsg=sprintf('Parameter %d entered is not a string. Hyperparameters should be in {''parameter'',value,...} format.',k);
+                return;
+            end
         end
     end
     
@@ -681,12 +687,13 @@ for k=1:length(paramsChecked)
         case 'Hyperparameters'
             
             %=== Loop through and ensure these hyperparameters are legit
+            % i.e. they exist in the default options for the fitness fcn
             fn = fieldnames(options.FitnessParam);
-            idxFound = false(numel(pval)/2,1);
-            for q=1:2:numel(pval)
-                idxFound((q+1)/2) = any(strcmpi(pval{q},fn));
+            idxFound = false(numel(pval),1);
+            for q=1:3:numel(pval)
+                idxFound(q) = any(strcmpi(pval{q},fn));
             end
-            
+            idxFound = idxFound(1:3:numel(pval));
             if any(~idxFound)
                 wrong_hyp = pval(1:2:end); wrong_hyp = wrong_hyp(~idxFound);
                 error(sprintf('validateConsistency:%s:InvalidHyperparameterName',mfilename),...
