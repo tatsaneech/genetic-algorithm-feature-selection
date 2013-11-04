@@ -65,6 +65,8 @@ parfor individual=1:P
     curr_model = cell(1,KI);
     curr_train_stats = cell(1,KI);
     curr_test_stats = cell(1,KI);
+    train_pred = cell(1,KI);
+    test_pred = cell(1,KI);
     
     % If enough variables selected to regress
     if any(FS)
@@ -92,11 +94,11 @@ parfor individual=1:P
             end
             
             % Use fitness function to train model/get predictions
-            [ train_pred, test_pred, curr_model{ki} ]  = feval(fitFcn,...
+            [ train_pred{ki}, test_pred{ki}, curr_model{ki} ]  = feval(fitFcn,...
                 train_data,train_target,test_data, fitOptCurr);
             
-            curr_train_stats{ki} = stat_calc_struct(train_pred,train_target);
-            curr_test_stats{ki} = stat_calc_struct(test_pred,test_target);
+            curr_train_stats{ki} = stat_calc_struct(train_pred{ki},train_target);
+            curr_test_stats{ki} = stat_calc_struct(test_pred{ki},test_target);
         end
         
         %=== This function will perform the following:
