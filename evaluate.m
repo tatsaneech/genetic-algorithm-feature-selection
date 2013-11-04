@@ -12,7 +12,6 @@ function [ SCORE_test, SCORE_train, miscOutputContent ] = ...
 %=== Extract parameters used from options structure
 fitFcn=options.FitnessFcn;
 fitOpt=options.FitnessParam;
-costFcn=options.CostFcn;
 optDir = options.OptDir;
 normalizeDataFlag = options.NormalizeData;
 mdlStorage = options.ModelStorage;
@@ -32,6 +31,11 @@ if mdlStorage==1
 model = cell(P,1);
 end
 
+if optDir % Maximizing cost -> low default value
+    defaultCost=-Inf;
+else % Minimizing cost -> high default value
+    defaultCost=Inf;
+end
 
 if isfield(fitOpt,'lbl')
     lbl = fitOpt.lbl;
@@ -42,13 +46,6 @@ end
 %=== Default cost values to very sub-optimal
 % If the algorithm does not assign a cost value (due to missing values or
 % unselected features), the genome will be heavily penalized
-
-%TODO: Figure out a better limits than 9999 and -9999
-if optDir % Maximizing cost -> low default value
-    defaultCost=-Inf;
-else % Minimizing cost -> high default value
-    defaultCost=Inf;
-end
 
 %=== the genomes at the end will be indexing hyperparameters
 if ~isempty(options.Hyperparameters)
@@ -63,8 +60,6 @@ end
 for individual=1:P
     % If you want to remove multiples warnings
     warning off all
-    tr_cost=ones(KI,1)*defaultCost;
-    t_cost=ones(KI,1)*defaultCost;
     
     % Convert Gene into selected variables
     FS = parents(individual,:)==1;
@@ -76,7 +71,8 @@ for individual=1:P
     curr_model = cell(1,KI);
     curr_train_stats = cell(1,KI);
     curr_test_stats = cell(1,KI);
-    
+    train_pred = cell(1,KI);
+    test_pred = cell(1,KI);
     % If enough variables selected to regress
     if any(FS)
         DATA = full(OriginalData(:,FS));
@@ -100,31 +96,33 @@ for individual=1:P
             end
             
             % Use fitness function to train model/get predictions
-            [ train_pred, test_pred, curr_model{ki} ]  = feval(fitFcn,...
+            [ train_pred{ki}, test_pred{ki}, curr_model{ki} ]  = feval(fitFcn,...
                 train_data,train_target,test_data, fitOpt);
             
-            curr_train_stats{ki} = stat_calc_struct(train_pred,train_target);
-            curr_test_stats{ki} = stat_calc_struct(test_pred,test_target);
-            
-            [ tr_cost(ki) ] = callStatFcn(costFcn,...
-                train_pred, train_target, curr_model{ki});
-            [ t_cost(ki) ] = callStatFcn(costFcn,...
-                test_pred, test_target, curr_model{ki});
+            %TODO: Probably need to replace this with GA toolbox specific code.
+            curr_train_stats{ki} = stat_calc_struct(train_pred{ki},train_target);
+            curr_test_stats{ki} = stat_calc_struct(test_pred{ki},test_target);
         end
         
-        % Check/perform minimal feature selection is desired
-        [ tr_cost, t_cost ] = fs_opt( tr_cost, t_cost, FS, options );
+        %=== This function will perform the following:
+        %   1) Apply regularization, if requested
+        %   2) Get the overall performance across K model developments
+        %       This could be calculated by mean, median, etc ...
+        [ tr_cost, t_cost, idxMedian ] = fs_opt( train_pred, train_target, ...
+            test_pred, test_target, ...
+            train, test, ...
+            curr_model, FS, options, KI );
         
     else
-        % Do nothing - leave costs as they were preallocated
+        % leave costs as worse possible value
+        t_cost = defaultCost;
+        tr_cost = defaultCost;
+        idxMedian = [];
     end
     
-    % ...get median results on TEST set
-    SCORE_test(individual) =  nanmedian(t_cost);
-    idxMedian = find(t_cost==SCORE_test(individual),1);
-    
-    % ...save corresponding result from training set
-    SCORE_train(individual) =  tr_cost(idxMedian);
+    % ...get estimate performance results calculated by fs_opt
+    SCORE_test(individual) = t_cost;
+    SCORE_train(individual) =  tr_cost;
     
     if any(FS)
         % ... save misc details

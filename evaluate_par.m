@@ -32,8 +32,6 @@ end
 %=== Default cost values to very sub-optimal
 % If the algorithm does not assign a cost value (due to missing values or
 % unselected features), the genome will be heavily penalized
-
-%TODO: Figure out a better limits than 9999 and -9999
 if optDir % Maximizing cost -> low default value
     defaultCost=-Inf;
 else % Minimizing cost -> high default value
@@ -53,8 +51,6 @@ end
 parfor individual=1:P
     % If you want to remove multiples warnings
     warning off all
-    tr_cost=ones(KI,1)*defaultCost;
-    t_cost=ones(KI,1)*defaultCost;
     
     % Convert Gene into selected variables
     FS = parents(individual,:)==1;
@@ -100,25 +96,27 @@ parfor individual=1:P
             
             curr_train_stats{ki} = stat_calc_struct(train_pred,train_target);
             curr_test_stats{ki} = stat_calc_struct(test_pred,test_target);
-            
-            [ tr_cost(ki) ] = callStatFcn(costFcn,...
-                train_pred, train_target, curr_model{ki});
-            [ t_cost(ki) ] = callStatFcn(costFcn,...
-                test_pred, test_target, curr_model{ki});
         end
         
-        % Check/perform minimal feature selection is desired
-        [ tr_cost, t_cost ] = fs_opt( tr_cost, t_cost, FS, options );
+        %=== This function will perform the following:
+        %   1) Apply regularization, if requested
+        %   2) Get the overall performance across K model developments
+        %       This could be calculated by mean, median, etc ...
+        [ tr_cost, t_cost, idxMedian ] = fs_opt( train_pred, train_target, ...
+            test_pred, test_target, ...
+            train, test, ...
+            curr_model, FS, options, KI );
     else
-        % Do nothing - leave costs as they were preallocated
+        % leave costs as worse possible value
+        t_cost = defaultCost;
+        tr_cost = defaultCost;
+        idxMedian = [];
     end
     
-    % ...get median results on TEST set
-    SCORE_test(individual) =  nanmedian(t_cost);
-    idxMedian = find(t_cost==SCORE_test(individual),1);
+    % ...get estimate performance results calculated by fs_opt
+    SCORE_test(individual) = t_cost;
+    SCORE_train(individual) =  tr_cost;
     
-    % ...save corresponding result from training set
-    SCORE_train(individual) =  tr_cost(idxMedian);
     
     if any(FS)
         % ... save misc details
