@@ -6,6 +6,7 @@ fitOpt=options.FitnessParam;
 costFcn=options.CostFcn;
 optDir = options.OptDir;
 normalizeDataFlag = options.NormalizeData;
+mdlStorage = options.ModelStorage;
 
 % Pre-allocate
 P=size(parents,1);
