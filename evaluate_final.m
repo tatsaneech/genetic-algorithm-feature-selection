@@ -71,6 +71,12 @@ if ~isempty(options.Hyperparameters)
     fitOpt = parseHyperparameters(fitOpt,fitFcn,hyper(1,:),options);
 end 
 
+if isfield(fitOpt,'lbl')
+    lbl = fitOpt.lbl;
+else
+    lbl = [];
+end
+
 %=== Extract features as logicals
 FS = parents(1,1:size(OriginalData,2)) == 1;
 %=== Create default cost values
@@ -93,6 +99,10 @@ for ki=1:KI % Repeat fitness function KI times to get good estimate of cost
     
     train_target = data_target(train(:,ki));
     test_target = data_target(test(:,ki));
+    
+    if ~isempty(lbl)
+        fitOpt.lbl = lbl(FS);
+    end
     
     % Use fitness function to train model/get predictions
     [ train_pred, test_pred, model{ki} ]  = feval(fitFcn,...

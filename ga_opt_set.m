@@ -51,6 +51,9 @@ function [ options ] = ga_opt_set( varargin )
 %   OutputContent      - Specify the data stored in the output structure
 %                       Note: may increase computationally intensity
 %                       [ {'normal'} | 'detailed' | 'debug' ]
+%   ModelStorage        - Specify whether to keep model during genome search or retrain after finding best genomes\n');
+%                       Note: may increase memory required, especially with large models (e.g. Random forest)
+%                       [ {0} | 1 ]
 %   PlotFcn             - The plotting function used for display
 %                       [ function name string | function handle | {[]} ]
 %   ErrorGradient       - The minimum improvement required to prevent error termination
@@ -118,6 +121,7 @@ else
         'BalanceRatio', 1, ...
         'Elitism',10 , ...
         'MinimizeFeatures',false, ...
+        'ModelStorage',0,...
         'PopulationEvolutionAxe', [],...
         'FitFunctionEvolutionAxe', [],...
         'CurrentPopulationAxe', [],...
@@ -283,7 +287,8 @@ switch param
             errmsg = sprintf(['Invalid value for OPTIONS parameter %s: must be a string or \n'...
                 'function handle with valid three character prefix'],param);
         end
-    case {'GUIFlag','Parallelize','OptDir','MinimizeFeatures','NormalizeData'}
+    case {'GUIFlag','Parallelize','OptDir','MinimizeFeatures','NormalizeData',...
+            'ModelStorage'}
         % Booleans/0 1 flags
         if ~islogical(val) && ~(isnumeric(val) && (val==1 || val==0))
             valid = 0;
@@ -798,6 +803,9 @@ fprintf('                       [ 1 | {0} ]\n');
 fprintf('   OutputContent      - Specify the data stored in the output structure\n');
 fprintf('                       Note: may increase computationally intensity\n');
 fprintf('                       [ {''normal''} | ''detailed'' | ''debug'' ]\n');
+fprintf('   ModelStorage      - Specify whether to keep model during genome search or retrain after finding best genomes\n');
+fprintf('                       Note: may increase memory required, especially with large models (e.g. Random forest)\n');
+fprintf('                       [ {0} | 1 ]\n');
 fprintf('   PlotFcn             - The plotting function used for display\n');
 fprintf('                       [ function name string | function handle | {[]} ]\n');
 fprintf('   ErrorGradient       - The minimum improvement required to prevent error termination\n');

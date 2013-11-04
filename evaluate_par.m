@@ -1,4 +1,4 @@
-function [ SCORE_test, SCORE_train, other ] = ...
+function [ SCORE_test, SCORE_train, miscOutputContent ] = ...
     evaluate_par(OriginalData , data_target, parents, options, train, test, KI)
 
 fitFcn=options.FitnessFcn;
@@ -12,15 +12,32 @@ P=size(parents,1);
 SCORE_test=zeros(P,1);
 SCORE_train=zeros(P,1);
 
+% Output parameters
+TestStats = cell(P,1);
+TrainStats = cell(P,1);
+TrainIndex = false(size(train,1),P);
+TestIndex = false(size(test,1),P);
+
+if mdlStorage==1
+    model = cell(P,1);
+end
+
+
+if isfield(fitOpt,'lbl')
+    lbl = fitOpt.lbl;
+else
+    lbl = [];
+end
+
 %=== Default cost values to very sub-optimal
 % If the algorithm does not assign a cost value (due to missing values or
 % unselected features), the genome will be heavily penalized
 
 %TODO: Figure out a better limits than 9999 and -9999
 if optDir % Maximizing cost -> low default value
-    defaultCost=-9999;
+    defaultCost=-Inf;
 else % Minimizing cost -> high default value
-    defaultCost=9999;
+    defaultCost=Inf;
 end
 
 %=== the genomes at the end will be indexing hyperparameters
@@ -48,9 +65,22 @@ parfor individual=1:P
         fitOptCurr = fitOpt;
     end
     
+    curr_model = cell(1,KI);
+    curr_train_stats = cell(1,KI);
+    curr_test_stats = cell(1,KI);
+    
     % If enough variables selected to regress
     if any(FS)
+        
+        %=== update fitOpt label - needed for PSO range calculation
+        if ~isempty(lbl)
+            fitOptCurr.lbl = lbl(FS);
+        end
+        
         DATA = OriginalData(:,FS);
+        
+        fprintf('Number in label: %d. Number of data cols: %d. ',numel(fitOptCurr.lbl),size(DATA,2));
+        
         % Cross-validation repeat for each data partition
         for ki=1:KI
             train_target = data_target(train(:,ki));
@@ -65,13 +95,16 @@ parfor individual=1:P
             end
             
             % Use fitness function to train model/get predictions
-            [ train_pred, test_pred, model ]  = feval(fitFcn,...
-                train_data,train_target,test_data,fitOptCurr);
+            [ train_pred, test_pred, curr_model{ki} ]  = feval(fitFcn,...
+                train_data,train_target,test_data, fitOptCurr);
+            
+            curr_train_stats{ki} = stat_calc_struct(train_pred,train_target);
+            curr_test_stats{ki} = stat_calc_struct(test_pred,test_target);
             
             [ tr_cost(ki) ] = callStatFcn(costFcn,...
-                train_pred, train_target, model);
+                train_pred, train_target, curr_model{ki});
             [ t_cost(ki) ] = callStatFcn(costFcn,...
-                test_pred, test_target, model);
+                test_pred, test_target, curr_model{ki});
         end
         
         % Check/perform minimal feature selection is desired
@@ -80,13 +113,31 @@ parfor individual=1:P
         % Do nothing - leave costs as they were preallocated
     end
     
-    % ...get median results on TEST and TRAIN set
-    SCORE_test(individual) =  nanmedian( t_cost );
-    SCORE_train(individual) =  nanmedian( tr_cost );
+    % ...get median results on TEST set
+    SCORE_test(individual) =  nanmedian(t_cost);
+    idxMedian = find(t_cost==SCORE_test(individual),1);
+    
+    % ...save corresponding result from training set
+    SCORE_train(individual) =  tr_cost(idxMedian);
+    
+    if any(FS)
+        % ... save misc details
+        TestStats{individual} = curr_test_stats{idxMedian};
+        TrainStats{individual} = curr_train_stats{idxMedian};
+        TrainIndex(:,individual) = train(:,idxMedian);
+        TestIndex(:,individual) = test(:,idxMedian);
+        if mdlStorage==1
+            model{individual} = curr_model{idxMedian};
+        end
+    end
 end
-other.stats = [];
-other.trainPred = [];
-other.testPred = [];
+miscOutputContent.TestStats = TestStats;
+miscOutputContent.TrainStats = TrainStats;
+miscOutputContent.TrainIndex = TrainIndex;
+miscOutputContent.TestIndex = TestIndex;
+if mdlStorage==1
+    miscOutputContent.model = model;
+end
 
 end
 

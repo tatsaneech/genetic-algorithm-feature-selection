@@ -97,7 +97,7 @@ for tries = 1:options.Repetitions
         end
         
         %% Evaluate parents and create new generation
-        [testCost, trainCost] = feval(evalFcn,data,target,parent,options , train, test, KI);
+        [testCost, trainCost, miscOutputAll] = feval(evalFcn,data,target,parent,options , train, test, KI);
         % TODO:
         %   Change eval function to return:
         %       model, outputs with predictions+indices, statistics
@@ -107,18 +107,29 @@ for tries = 1:options.Repetitions
         trainCost = trainCost(idxTestSort,:);
         parent = parent(idxTestSort,:);
         
-        %% FINAL VALIDATION
-        % If tracking best genome statistics is desirable during run-time,
-        % this section will have to recalculate the genome fitness, etc.
-        
-        FS = parent(1,:)==1;
-        [out.Test.EvolutionBestCost(ite,tries),...
-            out.Training.EvolutionBestCost(ite,tries),...
-            miscOutputContent] ...
-            = evaluate_final(data,target,FS,options,train,test,KI);
-        
+        %=== Save median performance across all genomes
         out.Training.EvolutionMedianCost(ite,tries) = nanmedian(trainCost);
         out.Test.EvolutionMedianCost(ite,tries) = nanmedian(testCost);
+        %% FINAL VALIDATION
+        FS = parent(1,:)==1;
+        if options.ModelStorage==0
+            %=== Redevelop model
+            [out.Test.EvolutionBestCost(ite,tries),...
+                out.Training.EvolutionBestCost(ite,tries),...
+                miscOutputContent] ...
+                = evaluate_final(data,target,FS,options,train,test,KI);
+        else
+            %=== Use already stored best model
+            idxBestModel = idxTestSort(1);
+            
+            miscOutputContent.TrainStats = miscOutputAll.TrainStats{idxBestModel};
+            miscOutputContent.TestStats = miscOutputAll.TestStats{idxBestModel};
+            
+            miscOutputContent.TestIndex = miscOutputAll.TestIndex(:,idxBestModel);
+            miscOutputContent.TrainIndex = miscOutputAll.TrainIndex(:,idxBestModel);
+            
+            miscOutputContent.model = miscOutputAll.model{idxBestModel};
+        end
         
         %% Save and display results
         %%-------------------------+

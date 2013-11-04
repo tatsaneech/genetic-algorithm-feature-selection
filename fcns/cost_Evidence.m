@@ -20,7 +20,17 @@ Ed = nansum( target.*log(realmin+pred) + (1-target).*log(realmin+1-pred) );
 % Ed = prod( pred.^(target).*(1-pred).^(1-target) );
 
 %% Multiply by Occam's factor
-hess = inv(model.stats.covb);
+
+%=== since covariance is positive definite we can do cholskey projection
+% requires the lightspeed toolbox, though should double check this fast
+if exist('inv_triu.m','file')==2
+    hess = cholproj(model.stats.covb);
+    hess = inv_triu(hess);
+    hess = hess*hess';
+else
+    hess = inv(model.stats.covb);
+end
+
 % Probabily of parameters given assumptions. Assumptions is all betas are
 % normally distributed with mean 0 and variance 3
 % equivalent to 1/sigma_w where sigma is the prior uncertainty of the
@@ -34,4 +44,5 @@ out = Ed;
 
 
 end
+
 
