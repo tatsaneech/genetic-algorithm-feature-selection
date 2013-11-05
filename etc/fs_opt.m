@@ -1,44 +1,47 @@
-function [ tr_cost, t_cost, idxMedian ] = fs_opt(train_pred, train_target, ...
-            test_pred, test_target, ...
+function [ tr_cost, t_cost, idxMedian ] = fs_opt(train_pred, test_pred, ...
+            data_target, ...
             idxTrain, idxTest, ...
             curr_model, FS, options, KI )
-%FS_OPT Alters algorithm costs to minimize features selected.
-
+%FS_OPT Cost calculation
+%=== This function will perform the following:
+%   1) Get the overall performance across K model developments
+%       This could be calculated by mean, median, etc ...
+%   2) Apply regularization, if requested
 
 costFcn=options.CostFcn;
-optDir = options.OptDir;
-
-%TODO: Figure out a better limits than 9999 and -9999
-if optDir % Maximizing cost -> low default value
-    defaultCost=-Inf;
-else % Minimizing cost -> high default value
-    defaultCost=Inf;
-end
-
 
 %=== Now depending on the xval type, calculate the median cost
 switch options.CrossValidationFcn
-    case 'TODO' % Incomplete because unsure what model to save for final results..
-%     case {'xval_Kfold', 'xval_KfoldD'}
-        holdout_pred = nan(size(test_target,1),1);
-        tr_cost=ones(KI,1)*defaultCost;
+%     case 'TODO' % Incomplete because unsure what model to save for final results..
+    case {'xval_Kfold', 'xval_KfoldD'}
+        holdout_pred = nan(size(data_target,1),1);
+        tr_cost=zeros(KI,1);
         for ki=1:KI
             holdout_pred(idxTest(:,ki),1) = test_pred{ki};
+            train_target = data_target(idxTrain(:,ki),:);
             
             [ tr_cost(ki) ] = callStatFcn(costFcn,...
                 train_pred{ki}, train_target, curr_model{ki});
         end
-        [tr_cost,idxModel] = mean(tr_cost);
+        tr_cost_median =  nanmedian(tr_cost);
+        [~,idxMedian] = min(abs(tr_cost-tr_cost_median));
+        tr_cost = tr_cost_median;
+%         [tr_cost,idxMedian] = mean(tr_cost);
+        test_target = data_target;
         
         %FIXME: Use of idxModel here is probably inappropriate
         t_cost = callStatFcn(costFcn,...
-            holdout_pred, test_target, curr_model{idxModel});
+            holdout_pred, test_target, curr_model{idxMedian});
         
         
     otherwise
-        tr_cost=ones(KI,1)*defaultCost;
-        t_cost=ones(KI,1)*defaultCost;
+        tr_cost=zeros(KI,1);
+        t_cost=zeros(KI,1);
+        
         for ki=1:KI
+            train_target = data_target(idxTrain(:,ki),:);
+            test_target = data_target(idxTest(:,ki),:);
+            
             [ tr_cost(ki) ] = callStatFcn(costFcn,...
                 train_pred{ki}, train_target, curr_model{ki});
             [ t_cost(ki) ] = callStatFcn(costFcn,...
@@ -47,7 +50,7 @@ switch options.CrossValidationFcn
         
         % ...get median results on TEST set
         t_cost_median =  nanmedian(t_cost);
-        idxMedian = find(t_cost==t_cost_median,1);
+        [~,idxMedian] = min(abs(t_cost-t_cost_median));
         t_cost = t_cost_median;
         
         % ...save corresponding result from training set
