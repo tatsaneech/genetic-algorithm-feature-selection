@@ -49,7 +49,7 @@ end
 
 
 % For each individual
-for individual=1:P
+parfor individual=1:P
     % If you want to remove multiples warnings
     warning off all
     
