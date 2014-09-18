@@ -122,6 +122,9 @@ for tries = 1:options.Repetitions
             %=== Use already stored best model
             idxBestModel = idxTestSort(1);
             
+            out.Test.EvolutionBestCost(ite,tries) = testCost(idxBestModel);
+            out.Training.EvolutionBestCost(ite,tries) = trainCost(idxBestModel);
+            
             miscOutputContent.TrainStats = miscOutputAll.TrainStats{idxBestModel};
             miscOutputContent.TestStats = miscOutputAll.TestStats{idxBestModel};
             
