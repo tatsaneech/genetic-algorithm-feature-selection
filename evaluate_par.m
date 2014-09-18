@@ -78,8 +78,6 @@ parfor individual=1:P
         
         DATA = OriginalData(:,FS);
         
-        fprintf('Number in label: %d. Number of data cols: %d. ',numel(fitOptCurr.lbl),size(DATA,2));
-        
         % Cross-validation repeat for each data partition
         for ki=1:KI
             train_target = data_target(train(:,ki));
@@ -105,8 +103,7 @@ parfor individual=1:P
         %   1) Apply regularization, if requested
         %   2) Get the overall performance across K model developments
         %       This could be calculated by mean, median, etc ...
-        [ tr_cost, t_cost, idxMedian ] = fs_opt( train_pred, train_target, ...
-            test_pred, test_target, ...
+        [ tr_cost, t_cost, idxMedian ] = fs_opt( train_pred, test_pred, data_target, ...
             train, test, ...
             curr_model, FS, options, KI );
     else
